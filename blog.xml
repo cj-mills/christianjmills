@@ -17,7 +17,879 @@
 <width>144</width>
 </image>
 <generator>quarto-1.6.32</generator>
-<lastBuildDate>Sun, 10 Nov 2024 08:00:00 GMT</lastBuildDate>
+<lastBuildDate>Mon, 11 Nov 2024 08:00:00 GMT</lastBuildDate>
+<item>
+  <title>GPU MODE Lecture 13: Ring Attention</title>
+  <dc:creator>Christian Mills</dc:creator>
+  <link>https://christianjmills.com/posts/cuda-mode-notes/lecture-013/</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>GPU MODE Lecture Notes</strong></a>: My notes from the <strong>GPU MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li>Introduction and Overview</li>
+<li>Motivation: Long Context Transformers and Applications</li>
+<li>Background: Multimodal Input and Transformers</li>
+<li>Challenge: Memory Limitations</li>
+<li>Vanilla Attention Recap</li>
+<li>Compute Scaling with Context Length</li>
+<li>Online Softmax and LogSumExp Trick</li>
+<li>Ring Attention Details</li>
+<li>Causal Masking and Stripe Attention</li>
+<li>Flash Decoding</li>
+<li>History and Resources</li>
+<li>Q&amp;A</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=ws7angQYIxI">Lecture 13: Ring Attention</a></li>
+<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/180lS8XbeR1_bTMaldg21LKYQkjXftHuh9VnZ3xk27qQ/edit#slide=id.p">Ring Attention - Sequence Parallel Attention Across Devices</a></li>
+<li><strong>Code:</strong>
+<ul>
+<li><a href="https://github.com/gpu-mode/lectures/blob/main/lecture_013/howto_log_sum_exp.ipynb">lecture_013/howto_log_sum_exp.ipynb</a></li>
+<li><a href="https://github.com/gpu-mode/ring-attention">gpu-mode/ring-attention</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<section id="introduction-and-overview" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-and-overview">Introduction and Overview</h2>
+<ul>
+<li><strong>Speaker</strong>: Andreas Kopf, co-founder of the CUDA/GPU Mode Discord server, AI engineer at <a href="https://aleph-alpha.com/">Aleph Alpha</a>.</li>
+<li><strong>Lecture Date:</strong> April 6, 2024</li>
+<li><strong>Topic</strong>: Ring Attention, a method for sequence parallel attention across multiple devices.</li>
+<li><strong>Focus</strong>: High-level orchestration of multiple GPUs, rather than individual GPU utilization.</li>
+</ul>
+</section>
+<section id="motivation-long-context-transformers-and-applications" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-long-context-transformers-and-applications">Motivation: Long Context Transformers and Applications</h2>
+<ul>
+<li><strong>Long Context LLMs</strong>: Models like Gemini (1 million token context, up to 10 million in research) enable processing of extremely long inputs.</li>
+<li><strong>Comparison of Models</strong>:
+<ul>
+<li><strong><a href="https://deepmind.google/technologies/gemini/pro/">Gemini 1.5 Pro</a></strong>: ~1 million tokens (now 2 million tokens)</li>
+<li><strong><a href="https://github.com/LargeWorldModel/LWM">Large World Model (LWM)</a></strong>: ~1 million tokens</li>
+<li><strong><a href="https://huggingface.co/NousResearch/Yarn-Mistral-7b-128k">Yarn-Mistral</a></strong>: 128k tokens</li>
+<li><strong><a href="https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo">GPT-4 Turbo</a>/<a href="https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm">DBRX</a></strong>: 128k tokens</li>
+<li><strong><a href="https://huggingface.co/mosaicml/mpt-7b">MPT</a> (<a href="https://arxiv.org/abs/2108.12409">Alibi Linear Bias Attention</a>)</strong>: 65k tokens</li>
+<li><strong><a href="https://huggingface.co/xai-org/grok-1">xAI GROK-1</a></strong>: 8k tokens</li>
+</ul></li>
+<li><strong>New Capabilities</strong>:
+<ul>
+<li>Processing books, long documents, web content, chat histories, complete code bases, high-resolution images, audio recordings, and videos.</li>
+<li>Videos and text descriptions provide complementary information for world modeling.</li>
+<li>Improved future prediction and world simulation.</li>
+</ul></li>
+<li><strong>Example (<a href="https://largeworldmodel.github.io/lwm/">LWM</a>)</strong>: Video Question Answering on a one-hour video with multiple embedded videos. LWM correctly answered a question about the number of lemons in a person’s car, referencing a specific frame.
+<ul>
+<li>This example demonstrates improved capabilities, though acknowledged to be somewhat cherry-picked.</li>
+</ul></li>
+<li><strong>Open Question (Unanswered)</strong>: How Claude, Gemini, and GPT-4 support long context lengths remains undisclosed.
+<ul>
+<li>Andreas suggests it may not be ring attention due to high inference costs, especially for extremely long sequences like 10 million tokens.</li>
+</ul></li>
+</ul>
+</section>
+<section id="background-multimodal-input-and-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="background-multimodal-input-and-transformers">Background: Multimodal Input and Transformers</h2>
+<ul>
+<li><strong>Transformer Architecture</strong>: Multi-headed attention and feedforward network in multiple layers.</li>
+<li><strong>Multimodal Input Encoding</strong>:
+<ul>
+<li><strong>Vision Transformers</strong>: Direct linear projection of images into token dimensions.</li>
+<li><strong>LLaVA</strong>: Vision encoder converts images into tokens, combined with language queries and autoregressive answer generation.</li>
+<li><strong>LWM</strong>: VQGAN encodes 256x256 images into 144 tokens, allowing for video processing and next-text token prediction.</li>
+</ul></li>
+<li><strong>Multimodal Applications</strong>: Text, image, and video as individual or combined inputs and outputs, including text-to-image, text-to-video, image-to-text, video-to-text, and image-text combinations.
+<ul>
+<li><strong><a href="https://huggingface.co/papers/2207.12598">Classifier-Free Guidance</a></strong>: Used in LWM to steer autoregressive generation and produce images as output.</li>
+</ul></li>
+</ul>
+</section>
+<section id="challenge-memory-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-memory-limitations">Challenge: Memory Limitations</h2>
+<ul>
+<li><strong>Memory Requirements</strong>: A 100 million token sequence with a hidden size of 1024 requires over 1000 gigabytes of memory, even with a batch size of one. This highlights the need to store inputs, outputs, and gradients, even with online computation of the score matrix and softmax.</li>
+<li><strong>High-End GPU Memory</strong>:
+<ul>
+<li><a href="https://www.nvidia.com/en-us/data-center/h200/">NVIDIA H200</a>: 141 GB</li>
+<li><a href="https://www.amd.com/en/products/accelerators/instinct/mi300.html">AMD MI300X</a>: 192 GB</li>
+<li><a href="https://www.nvidia.com/en-us/data-center/gb200-nvl2/">NVIDIA GB200</a>: 288 GB up to 960GB</li>
+</ul></li>
+<li><strong>Alternative Approaches</strong>:
+<ul>
+<li>Approximation: (e.g., Sparse, LoRA)</li>
+<li>RAG/Vector-DBs (Approximate Nearest Neighbor Search, Locality Sensitive Hashing)</li>
+<li>Brute-force compute (tiling, blockwise)</li>
+</ul></li>
+<li><strong>Ring Attention Approach</strong>: Brute-force computation of all attention scores, but with memory optimizations to avoid quadratic memory scaling.</li>
+</ul>
+</section>
+<section id="vanilla-attention-recap" class="level2">
+<h2 class="anchored" data-anchor-id="vanilla-attention-recap">Vanilla Attention Recap</h2>
+<ul>
+<li><p><strong>Process</strong>: Two matrix multiplications: (1) Query x Transposed Keys = Attention Scores; (2) Softmax(Attention Scores) x Values = Output.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/vanilla-attention-slide-8.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 8: Vanilla Attention</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Parallel Computation Potential</strong>: Each query’s output can be computed independently, though typically done in batches for efficiency. Individual query processing is a potential memory optimization, though quadratic attention scaling remains a problem.</p></li>
+</ul>
+</section>
+<section id="compute-scaling-with-context-length" class="level2">
+<h2 class="anchored" data-anchor-id="compute-scaling-with-context-length">Compute Scaling with Context Length</h2>
+<ul>
+<li><p><strong>Formula for FLOPs</strong> (from the <a href="https://arxiv.org/abs/2310.01889">Ring Attention paper</a> appendix): <img src="https://latex.codecogs.com/png.latex?%0A24%20%5Ccdot%20%5Ctext%7Bsequence%5C_length%7D%20%5Ccdot%20%5Ctext%7Bhidden%5C_size%7D%5E2%20+%204%20%5Ccdot%20%5Ctext%7Bsequence%5C_length%7D%5E2%20%5Ccdot%20%5Ctext%7Bhidden%5C_size%7D%0A"></p></li>
+<li><p><strong>Surprising Result</strong>: Increasing context length has a less dramatic impact on compute than expected, especially for larger models.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/ring-attention-figure-5.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://arxiv.org/abs/2310.01889">Ring Attention Paper</a>: Figure 5</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Example:</strong> Training a 65B parameter model with 256k context length (64x increase) requires only 5.8x the compute compared to 4k context length.
+<ul>
+<li>This is partly due to requiring fewer batches.<br>
+</li>
+<li>However, quadratic scaling still dominates at extremely long context lengths (e.g., 100 million tokens).</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="online-softmax-and-logsumexp-trick" class="level2">
+<h2 class="anchored" data-anchor-id="online-softmax-and-logsumexp-trick">Online Softmax and LogSumExp Trick</h2>
+<ul>
+<li><p><strong>Softmax Formula</strong>:<br>
+<img src="https://latex.codecogs.com/png.latex?%0As(x_i)%20=%20%5Cfrac%7Be%5E%7Bx_i%7D%7D%7B%5Csum_%7Bj=1%7D%5En%20e%5E%7Bx_j%7D%7D%0A"></p></li>
+<li><p><strong>Challenge</strong>: The denominator requires the sum of all exponentiated elements, hindering blockwise computation.</p></li>
+<li><p><strong>Naive Softmax Implementation (Python)</strong>:</p>
+<div class="sourceCode" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> torch</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> naive_softmax(x: torch.Tensor) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-&gt;</span> torch.Tensor:</span>
+<span id="cb1-4">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> x.exp() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> x.exp().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># generate normally distributed random numbers</span></span>
+<span id="cb2-2">a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.softmax(x, dim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># reference output</span></span>
+<span id="cb2-3">b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> naive_softmax(x) <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># our naive version</span></span>
+<span id="cb2-4"></span>
+<span id="cb2-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"a"</span>, a)</span>
+<span id="cb2-6"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"b"</span>, b)</span>
+<span id="cb2-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"allclose"</span>, torch.allclose(a, b, atol<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1e-6</span>))</span></code></pre></div>
+<pre class="text"><code>a tensor([0.1022, 0.1295, 0.0292, 0.0882, 0.0455, 0.1041, 0.1491, 0.1286, 0.1785,
+        0.0451])
+b tensor([0.1022, 0.1295, 0.0292, 0.0882, 0.0455, 0.1041, 0.1491, 0.1286, 0.1785,
+        0.0451])
+allclose True</code></pre></li>
+<li><p><strong>Instability of Naive Softmax</strong>: Scaling input by large values leads to NaN values.</p>
+<div class="sourceCode" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">naive_softmax(x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>)</span></code></pre></div>
+<pre class="text"><code>tensor([0., 0., 0., 0., 0., nan, nan, 0., 0., 0.])</code></pre></li>
+<li><p><strong>Blockwise Computation Goal</strong>: Compute softmax on chunks (blocks) of the input and combine the results to match the full softmax output.</p>
+<div class="sourceCode" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>)</span>
+<span id="cb6-2"></span>
+<span id="cb6-3">x1,x2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.chunk(x, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb6-4">s1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> naive_softmax(x1)</span>
+<span id="cb6-5">s2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> naive_softmax(x2)</span>
+<span id="cb6-6"></span>
+<span id="cb6-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"We have:"</span>)</span>
+<span id="cb6-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"s1 = </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>s1<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb6-9"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"s2 = </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>s2<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb6-10"></span>
+<span id="cb6-11">target <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> naive_softmax(x)</span>
+<span id="cb6-12"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"We want:"</span>)</span>
+<span id="cb6-13"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"target = </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>target<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1">We have:</span>
+<span id="cb7-2">s1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tensor([<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1187</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0524</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.4145</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0082</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.4062</span>])</span>
+<span id="cb7-3">s2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tensor([<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2311</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2720</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2980</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0114</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1874</span>])</span>
+<span id="cb7-4">We want:</span>
+<span id="cb7-5">target <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> tensor([<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0879</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0388</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.3070</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0061</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.3008</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0600</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0706</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0773</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0030</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.0486</span>])</span></code></pre></div></li>
+<li><p><strong>Correction Factor</strong>: Multiplying intermediate softmax outputs by the full sum of exponentiated values (sum_exp) allows reconstruction of the target softmax.</p>
+<div class="sourceCode" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1">sum_exp_x1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x1.exp().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb8-2">sum_exp_x2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x2.exp().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb8-3">s1_corrected <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> s1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> sum_exp_x1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> (sum_exp_x1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> sum_exp_x2)</span>
+<span id="cb8-4">s2_corrected <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> s2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> sum_exp_x2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> (sum_exp_x1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> sum_exp_x2)</span>
+<span id="cb8-5"></span>
+<span id="cb8-6"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"After correction with help of sum_exp values:"</span>)</span>
+<span id="cb8-7">s_combined <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.cat([s1_corrected, s2_corrected])</span>
+<span id="cb8-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"s_combined"</span>, s_combined)</span>
+<span id="cb8-9"></span>
+<span id="cb8-10"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"allclose(s_combined, target):"</span>, torch.allclose(s_combined, target))</span></code></pre></div>
+<pre class="text"><code>After correction with help of sum_exp values:
+s_combined tensor([0.0879, 0.0388, 0.3070, 0.0061, 0.3008, 0.0600, 0.0706, 0.0773, 0.0030, 0.0486])
+allclose(s_combined, target): True</code></pre></li>
+<li><p><strong>Stable Softmax Implementation (Python)</strong>:</p>
+<div class="sourceCode" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> stable_softmax2(x):</span>
+<span id="cb10-2">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">"""returns softmax result and log sum exp"""</span></span>
+<span id="cb10-3">    m <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">max</span>()</span>
+<span id="cb10-4">    a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> m).exp()</span>
+<span id="cb10-5">    b <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> a.<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb10-6">    lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> m <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.log(b)</span>
+<span id="cb10-7">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> b, lse</span></code></pre></div>
+<ul>
+<li><strong>Shift Invariance</strong>: Softmax is invariant to adding or subtracting a constant value.</li>
+<li><strong>Stabilization Technique</strong>: Subtract the maximum input value from all inputs, ensuring all values are &lt;= 0 before exponentiation.</li>
+<li><strong>Returning Log Sum Exp</strong>: Return the logarithm of the sum of exponentiated values, corrected for the subtracted maximum, for numerical stability.</li>
+</ul>
+<div class="sourceCode" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1">x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.randn(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">20</span>)</span>
+<span id="cb11-2"></span>
+<span id="cb11-3">a <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.softmax(x, dim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb11-4"></span>
+<span id="cb11-5">x1, x2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> x.chunk(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb11-6"></span>
+<span id="cb11-7">b1, lse1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> stable_softmax2(x1)</span>
+<span id="cb11-8">b2, lse2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> stable_softmax2(x2)</span>
+<span id="cb11-9"></span>
+<span id="cb11-10">c1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> b1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> torch.exp(lse1) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> (torch.exp(lse1) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.exp(lse2))</span>
+<span id="cb11-11">c2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> b2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> torch.exp(lse2) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> (torch.exp(lse1) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.exp(lse2))</span>
+<span id="cb11-12"></span>
+<span id="cb11-13"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(a)</span>
+<span id="cb11-14"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(torch.cat([c1, c2]), torch.allclose(a, torch.cat([c1, c2])))</span></code></pre></div>
+<pre class="text"><code>tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035])
+tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035]) True</code></pre></li>
+<li><p><strong>Combining Blocks in Log Space</strong>: Using the formula <code>1 / (1 + B/A)</code> (equivalent to <code>A / (A + B)</code>), blocks can be combined in log space, avoiding exponentiation and improving numerical stability.</p>
+<div class="sourceCode" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1">d1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> b1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.exp(lse2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> lse1))</span>
+<span id="cb13-2">d2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> b2 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.exp(lse1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> lse2))</span>
+<span id="cb13-3"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(a)</span>
+<span id="cb13-4"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(torch.cat([d1, d2]))</span>
+<span id="cb13-5"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"allclose: "</span>, torch.allclose(a, torch.cat([d1, d2])))</span></code></pre></div>
+<pre class="text"><code>tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035])
+tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035])
+allclose:  True</code></pre>
+<ul>
+<li><p>This formula is used directly in the <a href="https://github.com/zhuzilin/ring-flash-attention/blob/55ff66fd35f329dfcc24ce7a448bfdd532865966/ring_flash_attn/utils.py#L10-L24">ring attention code</a>.</p>
+<div class="sourceCode" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">def</span> _update_out_and_lse(</span>
+<span id="cb15-2">    out: torch.Tensor,</span>
+<span id="cb15-3">    lse: torch.Tensor,</span>
+<span id="cb15-4">    block_out: torch.Tensor,</span>
+<span id="cb15-5">    block_lse: torch.Tensor,</span>
+<span id="cb15-6">) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-&gt;</span> Tuple[torch.Tensor, torch.Tensor]:</span>
+<span id="cb15-7">    block_out <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> block_out.to(torch.float32)</span>
+<span id="cb15-8">    block_lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> block_lse.transpose(<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>, <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>).unsqueeze(dim<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb15-9"></span>
+<span id="cb15-10">    new_lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.log(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.exp(block_lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> lse))</span>
+<span id="cb15-11">    out <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> torch.exp(lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> new_lse) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> out <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> torch.exp(block_lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span> new_lse) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> block_out</span>
+<span id="cb15-12"></span>
+<span id="cb15-13">    lse <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> new_lse</span>
+<span id="cb15-14">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">return</span> out, lse</span></code></pre></div></li>
+</ul></li>
+<li><p><strong>Application to Value Projections</strong>: The same log-sum-exp trick can be applied to value projections and accumulated value projections, enabling efficient blockwise computation in flash and ring attention.</p></li>
+<li><p><strong>Visualization</strong>: Animation illustrates the blockwise computation process. (<a href="https://x.com/fvsmassa/status/1580229170629849089">Source</a>)</p>
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="./videos/memory-efficient-attention-computation-in-xformers.mp4"></video></div>
+<ul>
+<li>Queries are processed against blocks of keys, intermediate outputs are generated, and these outputs are combined using the log-sum-exp trick to produce the final output.</li>
+</ul></li>
+</ul>
+</section>
+<section id="ring-attention-details" class="level2">
+<h2 class="anchored" data-anchor-id="ring-attention-details">Ring Attention Details</h2>
+<ul>
+<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/2310.01889">Ring Attention with Blockwise Transformers for Near-Infinite Context</a></p></li>
+<li><p><strong>Open-source implementation:</strong> <a href="https://github.com/zhuzilin/ring-flash-attention/tree/main">zhuzilin/ring-flash-attention</a></p></li>
+<li><p><strong>Sequence Parallelism</strong>: Distributing the input sequence across multiple devices, with each device processing a portion of the sequence.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/sequence-parallelism-figure-1.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://arxiv.org/abs/2105.13120">Sequence Parallelism Paper</a>: Figure 1</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2105.13120">Sequence Parallelism: Long Sequence Training from System Perspective</a></li>
+<li><strong>Other Parallelism Forms</strong>: Data parallelism, tensor parallelism, pipeline parallelism.</li>
+</ul></li>
+<li><p><strong>Ring Attention Concept</strong>: Blockwise computation across multiple devices, similar to flash attention but at a higher level.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/ring-attention-slide-21.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 21: Ring Attention</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Process</strong>:</p>
+<ol type="1">
+<li><strong>Data Distribution</strong>: Queries, keys, and values are split across N devices (forming a ring).</li>
+<li><strong>Key-Value Exchange</strong>: Keys and values are circulated around the ring, with each device receiving blocks from its predecessor and sending blocks to its successor.</li>
+<li><strong>Computation</strong>: Each device performs attention (e.g., flash attention) on its local queries and the received key-value blocks.</li>
+<li><strong>Iteration</strong>: This process repeats N-1 times, ensuring each device sees all key-value blocks.</li>
+<li><strong>Output Combination</strong>: Each device computes the output for its local queries, and these outputs are then combined (method not fully detailed in this section).</li>
+</ol></li>
+<li><p><strong>Benefit</strong>: Allows scaling memory by the number of GPUs, with communication overhead amortized for sufficiently long sequences.</p>
+<ul>
+<li>The paper suggests a sequence length of approximately 6000 for effective amortization, though this depends on transfer speed.</li>
+</ul></li>
+<li><p><strong>Pseudocode:</strong></p>
+<p><strong>Required</strong>: Input sequence <img src="https://latex.codecogs.com/png.latex?x">. Number of hosts <img src="https://latex.codecogs.com/png.latex?N_h">.</p>
+<ol type="1">
+<li><strong>Initialize</strong></li>
+<li>Split input sequence into <img src="https://latex.codecogs.com/png.latex?N_h"> blocks such that each host has one input block.</li>
+<li>Compute query, key, and value for its input block on each host.</li>
+<li><strong>For each transformer layer</strong> do:
+<ol type="1">
+<li><strong>For <img src="https://latex.codecogs.com/png.latex?%5Ctext%7Bcount%7D%20=%201"> to <img src="https://latex.codecogs.com/png.latex?N_h%20-%201"></strong> do:
+<ol type="1">
+<li><strong>For each host concurrently</strong>, do:
+<ul>
+<li>Compute memory efficient attention incrementally using local query, key, value blocks.</li>
+<li>Send key and value blocks to next host and receive key and value blocks from previous host.</li>
+</ul></li>
+<li><strong>End for</strong></li>
+</ol></li>
+<li><strong>End for</strong></li>
+<li><strong>For each host concurrently</strong>, do:
+<ol type="1">
+<li>Compute memory efficient feedforward using local attention output.</li>
+</ol></li>
+<li><strong>End for</strong></li>
+</ol></li>
+<li><strong>End for</strong></li>
+</ol></li>
+</ul>
+</section>
+<section id="causal-masking-and-stripe-attention" class="level2">
+<h2 class="anchored" data-anchor-id="causal-masking-and-stripe-attention">Causal Masking and Stripe Attention</h2>
+<ul>
+<li><p><strong>Causal Masking</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/causal-masking-slide-23.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 23: Causal Masking</figcaption>
+</figure>
+</div>
+<ul>
+<li>Prevents tokens from attending to future tokens during autoregressive decoding.</li>
+<li>Achieved by setting attention scores for future tokens to minus infinity before softmax.</li>
+</ul></li>
+<li><p><strong>Causal Masking in Ring Attention</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/ring-attention-problem-slide-24.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 24: Ring Attention Problem</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/ring-attention-problem-slide-25.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 25: Ring Attention Problem</figcaption>
+</figure>
+</div>
+<ul>
+<li>Naive implementation leads to idle nodes, as some devices finish computation early due to masking, while others are still working.<br>
+</li>
+<li>The slowest node determines the overall speed.</li>
+</ul></li>
+<li><p><strong>Stripe Attention Solution</strong>: Reorders queries, keys, and values to distribute work more evenly, minimizing idle time.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/striped-attention-slide-26.png" class="img-fluid figure-img"></p>
+<figcaption>Slide-26: Striped Attention</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/striped-attention-slide-27.png" class="img-fluid figure-img"></p>
+<figcaption>Slide-27: Striped Attention</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Permutation Pattern</strong>: Andreas describes a specific pattern that assigns specific token indices to each device.</p></li>
+<li><p><strong>Post-Processing</strong>: Requires undoing the permutation to reconstruct the original output sequence.</p></li>
+<li><p><strong>Benefits of Stripe Attention</strong>: Even distribution of work and data, allowing more efficient use of all devices. By dropping the first query and last key, standard causal masking and flash attention can be used within the stripe attention framework.</p></li>
+</ul>
+</section>
+<section id="flash-decoding" class="level2">
+<h2 class="anchored" data-anchor-id="flash-decoding">Flash Decoding</h2>
+<ul>
+<li><p><strong>Webpage:</strong> <a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Flash-Decoding for long-context inference</a></p></li>
+<li><p><strong>Motivation</strong>: Flash attention and ring attention are not optimized for token-by-token inference in long contexts, as they are designed for larger query sets.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/flash-decoding-slide-28.gif" class="img-fluid figure-img"></p>
+<figcaption><a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Stanford CRFM Blog: Multi-head attention for decoding</a></figcaption>
+</figure>
+</div></li>
+<li><p><strong>Flash Decoding Approach</strong>: Sends queries to all devices, computes blockwise attention and value projections locally, and then uses a reduction step to combine the results.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://christianjmills.com/posts/cuda-mode-notes/lecture-013/images/flash-decoding-slide-29.gif" class="img-fluid figure-img"></p>
+<figcaption><a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Stanford CRFM Blog: Flash Decoding</a></figcaption>
+</figure>
+</div>
+<ul>
+<li>Developed by Tri Dao, Daniel Haziza, Francisco Massa, and Grigory Sizov.</li>
+</ul></li>
+<li><p><strong>Benefits</strong>: Leverages compute of all devices, potentially achieving up to N times speedup with N devices.</p></li>
+<li><p><strong>Open Questions</strong>:</p>
+<ul>
+<li>Performance impact of the reduction step.</li>
+<li>How keys and values are reorganized during token-by-token generation.</li>
+</ul></li>
+<li><p><strong>Implementation</strong>: Andreas hasn’t found a production-ready implementation (might be in <a href="https://github.com/facebookresearch/xformers">xformers</a>).</p></li>
+</ul>
+</section>
+<section id="history-and-resources" class="level2">
+<h2 class="anchored" data-anchor-id="history-and-resources">History and Resources</h2>
+<ul>
+<li><strong>Paper History</strong>:
+<ul>
+<li><strong>Flash Attention</strong>: Foundation for memory-efficient attention.
+<ul>
+<li>May 2022, Tri Dao et al: <a href="https://arxiv.org/abs/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></li>
+</ul></li>
+<li><strong>Blockwise Parallel Transformer</strong>: Early work leading to ring attention.
+<ul>
+<li>Aug 2023 Hao Liu et al: <a href="https://arxiv.org/abs/2305.19370">Blockwise Parallel Transformer for Large Context Models</a></li>
+</ul></li>
+<li><strong>Ring Attention with Blockwise Transformers</strong>: Refinement of the initial concept.
+<ul>
+<li>Nov 2023, Hao Liu et al: <a href="https://arxiv.org/abs/2310.01889">Ring Attention with Blockwise Transformers for Near-Infinite Context</a></li>
+</ul></li>
+<li><strong>Stripe Attention</strong>: Addressing causal masking challenges in ring attention.
+<ul>
+<li>Nov 2023, Brandon et al: <a href="https://arxiv.org/abs/2311.09431">Striped Attention: Faster Ring Attention for Causal Transformers</a></li>
+</ul></li>
+<li><strong>Large World Models on Medium Length Video Language</strong>: Combining ring attention and stripe attention for long context video processing.
+<ul>
+<li>Feb 2024, Hao Liu et al: <a href="https://arxiv.org/abs/2402.08268">World Models on Million-Length Video and Language With RingAttention</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Code Repositories</strong>:
+<ul>
+<li><strong><a href="https://github.com/zhuzilin">Zilin Zhu</a>’s Ring Flash Attention</strong>: <a href="https://github.com/zhuzilin/ring-flash-attention">zhuzilin/ring-flash-attention</a></li>
+<li><strong>GPU Mode Implementation</strong>: <a href="https://github.com/gpu-mode/ring-attention">gpu-mode/ring-attention</a></li>
+</ul></li>
+<li><strong>Other Resources</strong>: <a href="https://github.com/gpu-mode/lectures/blob/main/lecture_013/howto_log_sum_exp.ipynb">Andreas’ “LogSumExp” IPython notebook</a></li>
+</ul>
+</section>
+<section id="qa" class="level2">
+<h2 class="anchored" data-anchor-id="qa">Q&amp;A</h2>
+<ul>
+<li><strong>Flash Decoding vs.&nbsp;Speculative Decoding</strong>:
+<ul>
+<li><strong>Flash Decoding</strong>: Optimizes inference for a single model.</li>
+<li><strong>Speculative Decoding</strong>: Uses a smaller “drafting” model to propose outputs, verified by a larger model. Orthogonal techniques and can be used together.</li>
+</ul></li>
+<li><strong>Ring Attention on Consumer GPUs (PCIe)</strong>:
+<ul>
+<li>Feasible, even with consumer GPUs like the A5000 or RTX 3090, especially with NVLink.</li>
+<li>Allows doubling memory for a single sequence across two GPUs.<br>
+</li>
+<li>However, consumer GPUs generally do not support peer-to-peer (P2P) communication over PCIe.</li>
+</ul></li>
+<li><strong>Shared Memory for Sequence Parallelism</strong>:
+<ul>
+<li>Not strictly required.</li>
+<li>Sequence parallelism operates at a higher level than shared memory within individual GPUs.</li>
+<li>Shared memory benefits flash attention within each device, but sequence parallelism handles distribution across devices.</li>
+</ul></li>
+<li><strong>Gemini’s Approach</strong>: Unknown. Andreas suggests it may not be ring attention due to scaling challenges.</li>
+<li><strong>Ring Attention in Inference</strong>:
+<ul>
+<li>Primarily a training technique.</li>
+<li>The LWM paper describes an optimized inference version, but details are unclear.<br>
+</li>
+<li>Flash decoding seems more suitable for token-by-token inference.</li>
+</ul></li>
+<li><strong>Batch Size One Inference (Memory Bound)</strong>:
+<ul>
+<li>Batch size one leads to matrix-vector multiplications, which are memory bandwidth bound.</li>
+<li>Production deployments often use larger batch sizes to improve throughput and efficiency.</li>
+<li>Batch size one is common in local or resource-constrained deployments, but it’s not optimal.</li>
+<li>The “two stages” of inference (prompt processing and token-by-token generation) have different memory and compute characteristics.</li>
+</ul></li>
+<li><strong>Flash Decoding as MapReduce</strong>: Analogy holds, with queries duplicated (mapped) to all devices and results combined (reduced).</li>
+<li><strong>Why LLMs Are Memory Bound in Inference</strong>: Token-by-token generation requires accessing previous token outputs (key-value cache), leading to memory bandwidth limitations.</li>
+<li><strong>On-Premise vs.&nbsp;Cloud Deployments</strong>:
+<ul>
+<li>Cloud deployments often have larger batch sizes due to higher throughput requirements.</li>
+<li>On-premise deployments may face batch size one scenarios more frequently, impacting cost-effectiveness of high-end GPUs.</li>
+<li>The business case and specific requirements (privacy, cost, latency) determine the optimal deployment strategy.</li>
+</ul></li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’m Christian Mills, a deep learning consultant specializing in practical AI implementations. I help clients leverage cutting-edge AI technologies to solve real-world problems.</p>
+<p>Interested in working together? Fill out my <a href="https://docs.google.com/forms/d/e/1FAIpQLScKDKPJF9Be47LA3nrEDXTVpzH2UMLz8SzHMHM9hWT5qlvjkw/viewform?usp=sf_link">Quick AI Project Assessment</a> form or learn more <a href="../../../about.html">about me</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+ ]]></description>
+  <category>notes</category>
+  <category>cuda</category>
+  <guid>https://christianjmills.com/posts/cuda-mode-notes/lecture-013/</guid>
+  <pubDate>Mon, 11 Nov 2024 08:00:00 GMT</pubDate>
+  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
+</item>
 <item>
   <title>Notes on Seeing What Others Don’t꞉ The Remarkable Ways We Gain Insights</title>
   <dc:creator>Christian Mills</dc:creator>
@@ -56887,1643 +57759,6 @@ About Me:
   <category>cuda</category>
   <guid>https://christianjmills.com/posts/cuda-mode-notes/lecture-006/</guid>
   <pubDate>Mon, 02 Sep 2024 07:00:00 GMT</pubDate>
-  <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
-</item>
-<item>
-  <title>Notes on Why Greatness Cannot Be Planned</title>
-  <dc:creator>Christian Mills</dc:creator>
-  <link>https://christianjmills.com/posts/why-greatness-cannot-be-planned-book-notes/</link>
-  <description><![CDATA[ 
-
-
-
-
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Book LInks:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<ul>
-<li><a href="https://link.springer.com/book/10.1007/978-3-319-15524-1">Publisher Page</a></li>
-<li><a href="https://www.kenstanley.net/home">Author’s Website: Kenneth O. Stanley</a></li>
-<li><a href="http://joellehman.com/">Author’s Website: Joel Lehman</a></li>
-</ul>
-</div>
-</div>
-<ul>
-<li>Preface</li>
-<li>Chapter 1: Questioning Objectives<br>
-</li>
-<li>Chapter 2: Victory for the Aimless<br>
-</li>
-<li>Chapter 3: The Art of Breeding Art<br>
-</li>
-<li>Chapter 4: The False Compass<br>
-</li>
-<li>Chapter 5: The Interesting and the Novel<br>
-</li>
-<li>Chapter 6: Long Live the Treasure Hunter<br>
-</li>
-<li>Chapter 7: Unshackling Education<br>
-</li>
-<li>Chapter 8: Unchaining Innovation<br>
-</li>
-<li>Chapter 9: Farewell to the Mirage<br>
-</li>
-<li>Chapter 10: Case Study 1 - Reinterpreting Natural Evolution<br>
-</li>
-<li>Chapter 11: Case Study 2 - Objectives and the Quest for AI</li>
-</ul>
-<section id="preface" class="level2">
-<h2 class="anchored" data-anchor-id="preface">Preface</h2>
-<section id="the-origin-of-the-book" class="level3">
-<h3 class="anchored" data-anchor-id="the-origin-of-the-book">The Origin of the Book</h3>
-<ul>
-<li><p>This book originated from a radical idea in <strong>Artificial Intelligence (AI)</strong> about algorithms achieving amazing things without explicit objectives.</p></li>
-<li><p>Initial experiments yielded surprising results, prompting further exploration beyond AI.</p></li>
-<li><p>The idea expanded to encompass broader implications for life, culture, society, innovation, achievement, biology, and more.</p></li>
-<li><blockquote class="blockquote">
-<p><strong>“If you don’t understand why I say that’s unusual, just consider how rare or bizarre it is for a computer algorithm to change how you think about life.”</strong></p>
-</blockquote></li>
-</ul>
-</section>
-<section id="public-reaction-and-books-purpose" class="level3">
-<h3 class="anchored" data-anchor-id="public-reaction-and-books-purpose">Public Reaction and Book’s Purpose</h3>
-<ul>
-<li><p>Stanley, a professor, began incorporating the idea into public talks, observing its impact on audiences.</p></li>
-<li><p>The book aims to communicate this novel insight and its broad implications to a wider audience.</p></li>
-<li><blockquote class="blockquote">
-<p><strong>“There is a story here—a story about an idea in AI and how it grew into something bigger—but there’s also a journey through a dizzying set of surprisingly broad implications for everything from personal dating, to the march of science, to the evolution of the human brain.”</strong></p>
-</blockquote></li>
-</ul>
-</section>
-</section>
-<section id="chapter-1-questioning-objectives" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-1-questioning-objectives">Chapter 1: Questioning Objectives</h2>
-<section id="introduction-a-world-driven-by-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-a-world-driven-by-objectives">Introduction: A World Driven by Objectives</h3>
-<ul>
-<li><strong>Objectives</strong> are deeply ingrained in our culture, influencing everything from education and careers to personal goals and societal aspirations.</li>
-<li>We rarely question the value of framing our pursuits with objectives.</li>
-<li>Examples of objective-driven pursuits:
-<ul>
-<li>Education: Mastering subjects, achieving high test scores.</li>
-<li>Careers: Job promotions, financial success.</li>
-<li>Personal life: Finding a partner, improving physical appearance.</li>
-<li>Societal goals: Low crime rates, economic growth, environmental sustainability.</li>
-</ul></li>
-<li>The assumption is that any worthy accomplishment is best achieved by setting it as an objective and pursuing it with conviction.</li>
-</ul>
-</section>
-<section id="the-prevalence-of-objectives-in-various-fields" class="level3">
-<h3 class="anchored" data-anchor-id="the-prevalence-of-objectives-in-various-fields">The Prevalence of Objectives in Various Fields</h3>
-<ul>
-<li><strong>Engineering:</strong> Objectives are set through rigorous specifications, and progress is measured against these specifications.</li>
-<li><strong>Science:</strong> Objectives are essential for securing funding and judging project success.</li>
-<li><strong>Investing:</strong> Objectives focus on earnings and profits.</li>
-<li><strong>Art and Design:</strong> Objectives involve conceiving a design and pursuing its realization.</li>
-<li><strong>Evolutionary Biology:</strong> Objectives are framed in terms of survival and reproduction.</li>
-<li><strong>Artificial Intelligence:</strong> Algorithms are designed to work towards specific objectives.</li>
-</ul>
-</section>
-<section id="the-appeal-and-comfort-of-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="the-appeal-and-comfort-of-objectives">The Appeal and Comfort of Objectives</h3>
-<ul>
-<li>Objectives offer a sense of order and predictability in an unpredictable world.</li>
-<li>The belief that setting an objective creates possibility and that hard work leads to success provides a sense of optimism.</li>
-</ul>
-</section>
-<section id="the-downside-of-objectives-limitations-and-costs" class="level3">
-<h3 class="anchored" data-anchor-id="the-downside-of-objectives-limitations-and-costs">The Downside of Objectives: Limitations and Costs</h3>
-<ul>
-<li><strong>Limitations:</strong>
-<ul>
-<li>Objectives can limit freedom and exploration.</li>
-<li>They can stifle playful discovery and creativity.</li>
-</ul></li>
-<li><strong>Costs:</strong>
-<ul>
-<li>Objectives can lead to an overwhelming focus on measurements, assessments, and metrics.</li>
-<li>They can become straitjackets, hindering our ability to explore new possibilities.</li>
-</ul></li>
-</ul>
-</section>
-<section id="the-paradox-of-ambitious-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="the-paradox-of-ambitious-objectives">The Paradox of Ambitious Objectives</h3>
-<ul>
-<li><strong>Ambitious objectives</strong>, those whose achievement is uncertain, often become obstacles to their own fulfillment.</li>
-<li>The stepping stones to achieving ambitious objectives are often unpredictable and counterintuitive.</li>
-<li>Focusing solely on the objective can blind us to the necessary stepping stones.</li>
-</ul>
-</section>
-<section id="achievement-as-a-process-of-discovery" class="level3">
-<h3 class="anchored" data-anchor-id="achievement-as-a-process-of-discovery">Achievement as a Process of Discovery</h3>
-<ul>
-<li><strong>Achievement</strong> can be viewed as a process of <strong>discovery</strong> within a vast <strong>search space</strong> of possibilities.</li>
-<li><strong>Search space:</strong> The set of all possible things relevant to a particular domain (e.g., all possible images, inventions, musical genres).</li>
-<li><strong>Stepping stones:</strong> Discoveries or innovations that pave the way for further progress within the search space.</li>
-<li>Exploration of the search space and the discovery of stepping stones are crucial for reaching ambitious objectives.</li>
-</ul>
-</section>
-<section id="the-unpredictability-of-stepping-stones" class="level3">
-<h3 class="anchored" data-anchor-id="the-unpredictability-of-stepping-stones">The Unpredictability of Stepping Stones</h3>
-<ul>
-<li><strong>Stepping stones</strong> often bear little resemblance to the final objective.</li>
-<li>Examples of unpredictable stepping stones:
-<ul>
-<li>Vacuum tubes (originally for electricity and radio) became crucial for early computers.</li>
-<li>Engines (not initially intended for flight) were essential for airplanes.</li>
-<li>Microwave technology (developed for radar) led to microwave ovens.</li>
-</ul></li>
-<li>The structure of the search space is often <strong>unpredictable</strong> and <strong>deceptive</strong>.</li>
-<li>Focusing solely on the objective can distract us from the unexpected stepping stones that are necessary for its achievement.</li>
-</ul>
-</section>
-<section id="the-power-of-no-objective-serendipity-and-discovery" class="level3">
-<h3 class="anchored" data-anchor-id="the-power-of-no-objective-serendipity-and-discovery">The Power of No Objective: Serendipity and Discovery</h3>
-<ul>
-<li><strong>Great ideas</strong> often emerge without being explicitly pursued as objectives.</li>
-<li>Examples of serendipitous discoveries:
-<ul>
-<li>Rock and roll music emerged from the fusion of various musical genres without a conscious objective to create it.</li>
-<li>Elvis Presley’s unique sound was a result of unplanned experimentation rather than a deliberate objective.</li>
-</ul></li>
-<li><strong>Serendipity</strong> can play a significant role in achieving greatness.</li>
-</ul>
-</section>
-<section id="exploring-the-search-space-without-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="exploring-the-search-space-without-objectives">Exploring the Search Space Without Objectives</h3>
-<ul>
-<li>It’s possible to explore a search space intelligently and creatively without a specific objective.</li>
-<li>Abandoning objectives doesn’t necessitate aimless wandering; we can align ourselves towards discovery and exploration.</li>
-<li><strong>The Paradox:</strong> Sometimes the best way to achieve greatness is to stop trying to achieve a specific great thing.</li>
-</ul>
-</section>
-<section id="implications-and-benefits-of-questioning-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="implications-and-benefits-of-questioning-objectives">Implications and Benefits of Questioning Objectives</h3>
-<ul>
-<li><strong>Personal Liberation:</strong> Freedom from the pressure of objectives and metrics, allowing for greater creativity and exploration.</li>
-<li><strong>Scientific Advancements:</strong> Potentially fostering breakthroughs by encouraging open-ended exploration and serendipitous discoveries.</li>
-<li><strong>Engineering and Design:</strong> Promoting innovative solutions that might not be conceived under strict objective-driven approaches.</li>
-<li><strong>Understanding Evolution:</strong> Recognizing the role of serendipity and unexpected adaptations in the development of life.</li>
-<li><strong>Algorithm Development:</strong> Exploring new approaches to AI that move beyond objective-driven algorithms.</li>
-</ul>
-</section>
-<section id="conclusion-breaking-free-from-the-myth-of-the-objective" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-breaking-free-from-the-myth-of-the-objective">Conclusion: Breaking Free from the Myth of the Objective</h3>
-<ul>
-<li>The objective-driven culture can be limiting and stifling.</li>
-<li>We can achieve greatness by embracing exploration, serendipity, and the freedom to deviate from predetermined objectives.</li>
-<li>By questioning the myth of the objective, we can unlock our potential for creativity, innovation, and true fulfillment.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-2-victory-for-the-aimless" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-2-victory-for-the-aimless">Chapter 2: Victory for the Aimless</h2>
-<section id="introduction" class="level3">
-<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
-<ul>
-<li><strong>Paradox of ambitious objectives:</strong> The most significant successes often arise unexpectedly, deviating from initial plans and objectives.</li>
-<li><strong>Serendipity:</strong> Embracing unexpected opportunities and being open to changing direction can lead to greater achievements than rigidly adhering to a predetermined path.</li>
-<li><strong>Stepping stones:</strong> Unforeseen events or choices can act as stepping stones towards unanticipated, fulfilling outcomes.</li>
-</ul>
-</section>
-<section id="the-deception-of-career-planning" class="level3">
-<h3 class="anchored" data-anchor-id="the-deception-of-career-planning">The Deception of Career Planning</h3>
-<ul>
-<li><strong>Abundance of Career Guidance:</strong> Numerous resources, tests, and experts aim to help individuals identify and pursue their ideal careers.
-<ul>
-<li>Examples: <em>What Color Is Your Parachute?</em> by Richard Bolles, Career Key test, Campbell Interest and Skill Survey, Myers-Briggs Type Indicator, Keirsey Temperament Sorter.</li>
-</ul></li>
-<li><strong>Success Stories that Defy Planning:</strong> Many highly successful individuals achieved their accomplishments through unplanned detours and unexpected opportunities.
-<ul>
-<li><strong>Key Idea:</strong> Anticipating the most fulfilling path is challenging in open-ended problems like career choice, making openness and flexibility crucial.</li>
-</ul></li>
-<li><strong>The Value of Openness (Wiseman’s Experiment):</strong>
-<ul>
-<li>Subjects tasked with counting photographs in a newspaper.</li>
-<li>Those less focused on the objective noticed a message revealing the answer earlier, demonstrating that excessive focus on a goal can hinder discoveries.</li>
-<li><strong>Key Idea:</strong> Openness to unexpected information or opportunities can lead to faster and more efficient solutions.</li>
-</ul></li>
-</ul>
-</section>
-<section id="serendipity-in-action-examples-of-unplanned-success" class="level3">
-<h3 class="anchored" data-anchor-id="serendipity-in-action-examples-of-unplanned-success">Serendipity in Action: Examples of Unplanned Success</h3>
-<ul>
-<li><strong>Johnny Depp:</strong>
-<ul>
-<li>Joined a band, leading to marriage and introduction to acting through his wife (a makeup artist).</li>
-<li><strong>Key Idea:</strong> A passion for music (not acting) became an unexpected stepping stone to a successful acting career.</li>
-</ul></li>
-<li><strong>John Grisham:</strong>
-<ul>
-<li>Practiced law for 10 years before a courtroom experience inspired him to write.</li>
-<li><strong>Key Idea:</strong> Legal experience, seemingly unrelated to writing, provided the inspiration and material for a successful writing career.</li>
-</ul></li>
-<li><strong>J.K. Rowling:</strong>
-<ul>
-<li>Worked as a bilingual secretary and English teacher before writing Harry Potter.</li>
-</ul></li>
-<li><strong>Haruki Murakami:</strong>
-<ul>
-<li>Ran a jazz bar, providing time for observation and inspiration for his writing.</li>
-<li>Didn’t consider writing novels until age 29.</li>
-</ul></li>
-<li><strong>Raymond Chandler:</strong>
-<ul>
-<li>Started writing at age 45 after being fired from his oil company executive job.</li>
-</ul></li>
-<li><strong>Mary Midgley:</strong>
-<ul>
-<li>Didn’t write books until after age 50.</li>
-</ul></li>
-<li><strong>Key Idea (for writers):</strong> Diverse experiences and unexpected life changes can be valuable stepping stones for a writing career, even if they seem unrelated to the craft.</li>
-</ul>
-</section>
-<section id="challenging-the-realistic-objectives-mindset" class="level3">
-<h3 class="anchored" data-anchor-id="challenging-the-realistic-objectives-mindset">Challenging the “Realistic Objectives” Mindset</h3>
-<ul>
-<li><strong>Pressure to be Practical:</strong> Societal pressure often pushes individuals towards “realistic” objectives, discouraging them from following their passions.
-<ul>
-<li><strong>Examples:</strong> John Lennon and Elton John both received discouragement from family regarding their musical aspirations.</li>
-</ul></li>
-<li><strong>“Get your head out of the clouds”:</strong> This common saying reflects a cultural bias against pursuing paths based on passion rather than practicality.</li>
-<li><strong>Colonel Sanders:</strong>
-<ul>
-<li>Cooked from a young age but didn’t find success until age 40 after a varied career path.</li>
-<li><strong>Key Idea:</strong> A willingness to explore different paths and embrace change (“catching the winds of serendipity”) eventually led to success.</li>
-</ul></li>
-</ul>
-</section>
-<section id="the-common-thread-embracing-change" class="level3">
-<h3 class="anchored" data-anchor-id="the-common-thread-embracing-change">The Common Thread: Embracing Change</h3>
-<ul>
-<li><strong>Successful individuals often deviate from initial paths:</strong> Whether self-chosen or imposed, original objectives can transform into stepping stones towards something unforeseen.</li>
-<li><strong>Openness to 180-degree turns:</strong> A willingness to abandon initial goals and seize opportunities is a common characteristic of highly successful people.</li>
-<li><strong>Serendipity is widespread:</strong> A study found that nearly two-thirds of adults attribute some aspect of their career choice to serendipity.
-<ul>
-<li><strong>Example:</strong> “I happened to visit an animal hospital and became interested in veterinary medicine.”</li>
-</ul></li>
-</ul>
-</section>
-<section id="career-experts-acknowledge-serendipity" class="level3">
-<h3 class="anchored" data-anchor-id="career-experts-acknowledge-serendipity">Career Experts Acknowledge Serendipity</h3>
-<ul>
-<li><strong>Shifting Focus:</strong> Some career experts are recognizing the importance of unplanned experiences in career development.</li>
-<li><strong>Encouraging Exploration:</strong> Activities like volunteering, joining clubs, and networking are recommended to increase chances of serendipitous encounters.</li>
-<li><strong>Emphasis on the Unplanned:</strong> This approach moves away from rigid career planning and emphasizes exploration without a fixed destination.</li>
-</ul>
-</section>
-<section id="the-non-objective-principle-beyond-careers" class="level3">
-<h3 class="anchored" data-anchor-id="the-non-objective-principle-beyond-careers">The Non-Objective Principle: Beyond Careers</h3>
-<ul>
-<li><strong>Applicability:</strong> The principle of “finding without trying to find” extends beyond careers to any search process, including personal discoveries.</li>
-<li><strong>Openness to Change:</strong> Embracing a flexible mindset and recognizing that appearances can be deceiving is crucial.</li>
-<li><strong>Recognizing Potential:</strong> Sensing potential in unexpected areas, even without a clear understanding of its nature, can lead to significant discoveries.</li>
-</ul>
-</section>
-<section id="cultural-echoes-of-the-non-objective-principle" class="level3">
-<h3 class="anchored" data-anchor-id="cultural-echoes-of-the-non-objective-principle">Cultural Echoes of the Non-Objective Principle</h3>
-<ul>
-<li><strong>Love as an Example:</strong> The paradoxical nature of finding love is widely acknowledged.
-<ul>
-<li><strong>Loretta Young:</strong> “Love isn’t something you find. Love is something that finds you.”</li>
-<li><strong>D.H. Lawrence:</strong> “Those that go searching for love, only manifest their own lovelessness… only the loving find love. And they never have to seek for it.”</li>
-</ul></li>
-<li><strong>The deceptive nature of ideals:</strong> Preconceived notions about ideal outcomes often lead to disappointment, highlighting the unpredictable nature of great discoveries.</li>
-<li><strong>The Surprise of Love Stories:</strong> Love stories often emphasize the unexpected and unplanned nature of finding happiness, contrasting with traditional goal-oriented approaches.
-<ul>
-<li><strong>Example:</strong> Calvin and Grace Coolidge’s unconventional first encounter.</li>
-</ul></li>
-</ul>
-</section>
-<section id="hobbies-and-recreation-embracing-the-unplanned" class="level3">
-<h3 class="anchored" data-anchor-id="hobbies-and-recreation-embracing-the-unplanned">Hobbies and Recreation: Embracing the Unplanned</h3>
-<ul>
-<li><strong>Hobbies chosen for enjoyment:</strong> Unlike careers, hobbies are often pursued without a specific objective, providing intrinsic satisfaction.
-<ul>
-<li><strong>Examples of unusual hobbies:</strong> Snail racing, underwater hockey, limbo skating, extreme unicycling, extreme ironing.</li>
-</ul></li>
-<li><strong>Hobbies as Stepping Stones:</strong> Some hobbies can unexpectedly evolve into successful careers.
-<ul>
-<li><strong>Example:</strong> Nathan Sawaya, a corporate attorney, turned his Lego building hobby into a full-time career.</li>
-</ul></li>
-<li><strong>The Value of “Pointless” Pursuits:</strong> Activities without a clear objective can still have significant benefits.
-<ul>
-<li><strong>Example:</strong> Joseph Herscher’s Rube Goldberg machines, initially created for entertainment, gained widespread recognition and led to media appearances.</li>
-</ul></li>
-<li><strong>Unstructured Play:</strong> Psychologists recognize the importance of unstructured play for children’s development, suggesting a similar need for adults.</li>
-<li><strong>The Potential for Unexpected Discoveries:</strong> “Pointless” pursuits can lead to unforeseen solutions or innovations.
-<ul>
-<li><strong>Example:</strong> Marcelino de Sautuola’s caving and artifact hobbies led to the discovery of ancient cave paintings.</li>
-</ul></li>
-</ul>
-</section>
-<section id="pivoting-and-adapting-in-business" class="level3">
-<h3 class="anchored" data-anchor-id="pivoting-and-adapting-in-business">Pivoting and Adapting in Business</h3>
-<ul>
-<li><strong>Internet Businesses:</strong> Many successful online ventures evolved from initial concepts through pivoting and adapting to user behavior.
-<ul>
-<li><strong>Example:</strong> YouTube, initially envisioned as a video dating site, transitioned to video sharing.</li>
-<li><strong>Example:</strong> Flickr, a photo-sharing service, emerged from a larger social online game.</li>
-</ul></li>
-<li><strong>Nintendo:</strong>
-<ul>
-<li>Started in 1889 selling playing cards.</li>
-<li>Explored diverse ventures (taxi service, hotels, instant rice, toys) before finding success in electronic toys and video games.</li>
-<li><strong>Key Idea:</strong> Adapting to changing markets and embracing new opportunities led to Nintendo’s eventual dominance in the video game industry.</li>
-</ul></li>
-</ul>
-</section>
-<section id="the-right-to-follow-your-passions" class="level3">
-<h3 class="anchored" data-anchor-id="the-right-to-follow-your-passions">The Right to Follow Your Passions</h3>
-<ul>
-<li><strong>Embrace serendipity:</strong> Be willing to deviate from original plans and follow passions, even if they seem to conflict with initial objectives.</li>
-<li><strong>Acknowledge the unknown:</strong> Recognize that the path to happiness and fulfillment is often unpredictable.</li>
-<li><strong>Value stepping stones:</strong> View seemingly unrelated experiences as potential stepping stones towards something greater.</li>
-<li><strong>Trust your intuition:</strong> Be open to following a path that feels right, even without a clear objective justification.</li>
-</ul>
-</section>
-<section id="conclusion" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion">Conclusion</h3>
-<ul>
-<li><strong>Success often arises from embracing the unplanned:</strong> Many great achievements result from a willingness to deviate from initial objectives and follow unexpected opportunities.</li>
-<li><strong>Openness and flexibility are key:</strong> A rigid adherence to predetermined plans can hinder serendipitous discoveries and limit potential.</li>
-<li><strong>Follow your passions:</strong> Embrace activities that resonate with you, even if they don’t seem to have a clear objective or practical application.</li>
-<li><strong>Recognize the value of stepping stones:</strong> Seemingly unrelated experiences can be crucial stepping stones towards unexpected and fulfilling outcomes.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-3-the-art-of-breeding-art" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-3-the-art-of-breeding-art">Chapter 3: The Art of Breeding Art</h2>
-<section id="introduction-questioning-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-questioning-objectives">Introduction: Questioning Objectives</h3>
-<ul>
-<li><strong>The book challenges the common assumption that having an objective is always beneficial.</strong></li>
-<li>The authors, AI researchers, initially embraced objectives like everyone else.</li>
-<li>Their research on Picbreeder, a website for breeding pictures, led them to question the value of objectives.</li>
-<li>Quote: “This book is about questioning the value of objectives.”</li>
-</ul>
-</section>
-<section id="picbreeder-a-novel-experiment" class="level3">
-<h3 class="anchored" data-anchor-id="picbreeder-a-novel-experiment"><a href="https://nbenko1.github.io/#/">Picbreeder</a>: A Novel Experiment</h3>
-<ul>
-<li><strong>Picbreeder was designed as a website where users could “breed” pictures, similar to animal breeding.</strong></li>
-<li>The idea was to allow users to create visually appealing images through an evolutionary process, even without artistic skills.</li>
-<li><strong>Genetic Art:</strong> Pictures are assigned artificial “DNA,” allowing them to be bred like animals (first introduced by Richard Dawkins).</li>
-<li>Users select “parent” pictures based on their preferences, influencing the characteristics of the next generation.</li>
-<li><strong>Branching:</strong> Users can continue breeding images evolved by others, enabling evolution over many generations.</li>
-</ul>
-</section>
-<section id="the-role-of-objectives-in-picbreeder" class="level3">
-<h3 class="anchored" data-anchor-id="the-role-of-objectives-in-picbreeder">The Role of Objectives in Picbreeder</h3>
-<ul>
-<li><strong>Objectives in Picbreeder relate to the desired outcome of the breeding process (e.g., evolving a face or an animal).</strong></li>
-<li>Surprisingly, users achieved the best results when they were not explicitly focused on a specific objective.</li>
-<li><strong>Serendipity played a crucial role in major discoveries on Picbreeder.</strong></li>
-</ul>
-</section>
-<section id="picbreeders-mechanics-and-discoveries" class="level3">
-<h3 class="anchored" data-anchor-id="picbreeders-mechanics-and-discoveries">Picbreeder’s Mechanics and Discoveries</h3>
-<ul>
-<li><strong>Picbreeder allows users to start from scratch (random blobs) or branch from existing images.</strong></li>
-<li><strong>Starting from scratch:</strong>
-<ul>
-<li>Users select parent blobs from a randomly generated set.</li>
-<li>Evolution progresses as users repeatedly choose parents for subsequent generations.</li>
-</ul></li>
-<li><strong>Branching:</strong>
-<ul>
-<li>Users can continue evolving images published by other users.</li>
-<li>This extends the evolutionary process beyond the typical attention span of a single user.</li>
-</ul></li>
-<li><strong>Despite starting from simple blobs, Picbreeder users evolved remarkably complex and compelling images.</strong></li>
-<li>These discoveries were made by non-artists who were simply exploring the platform.</li>
-</ul>
-</section>
-<section id="the-paradox-of-objectives-in-picbreeder" class="level3">
-<h3 class="anchored" data-anchor-id="the-paradox-of-objectives-in-picbreeder">The Paradox of Objectives in Picbreeder</h3>
-<ul>
-<li><strong>It’s often impossible to breed a specific image if it’s set as an objective.</strong></li>
-<li>Even images previously discovered on Picbreeder cannot be reliably reproduced when targeted directly.</li>
-<li>Computer simulations confirmed this: programs attempting to evolve towards a target image consistently failed.</li>
-<li><strong>Discoveries happen when the desired image is <em>not</em> the objective.</strong></li>
-</ul>
-</section>
-<section id="the-car-example-serendipity-in-action" class="level3">
-<h3 class="anchored" data-anchor-id="the-car-example-serendipity-in-action">The Car Example: Serendipity in Action</h3>
-<ul>
-<li>Ken Stanley (one of the authors) discovered the “Car” image on Picbreeder.</li>
-<li><strong>Ken was not trying to breed a car; he started from an “Alien Face” image and aimed to breed more alien faces.</strong></li>
-<li><strong>Serendipity:</strong> Random mutations caused the alien’s eyes to gradually descend, eventually resembling wheels.</li>
-<li>This unexpected stepping stone led to the discovery of the Car.</li>
-</ul>
-</section>
-<section id="stepping-stones-and-open-minds" class="level3">
-<h3 class="anchored" data-anchor-id="stepping-stones-and-open-minds">Stepping Stones and Open Minds</h3>
-<ul>
-<li><strong>Most attractive images on Picbreeder were discovered through serendipitous stepping stones.</strong></li>
-<li>The stepping stones rarely resemble the final product.</li>
-<li><strong>Picbreeder’s success stems from its lack of a unified objective.</strong> Users follow individual instincts, laying stepping stones for others.</li>
-<li><strong>The most successful users are those with open minds, who avoid fixating on a specific objective.</strong></li>
-</ul>
-</section>
-<section id="implications-beyond-picbreeder" class="level3">
-<h3 class="anchored" data-anchor-id="implications-beyond-picbreeder">Implications Beyond Picbreeder</h3>
-<ul>
-<li><strong>The principle observed on Picbreeder may apply to other areas of life:</strong>
-<ul>
-<li>Focusing too much on a distant objective might cause us to miss crucial stepping stones.</li>
-<li>Stepping stones may not resemble the final destination.</li>
-</ul></li>
-<li><strong>The distant objective can be a misleading guide.</strong></li>
-</ul>
-</section>
-<section id="conclusion-1" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-1">Conclusion</h3>
-<ul>
-<li>Abandoning objectives is often the best strategy for achieving significant breakthroughs.</li>
-<li>This is because stepping stones rarely resemble the final destination, regardless of whether it was planned.</li>
-<li>The next chapter will explore the reasons behind this pattern and explain why distant objectives can be deceptive.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-4-the-false-compass" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-4-the-false-compass">Chapter 4: The False Compass</h2>
-<section id="introduction-the-problem-of-stepping-stones-in-a-fog" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-the-problem-of-stepping-stones-in-a-fog">Introduction: The Problem of Stepping Stones in a Fog</h3>
-<ul>
-<li><strong>Stepping stones</strong> represent the necessary waypoints to reach an objective in a large, uncharted search space.</li>
-<li>The challenge of search and discovery is that we usually don’t know the stepping stones to the objective at the outset.</li>
-<li><strong>Ambitious objectives</strong> are particularly difficult because their solutions are multiple stepping stones away, making them hard to predict.</li>
-<li>The human condition is akin to being marooned on a stepping stone with limited foresight.</li>
-</ul>
-</section>
-<section id="the-deception-of-objective-functions" class="level3">
-<h3 class="anchored" data-anchor-id="the-deception-of-objective-functions">The Deception of Objective Functions</h3>
-<ul>
-<li><strong>Objective functions</strong> (measures of progress) are used to track progress towards objectives.</li>
-<li>The assumption that improving objective function scores guarantees progress towards the objective is often <strong>wrong</strong>.</li>
-<li><strong>Deception</strong> occurs when the objective function is a false compass, meaning it may not register progress even when moving closer to the objective.</li>
-<li><strong>Example:</strong> The Chinese finger trap, where moving away from freedom (pushing inward) is the stepping stone to achieving freedom.</li>
-<li>Ambitious problems are likely to involve multiple deceptive stepping stones.</li>
-<li><strong>Deception is universal</strong> in complex problems because the stepping stones to solve them are not obvious.</li>
-<li><strong>Examples:</strong> Chess moves that seem promising but lead to trouble, vacuum tubes leading to computers, ragtime leading to rock and roll.</li>
-</ul>
-</section>
-<section id="non-objective-systems-of-discovery-picbreeder-evolution-and-innovation" class="level3">
-<h3 class="anchored" data-anchor-id="non-objective-systems-of-discovery-picbreeder-evolution-and-innovation">Non-Objective Systems of Discovery: Picbreeder, Evolution, and Innovation</h3>
-<section id="picbreeder-a-stepping-stone-collector" class="level4">
-<h4 class="anchored" data-anchor-id="picbreeder-a-stepping-stone-collector">Picbreeder: A Stepping-Stone Collector</h4>
-<ul>
-<li>Picbreeder has no final objective; it’s a <strong>stepping-stone collector</strong>, creating the potential for finding more stepping stones.</li>
-<li>Collecting stepping stones is not about pursuing a specific objective but about creating a road to everywhere.</li>
-</ul>
-</section>
-<section id="natural-evolution-a-non-objective-process" class="level4">
-<h4 class="anchored" data-anchor-id="natural-evolution-a-non-objective-process">Natural Evolution: A Non-Objective Process</h4>
-<ul>
-<li><strong>Thought experiment:</strong> Evolving human-level intelligence from single-celled organisms in a Petri dish.</li>
-<li><strong>Flawed strategy:</strong> Administering intelligence tests to single-celled organisms and selecting the highest scorers for reproduction.</li>
-<li><strong>Reason for failure:</strong> Stepping stones to intelligence (e.g., multicellularity, bilateral symmetry) do not resemble intelligence.</li>
-<li>Human-level intelligence is a <strong>deceptive objective</strong> for evolution.</li>
-<li><strong>Evolution’s success:</strong> It did not try to evolve human-level intelligence.</li>
-<li><strong>Nature as a stepping-stone collector:</strong> Organisms reproduce based on their success in their own niche, not based on their potential to lead to humans.</li>
-<li><strong>Examples of non-objective outcomes:</strong> Flight, photosynthesis, the human mind were not objectives of evolution but arose as byproducts.</li>
-</ul>
-</section>
-<section id="survive-and-reproduce-a-constraint-not-an-objective" class="level4">
-<h4 class="anchored" data-anchor-id="survive-and-reproduce-a-constraint-not-an-objective">Survive and Reproduce: A Constraint, Not an Objective</h4>
-<ul>
-<li>The common belief that evolution’s objective is to survive and reproduce is misleading.</li>
-<li><strong>Constraints vs.&nbsp;Objectives:</strong> Survive and reproduce is a minimal criterion for continued evolution, not a well-defined product to be produced.</li>
-<li>Every organism in the lineage leading to humans satisfied the “survive and reproduce” constraint, making it an odd type of objective.</li>
-<li><strong>Survive and reproduce as a constraint:</strong> It allows evolution to identify successful organisms that may lead to other successful organisms, facilitating stepping-stone collection.</li>
-</ul>
-</section>
-<section id="human-innovation-a-non-objective-process" class="level4">
-<h4 class="anchored" data-anchor-id="human-innovation-a-non-objective-process">Human Innovation: A Non-Objective Process</h4>
-<ul>
-<li><strong>Thought experiment:</strong> Gathering brilliant minds 5,000 years ago to build a computer.</li>
-<li><strong>Reason for failure:</strong> The stepping stones to computers (e.g., vacuum tubes, electricity) were not yet discovered.</li>
-<li><strong>Deceptive objective:</strong> Focusing on the computer diverts attention from pursuing the necessary prerequisites.</li>
-<li><strong>Hypothesis about invention:</strong> Almost no prerequisite to any major invention was invented with that invention in mind.</li>
-<li><strong>Example:</strong> The Wright brothers’ invention of the airplane relied on pre-existing innovations like the internal combustion engine, which was not invented with flight in mind.</li>
-<li><strong>The chain of innovation:</strong> Each link (e.g., induction coil, internal combustion engine, airplane) was not invented with the next link in mind.</li>
-<li><strong>Great invention:</strong> Recognizing that existing stepping stones, laid by predecessors with unrelated ambitions, can be combined and enhanced to reach a new stepping stone.</li>
-<li><strong>Human innovation as a stepping-stone collector:</strong> The tree of human innovation grows outward, driven by individual pursuits and discoveries, leading to unexpected outcomes.</li>
-</ul>
-</section>
-</section>
-<section id="the-disconnect-between-the-myth-of-the-objective-and-reality" class="level3">
-<h3 class="anchored" data-anchor-id="the-disconnect-between-the-myth-of-the-objective-and-reality">The Disconnect Between the Myth of the Objective and Reality</h3>
-<ul>
-<li><strong>Conventional wisdom:</strong> We’re supposed to know our dreams and strive for them with passion and commitment.</li>
-<li><strong>Reality:</strong> Ambitious objectives often lead to deception and failure because the stepping stones do not resemble the final destination.</li>
-<li><strong>Examples:</strong>
-<ul>
-<li>Evolving intelligence by measuring intelligence is flawed.</li>
-<li>Building a computer without the necessary stepping stones is impossible.</li>
-<li>Becoming rich solely by seeking a higher salary is unlikely.</li>
-</ul></li>
-<li><strong>The power of ignoring objectives:</strong> Astonishing achievements often occur when the objective is ignored, and exploration is allowed to roam freely.</li>
-<li><strong>Ambitious objectives vs.&nbsp;Stepping Stones:</strong> Objectives close at hand can be pursued effectively, but ambitious objectives require a different approach.</li>
-<li><strong>The paradox of search:</strong> The world’s greatest compass can lead us astray, while a form of ignorance (not being fixated on a distant objective) can be surprisingly powerful.</li>
-</ul>
-</section>
-<section id="conclusion-embracing-non-objective-search" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-embracing-non-objective-search">Conclusion: Embracing Non-Objective Search</h3>
-<ul>
-<li>The disconnect between conventional wisdom and the reality of search presents an opportunity.</li>
-<li>We can leverage the way the world really works (stepping-stone collection) to our advantage.</li>
-<li>The next chapter will explore how to play the game of discovery on its own terms, without relying on the false compass of objectives.</li>
-<li>This approach involves embracing untamed, wild, and unfamiliar exploration.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-5-the-interesting-and-the-novel" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-5-the-interesting-and-the-novel">Chapter 5: The Interesting and the Novel</h2>
-<section id="introduction-the-problem-with-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-the-problem-with-objectives">Introduction: The Problem with Objectives</h3>
-<ul>
-<li><strong>Anecdote:</strong> New Year’s resolutions often fail because people focus on the end goal without identifying the steps to get there.</li>
-<li><strong>Central Argument:</strong> Instead of focusing on objectives, we should focus on identifying and exploring <strong>novel stepping stones</strong>, even if they don’t directly lead to a pre-defined objective.
-<ul>
-<li><strong>Novelty:</strong> Discovering something genuinely new that can potentially lead to further novelties.</li>
-<li><strong>Stepping Stone:</strong> A discovery or development that opens up new possibilities and avenues for exploration.</li>
-</ul></li>
-</ul>
-</section>
-<section id="judging-progress-by-novelty-not-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="judging-progress-by-novelty-not-objectives">Judging Progress by Novelty, Not Objectives</h3>
-<ul>
-<li><strong>Problem with Objectives:</strong>
-<ul>
-<li><strong>Preoccupation with the future:</strong> We constantly compare our present state to an idealized future objective.</li>
-<li><strong>Deception:</strong> Objectives can be misleading and may not reveal the necessary stepping stones (e.g., air travel and induction coils).</li>
-</ul></li>
-<li><strong>Solution: Comparing to the Past:</strong>
-<ul>
-<li><strong>The past is a guide to novelty:</strong> We can objectively compare our current state to our past, identifying how we’ve deviated and created something new.</li>
-<li><strong>Focus on escaping the outdated:</strong> This opens up new possibilities and potential stepping stones.</li>
-</ul></li>
-</ul>
-</section>
-<section id="the-power-of-novelty-and-interestingness" class="level3">
-<h3 class="anchored" data-anchor-id="the-power-of-novelty-and-interestingness">The Power of Novelty and Interestingness</h3>
-<ul>
-<li><strong>Novelty as a Stepping Stone Detector:</strong> Novel discoveries are potential stepping stones to further novelties.</li>
-<li><strong>Interestingness:</strong>
-<ul>
-<li><strong>Definition:</strong> Interesting ideas open up new possibilities.</li>
-<li><strong>Philosophical Significance:</strong>
-<ul>
-<li>Alfred Whitehead: “It is more important that a proposition be interesting than it be true.”</li>
-<li>W.T. Stace: “The criticism that interestingness is a trivial end proceeds from a scale of values thus perverted and turned upside down.”</li>
-</ul></li>
-</ul></li>
-<li><strong>Compounding Novelty:</strong> Continually seeking novelty creates an endless chain of stepping stones, branching out into an open future.</li>
-<li><strong>Examples:</strong> Picbreeder, natural evolution, and human innovation illustrate this <strong>ratcheting process</strong> of building upon stepping stones without a specific end goal.</li>
-</ul>
-</section>
-<section id="embracing-the-unknown-novelty-search" class="level3">
-<h3 class="anchored" data-anchor-id="embracing-the-unknown-novelty-search">Embracing the Unknown: Novelty Search</h3>
-<ul>
-<li><strong>Fear of Aimlessness:</strong> Searching for novelty might seem unanchored and random.</li>
-<li><strong>Information in Novelty:</strong>
-<ul>
-<li>Novelty provides information about how something is different from the past.</li>
-<li>This information is arguably more plentiful and reliable than information provided by an objective (which can be deceptive).</li>
-</ul></li>
-<li><strong>Human Sensitivity to Novelty:</strong> We are naturally drawn to explore novel paths and ideas, even without knowing where they might lead.
-<ul>
-<li><strong>Intuition and Hunches:</strong> These can guide us towards interesting and novel directions.</li>
-</ul></li>
-</ul>
-</section>
-<section id="the-myth-of-serendipity" class="level3">
-<h3 class="anchored" data-anchor-id="the-myth-of-serendipity">The Myth of Serendipity</h3>
-<ul>
-<li><strong>Traditional View:</strong> Serendipity is seen as accidental, like a mad scientist stumbling upon a breakthrough.</li>
-<li><strong>Reality:</strong> Most serendipitous discoveries are made by intelligent, educated, and accomplished individuals who have a <strong>strong intuition for what is interesting</strong>.</li>
-<li><strong>Examples:</strong>
-<ul>
-<li>Isaac Newton: Observing an apple falling led to the discovery of the universal law of gravitation.</li>
-<li>Louis Pasteur: Made accidental discoveries like chiral molecules and bacterial vaccines.</li>
-<li>Archimedes: Eureka moment in the bathtub led to understanding displacement and volume.</li>
-</ul></li>
-<li><strong>Prepared Minds:</strong>
-<ul>
-<li>These individuals were able to recognize the significance of their observations and connect them to broader concepts.</li>
-<li>Louis Pasteur: “In the fields of observation chance favors only the prepared mind.”</li>
-</ul></li>
-</ul>
-</section>
-<section id="formalizing-novelty-search-an-algorithm-without-an-objective" class="level3">
-<h3 class="anchored" data-anchor-id="formalizing-novelty-search-an-algorithm-without-an-objective">Formalizing Novelty Search: An Algorithm Without an Objective</h3>
-<ul>
-<li><strong>Algorithms:</strong>
-<ul>
-<li>Traditional View: Recipes for solving specific problems.</li>
-<li>Broader Definition: A way of clearly describing a process, with or without an objective.</li>
-</ul></li>
-<li><strong>Novelty Search Algorithm:</strong> Formalizes the process of searching for novelty as a computer program.</li>
-<li><strong>Domain:</strong> The specific area or category within which the algorithm searches for novelty (e.g., art, music, robot behaviors).</li>
-<li><strong>Robot Behavior Example:</strong>
-<ul>
-<li><strong>Traditional Approach (Objective-Driven):</strong> A robot learns to navigate a hallway to reach an open door by incrementally improving its ability to move closer to the door.</li>
-<li><strong>Novelty Search Approach:</strong>
-<ul>
-<li>The robot seeks novel behaviors, initially crashing into walls in various ways.</li>
-<li>By exhausting simple behaviors, it eventually learns to avoid walls and navigate the hallway to find further novelties, eventually reaching the door even though it wasn’t an objective.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="the-order-of-discovery-in-novelty-search" class="level3">
-<h3 class="anchored" data-anchor-id="the-order-of-discovery-in-novelty-search">The Order of Discovery in Novelty Search</h3>
-<ul>
-<li><strong>Traditional Objective-Driven Search:</strong> Expects an order from bad to good behavior, with incremental improvements towards the objective.</li>
-<li><strong>Problem with Bad-to-Good Ordering:</strong>
-<ul>
-<li><strong>Deceptive Problems:</strong> Like the Chinese finger trap, progress may require temporarily moving away from the objective (from bad to worse before getting better).</li>
-</ul></li>
-<li><strong>Novelty Search Ordering:</strong> From simple to complex behaviors.
-<ul>
-<li><strong>Novelty is Context-Dependent:</strong> What is considered novel changes over time as new behaviors are discovered.</li>
-<li><strong>Simplicity to Complexity:</strong>
-<ul>
-<li>Initially, simple behaviors (requiring little knowledge of the world) are novel.</li>
-<li>To continue finding novelty, the search must learn about the world and produce increasingly complex behaviors.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="novelty-search-as-an-information-accumulator" class="level3">
-<h3 class="anchored" data-anchor-id="novelty-search-as-an-information-accumulator">Novelty Search as an Information Accumulator</h3>
-<ul>
-<li><strong>Information Accumulation:</strong> Both novelty search and other non-objective searches (like natural evolution) accumulate information about the world as they progress from simple to complex.</li>
-<li><strong>Natural Evolution:</strong>
-<ul>
-<li>Increasing complexity is driven by the need to find new niches and species as simple options are exhausted.</li>
-<li>Organisms reflect aspects of the world in their structure and behavior (e.g., eyes reflect light, lungs reflect oxygen).</li>
-<li>Evolution can be seen as a process of accumulating information about the universe.</li>
-</ul></li>
-<li><strong>Picbreeder:</strong> Reflects aspects of the human world (its environment) by discovering familiar themes like faces, butterflies, and castles.</li>
-<li><strong>Novelty Search:</strong> The robot in the hallway example illustrates how it must learn about walls and doors to continue finding novel behaviors.</li>
-</ul>
-</section>
-<section id="constraints-and-meaningfulness-in-novelty-search" class="level3">
-<h3 class="anchored" data-anchor-id="constraints-and-meaningfulness-in-novelty-search">Constraints and Meaningfulness in Novelty Search</h3>
-<ul>
-<li><strong>Concern:</strong> Without an objective, novelty search might explore meaningless behaviors.</li>
-<li><strong>World as a Constraint:</strong>
-<ul>
-<li>Physical laws limit the space of possible behaviors.</li>
-<li>Many imaginable behaviors are impossible in reality (e.g., walking through walls).</li>
-</ul></li>
-<li><strong>Information Accumulation and Meaning:</strong>
-<ul>
-<li>Behaviors that respect the laws of physics and exploit how the world works are better stepping stones to further novelty.</li>
-<li>Novelty search tends to focus on meaningful behaviors because they lead to more possibilities.</li>
-</ul></li>
-</ul>
-</section>
-<section id="novelty-as-an-objective-a-misinterpretation" class="level3">
-<h3 class="anchored" data-anchor-id="novelty-as-an-objective-a-misinterpretation">Novelty as an Objective: A Misinterpretation</h3>
-<ul>
-<li><strong>Argument:</strong> Some argue that novelty itself is an objective.</li>
-<li><strong>Problems with this View:</strong>
-<ul>
-<li><strong>Achieving Novelty is Different from Achieving an Objective:</strong> With novelty, the specific outcome is not the goal.</li>
-<li><strong>Novelty is Fleeting:</strong> What is novel quickly becomes less novel, unlike achieving a fixed objective.</li>
-<li><strong>Multiple Fulfillments:</strong> A novelty-driven search might achieve “novelty” many times before reaching a specific outcome, making it unclear how that outcome fulfills the “objective”.</li>
-</ul></li>
-<li><strong>Distinction is Important:</strong> Using the word “objective” for both traditional goals and novelty muddles the important differences between them.</li>
-<li><strong>Similarities to “Survive and Reproduce”:</strong> Both are constraints rather than objectives, can be satisfied from the beginning, and lead to discoveries that weren’t initially intended.</li>
-</ul>
-</section>
-<section id="divergence-and-novelty-search" class="level3">
-<h3 class="anchored" data-anchor-id="divergence-and-novelty-search">Divergence and Novelty Search</h3>
-<ul>
-<li><strong>Objectives and Convergence:</strong> Objectives naturally lead to convergence, limiting exploration of other possibilities.</li>
-<li><strong>Novelty Search and Divergence:</strong> Without objectives, novelty search can branch out in many directions, exploring a wider range of possibilities.</li>
-<li><strong>Divergent Thinking and Creativity:</strong> Divergent thinking is associated with finding novel and surprising solutions that others miss.</li>
-</ul>
-</section>
-<section id="testing-novelty-search-the-robot-maze-experiment" class="level3">
-<h3 class="anchored" data-anchor-id="testing-novelty-search-the-robot-maze-experiment">Testing Novelty Search: The Robot Maze Experiment</h3>
-<ul>
-<li><strong>Scientific Approach:</strong> Implement novelty search as a computer algorithm to test its effectiveness.</li>
-<li><strong>Robot Maze Simulation:</strong>
-<ul>
-<li>The computer simulates a robot in a maze.</li>
-<li>The program generates new robot behaviors.</li>
-<li>Novel behaviors are considered “good” and explored further by making slight modifications.</li>
-</ul></li>
-<li><strong>Results:</strong>
-<ul>
-<li><strong>Novelty Search:</strong> Successfully found maze-solving behaviors in 39 out of 40 trials.</li>
-<li><strong>Objective-Based Search:</strong> Succeeded in only 3 out of 40 trials.</li>
-</ul></li>
-<li><strong>Explanation:</strong>
-<ul>
-<li><strong>Deception:</strong> Objective-based search was misled by cul-de-sacs that appeared to be closer to the goal.</li>
-<li><strong>Novelty Search:</strong> Unaffected by deception because it wasn’t focused on the goal.</li>
-</ul></li>
-</ul>
-</section>
-<section id="further-experiments-and-applications" class="level3">
-<h3 class="anchored" data-anchor-id="further-experiments-and-applications">Further Experiments and Applications</h3>
-<ul>
-<li><strong>Biped Robot:</strong>
-<ul>
-<li>Novelty search produced better walking gaits than objective-based search (which aimed to maximize walking distance).</li>
-<li><strong>Deception:</strong> Falling down and kicking, which are stepping stones to walking, were penalized by the objective-based approach.</li>
-</ul></li>
-<li><strong>Other Applications:</strong>
-<ul>
-<li>Replicating maze results.</li>
-<li>Evolving artificial ants that follow food trails.</li>
-<li>Solving deceptive problems in robot body-brain co-evolution.</li>
-<li>Finding bugs in computer programs.</li>
-<li>Evolving robots that learn and adapt.</li>
-</ul></li>
-</ul>
-</section>
-<section id="limitations-and-the-future-of-novelty-search" class="level3">
-<h3 class="anchored" data-anchor-id="limitations-and-the-future-of-novelty-search">Limitations and the Future of Novelty Search</h3>
-<ul>
-<li><strong>Limitations:</strong> Novelty search is not a universal solution and can fail in very complex problems.</li>
-<li><strong>Maze Experiment with Varying Difficulty:</strong>
-<ul>
-<li>Both novelty search and objective-based search struggled with increasingly complex mazes.</li>
-<li>Objective-based search’s performance declined more rapidly.</li>
-</ul></li>
-<li><strong>No Magic Bullet:</strong> There may not be a single method that can consistently solve all problems.</li>
-<li><strong>Embracing Futility:</strong> Accepting that we can’t always achieve our objectives allows us to appreciate the interesting and novel discoveries made along the way, even if they don’t lead to a specific destination.</li>
-<li><strong>The Treasure Hunter:</strong> Instead of seeking a magic bullet, we can become treasure hunters, exploring the possibilities opened up by novelty and enjoying the unexpected discoveries we make.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-6-long-live-the-treasure-hunter" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-6-long-live-the-treasure-hunter">Chapter 6: Long Live the Treasure Hunter</h2>
-<section id="introduction-the-limitations-of-possibility-and-the-power-of-novelty-search" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-the-limitations-of-possibility-and-the-power-of-novelty-search">Introduction: The Limitations of Possibility and the Power of Novelty Search</h3>
-<ul>
-<li><strong>Novelty search</strong>, as discussed in previous chapters, suggests that finding objectives can sometimes be easier when not directly searching for them.</li>
-<li>This chapter explores the limitations of novelty search and the concept of <strong>objectives</strong> in problem-solving.</li>
-<li>It challenges the cultural notion that “anything is possible” and acknowledges the existence of limitations.</li>
-<li>The chapter aims to find a balance between optimism and realism when considering future possibilities.</li>
-</ul>
-</section>
-<section id="the-paradox-of-novelty-search-and-the-myth-of-the-objective" class="level3">
-<h3 class="anchored" data-anchor-id="the-paradox-of-novelty-search-and-the-myth-of-the-objective">The Paradox of Novelty Search and the Myth of the Objective</h3>
-<ul>
-<li><strong>Novelty search as a tool:</strong> While novelty search can be a useful tool, it’s not a universal solution. It may not work for all problems, particularly those involving vast, complex search spaces (e.g., an endless maze).</li>
-<li><strong>Myth of the objective:</strong> Despite novelty search’s successes in certain scenarios, the belief in the necessity of objectives persists.</li>
-<li><strong>Diversity as a compromise:</strong> One argument is that objectives are still valuable but require a <strong>diversity of ideas</strong> during the search process to avoid being misled by deceptive paths.</li>
-<li><strong>Horse racing analogy:</strong> This perspective is compared to betting on multiple horses in a race to increase the chances of winning, suggesting that maintaining a variety of alternatives is beneficial even when pursuing an objective.</li>
-<li><strong>Hybrid approach:</strong> This leads to the idea of combining objective-driven search with novelty search, using the objective for guidance and novelty to prevent deception.</li>
-</ul>
-</section>
-<section id="the-deception-of-objectives-and-the-futility-of-search" class="level3">
-<h3 class="anchored" data-anchor-id="the-deception-of-objectives-and-the-futility-of-search">The Deception of Objectives and the Futility of Search</h3>
-<ul>
-<li><strong>Ambitious objectives and deception:</strong> The chapter argues that the more ambitious the objective, the more deceptive it becomes.</li>
-<li><strong>False compass analogy:</strong> A deceptive objective acts like a compass pointing in the wrong direction, rendering open-mindedness ineffective.</li>
-<li><strong>Maze-navigating robot example:</strong> Even in a simple maze, the objective of reaching the end can be deceptive due to walls that attract the robot based on proximity but hinder actual progress.</li>
-<li><strong>Limitations of objectives with novelty:</strong> Combining novelty with objectives doesn’t fully solve the deception problem in ambitious situations.</li>
-<li><strong>Five thousand year old computer example:</strong> The objective of building a computer five thousand years ago would have been deeply deceptive, as the necessary stepping stones (e.g., vacuum tubes) were unimaginable at the time.</li>
-<li><strong>Futility at the heart of search:</strong> The chapter concludes that no single search approach can guarantee reaching a specific objective, especially for highly ambitious goals.</li>
-<li><strong>Limitations of objective-driven search:</strong> The fact that novelty search outperforms objective-driven search in some simple problems raises concerns about the latter’s effectiveness in more complex scenarios.</li>
-<li><strong>No Free Lunch Theorem:</strong> This theorem supports the idea that there’s no universally best search algorithm, as improving performance on one set of problems can negatively impact performance on others.</li>
-<li><strong>Black box optimization:</strong> This field in machine learning also acknowledges that general rules or heuristics can be misleading in specific circumstances.</li>
-</ul>
-</section>
-<section id="the-treasure-hunter-embracing-discovery-without-objectives" class="level3">
-<h3 class="anchored" data-anchor-id="the-treasure-hunter-embracing-discovery-without-objectives">The Treasure Hunter: Embracing Discovery Without Objectives</h3>
-<ul>
-<li><strong>Finding the unexpected:</strong> Despite the limitations of search, the chapter argues that we can reliably find amazing things, even if we can’t predefine them.</li>
-<li><strong>Great discoveries as undefined:</strong> This idea is based on the success of Picbreeder, natural evolution, and human innovation, all of which involve processes without predefined objectives.</li>
-<li><strong>Non-objective search as a treasure hunter:</strong> It’s presented as a powerful tool for finding unexpected treasures while exploring the search space.</li>
-<li><strong>Picbreeder Car example:</strong> The Picbreeder Car, a surprising and complex image, was discovered without anyone explicitly searching for it, demonstrating the potential of non-objective search.</li>
-<li><strong>The paradox of trying vs.&nbsp;not trying:</strong> The chapter highlights the irony that actively trying to achieve a specific objective can hinder progress, while exploring without a fixed goal can lead to unexpected breakthroughs.</li>
-<li><strong>Treasure hunter’s approach:</strong> The treasure hunter collects as many stepping stones as possible, recognizing that any one of them could lead to something valuable, even if the ultimate destination is unknown.</li>
-<li><strong>Collective exploration:</strong> The chapter emphasizes the importance of diverse individuals with different interests contributing to the exploration of the search space, rather than relying on a single objective or individual.</li>
-<li><strong>The inevitability of the future:</strong> While the future may not unfold as planned, the continuous exploration of diverse individuals ensures that unexpected discoveries and advancements will emerge.</li>
-</ul>
-</section>
-<section id="building-treasure-hunting-systems-harnessing-non-objective-principles" class="level3">
-<h3 class="anchored" data-anchor-id="building-treasure-hunting-systems-harnessing-non-objective-principles">Building Treasure-Hunting Systems: Harnessing Non-Objective Principles</h3>
-<ul>
-<li><strong>Novelty search as a model:</strong> The chapter suggests that novelty search and Picbreeder demonstrate the feasibility of building systems based on non-objective principles.</li>
-<li><strong>Human feedback and collaboration:</strong> Human feedback, as seen in Picbreeder, can play a crucial role in guiding non-objective search and capitalizing on the diverse tastes and insights of individuals.</li>
-<li><strong>Internet as a platform for treasure hunting:</strong> The internet provides an ideal platform for organizing and facilitating collaborative treasure hunting through interconnected systems.</li>
-<li><strong>Interactive catalog example:</strong> The chapter presents the concept of an interactive catalog (e.g., for furniture) where users can explore and “breed” new designs based on existing ones.</li>
-<li><strong>Customer-driven design:</strong> This system allows customers to become active participants in the design process, discovering unique and personalized products that wouldn’t have been conceived through traditional methods.</li>
-<li><strong>Collaborative stepping stone collection:</strong> The catalog evolves into a repository of user-generated designs, each potentially serving as a stepping stone for further exploration and innovation.</li>
-<li><strong>Trusting the non-objective catalog:</strong> The chapter raises the question of whether users would trust a catalog where designs are generated through a collaborative, non-objective process rather than by expert designers.</li>
-<li><strong>The role of experts:</strong> While acknowledging the importance of expert designers, the chapter suggests that non-objective systems can uncover hidden treasures that experts might miss due to their focus on specific objectives.</li>
-<li><strong>Potential of non-objective systems:</strong> The chapter argues that non-objective systems, like the interactive catalog, can lead to the creation of innovative concepts that would otherwise remain undiscovered.</li>
-</ul>
-</section>
-<section id="conclusion-embracing-the-futility-and-power-of-search" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-embracing-the-futility-and-power-of-search">Conclusion: Embracing the Futility and Power of Search</h3>
-<ul>
-<li><strong>Relinquishing the myth of the objective:</strong> The chapter concludes that we must accept the futility of searching for a guaranteed path to a predetermined destination, especially for ambitious goals.</li>
-<li><strong>Embracing the treasure hunter:</strong> Instead, we should embrace the treasure hunter approach, exploring the search space without a fixed objective and collecting stepping stones that may lead to unexpected and valuable discoveries.</li>
-<li><strong>Natural evolution, human innovation, Picbreeder, and novelty search as examples:</strong> These examples demonstrate the power and success of non-objective processes in generating innovation and progress.</li>
-<li><strong>Liberation from objectives:</strong> Freeing ourselves from the grip of objectives can lead to a new perspective on the world and open up new possibilities for innovation and discovery.</li>
-<li><strong>Implications for society:</strong> The next chapters will explore the implications of this non-objective perspective for how we organize and operate our society.</li>
-<li><strong>The future of innovation:</strong> The chapter concludes with an optimistic outlook on the future of innovation, suggesting that it will be driven by the collective exploration of diverse individuals without a unified objective, leading to unexpected and exciting discoveries.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-7-unshackling-education" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-7-unshackling-education">Chapter 7: Unshackling Education</h2>
-<section id="societal-harms-of-objective-obsession" class="level3">
-<h3 class="anchored" data-anchor-id="societal-harms-of-objective-obsession">Societal Harms of Objective Obsession</h3>
-<section id="the-deception-of-objectives" class="level4">
-<h4 class="anchored" data-anchor-id="the-deception-of-objectives">The Deception of Objectives</h4>
-<ul>
-<li><p><strong>Campbell’s law</strong>:</p>
-<blockquote class="blockquote">
-<p>“The more any quantitative social indicator is used for social decision-making, the more subject it will be to corruption pressures and the more apt it will be to distort and corrupt the social processes it is intended to monitor.” - David Campbell, <em>Assessing the impact of planned social change</em></p>
-</blockquote>
-<ul>
-<li>Social indicators, like academic achievement tests, become less effective when used as objectives for improvement.</li>
-<li>Focusing on simple metrics can lead to <strong>deception</strong>, as they often fail to capture the essence of the desired outcome.
-<ul>
-<li>Example: Judging teachers based on student test scores encourages teaching to the test, resulting in students who are good at test-taking but lack meaningful knowledge.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="gdp-fetishism" class="level4">
-<h4 class="anchored" data-anchor-id="gdp-fetishism">GDP Fetishism</h4>
-<ul>
-<li><strong>GDP (gross domestic product)</strong>, a measure of national productivity, is often treated as a national objective.</li>
-<li><strong>GDP fetishism</strong>: The tendency to overemphasize GDP as the primary indicator of economic health.</li>
-<li>Increasing GDP doesn’t guarantee a healthy economy.
-<ul>
-<li>Policies that boost GDP in the short term may be detrimental in the long run.</li>
-<li>GDP is a simple measure that fails to capture the complexity of a healthy economy.</li>
-</ul></li>
-</ul>
-</section>
-<section id="perverse-incentives" class="level4">
-<h4 class="anchored" data-anchor-id="perverse-incentives">Perverse Incentives</h4>
-<ul>
-<li><strong>Perverse incentives</strong>: When rewards or measures intended to improve a situation actually make it worse.
-<ul>
-<li>Examples:
-<ul>
-<li>Paying citizens for dead snakes in India led to cobra breeding.</li>
-<li>Paying for rat tails in Hanoi led to rat farming.</li>
-<li>Campaigns to reduce alcohol or drug abuse can lead to the abuse of more dangerous substances.</li>
-<li>Paying workers for dinosaur bone fragments led to the destruction of whole bones.</li>
-<li>Paying executives with bonuses for higher earnings can incentivize short-term profits at the expense of long-term stability.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="the-myth-of-the-objective-in-education" class="level3">
-<h3 class="anchored" data-anchor-id="the-myth-of-the-objective-in-education">The Myth of the Objective in Education</h3>
-<section id="the-aimless-youth-vs.-the-overachiever" class="level4">
-<h4 class="anchored" data-anchor-id="the-aimless-youth-vs.-the-overachiever">The Aimless Youth vs.&nbsp;The Overachiever</h4>
-<ul>
-<li><p>The <strong>aimless youth</strong>, with no clear career goals, is often seen as a negative stereotype.</p></li>
-<li><p>The <strong>overachiever</strong>, driven by ambitious career objectives, may be more susceptible to <strong>deception</strong>.</p>
-<ul>
-<li>Focusing on distant career aspirations as objectives can lead to pursuing steps that don’t actually contribute to achieving the desired outcome.</li>
-</ul></li>
-<li><p>The aimless youth, unburdened by specific objectives, has the freedom to explore and discover interesting paths.</p>
-<ul>
-<li><p>Example: Steve Jobs dropping out of college and exploring courses that interested him.</p>
-<ul>
-<li><blockquote class="blockquote">
-<p>“After six months, I couldn’t see the value in it…So I decided to drop out and trust that it would all work out okay…The minute I dropped out I could stop taking the required classes that didn’t interest me, and begin dropping in on the ones that looked interesting.”</p>
-</blockquote></li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="assessing-schools-based-on-standardized-tests" class="level4">
-<h4 class="anchored" data-anchor-id="assessing-schools-based-on-standardized-tests">Assessing Schools Based on Standardized Tests</h4>
-<ul>
-<li>Assessing schools based on standardized test scores can lead to <strong>deception</strong>.
-<ul>
-<li>Example: No Child Left Behind Act in Florida setting annual measurable objectives (AMO) for student proficiency in reading and mathematics.
-<ul>
-<li>The assumption is that increasing test scores indicate progress towards the objective of near-perfect proficiency.</li>
-<li>However, this approach can lead to a focus on teaching to the test rather than fostering genuine understanding.</li>
-</ul></li>
-</ul></li>
-<li>The complexity of education makes it unlikely that simple metrics like standardized test scores can accurately reflect progress towards ambitious objectives.</li>
-</ul>
-</section>
-<section id="the-software-engineering-analogy" class="level4">
-<h4 class="anchored" data-anchor-id="the-software-engineering-analogy">The Software Engineering Analogy</h4>
-<ul>
-<li>Early software engineering embraced metrics to improve productivity and quality.
-<ul>
-<li>“You can’t control what you can’t measure.” - Tom DeMarco, <em>Controlling software projects</em></li>
-</ul></li>
-<li>DeMarco later acknowledged the limitations of metrics in complex software projects.
-<ul>
-<li>“Metrics…must be used with careful moderation.”</li>
-<li>Strict control through metrics is only appropriate for projects with modest goals.</li>
-</ul></li>
-<li>The obsession with metrics in software engineering led to engineers focusing on improving measurements rather than addressing underlying issues.</li>
-<li>A similar situation may be occurring in the US educational system, with teachers and students pressured to improve test scores at the expense of genuine learning.</li>
-</ul>
-</section>
-<section id="the-illusion-of-accuracy-in-assessment" class="level4">
-<h4 class="anchored" data-anchor-id="the-illusion-of-accuracy-in-assessment">The Illusion of Accuracy in Assessment</h4>
-<ul>
-<li>The push for more accurate assessments in education, like the Race to the Top initiative, is based on the assumption that accuracy improves performance in objective-driven pursuits.</li>
-<li>However, <strong>accuracy doesn’t necessarily lead to better outcomes in complex search spaces</strong>.
-<ul>
-<li>Example: The Picbreeder Skull image evolved through stepping stones that didn’t resemble the final image.
-<ul>
-<li>Even with accurate assessment of “Skull-ness,” an objective-driven approach would have failed to discover the Skull because the stepping stones looked nothing like it.</li>
-</ul></li>
-</ul></li>
-<li>Accuracy becomes meaningless when the underlying compass (objective) is flawed.</li>
-</ul>
-</section>
-<section id="the-pitfalls-of-uniform-standards" class="level4">
-<h4 class="anchored" data-anchor-id="the-pitfalls-of-uniform-standards">The Pitfalls of Uniform Standards</h4>
-<ul>
-<li>The drive towards uniform standards, like the Common Core State Standards Initiative, aims to ensure equal access to quality education and facilitate comparisons.</li>
-<li>However, uniformity can hinder progress by:
-<ul>
-<li><strong>Potentially adopting a flawed standard</strong>: Even a well-chosen standard may be rooted in the myth of the objective.</li>
-<li><strong>Extinguishing diversity</strong>: Uniformity eliminates alternative standards that individual schools or states might be exploring, limiting future innovation.</li>
-</ul></li>
-<li>Uniformity doesn’t guarantee better outcomes and can stifle progress by reducing the diversity of approaches.</li>
-</ul>
-</section>
-</section>
-<section id="non-objective-thinking-in-education" class="level3">
-<h3 class="anchored" data-anchor-id="non-objective-thinking-in-education">Non-Objective Thinking in Education</h3>
-<section id="embracing-the-treasure-hunter" class="level4">
-<h4 class="anchored" data-anchor-id="embracing-the-treasure-hunter">Embracing the Treasure Hunter</h4>
-<ul>
-<li>The alternative to objective deception in education is to adopt the <strong>treasure hunter</strong> approach.</li>
-<li>Instead of focusing on assessments tied to ambitious objectives, we can encourage exploration and the sharing of diverse ideas.</li>
-<li>Example: Replacing standardized tests with teacher portfolios assessed by peer review.
-<ul>
-<li>Teachers create portfolios showcasing their teaching methods, student work, etc.</li>
-<li>Portfolios are anonymously reviewed by other teachers.</li>
-<li>Standardized tests are only administered if a teacher’s portfolio receives a failing grade.</li>
-</ul></li>
-<li>This approach fosters a culture of sharing and learning from each other’s experiences, promoting innovation and creativity.</li>
-</ul>
-</section>
-<section id="shifting-the-focus-from-assessment-to-exploration" class="level4">
-<h4 class="anchored" data-anchor-id="shifting-the-focus-from-assessment-to-exploration">Shifting the Focus from Assessment to Exploration</h4>
-<ul>
-<li>Instead of prioritizing assessment, we can reframe education as a <strong>treasure hunt</strong> for the best teaching approaches.</li>
-<li>This shift requires:
-<ul>
-<li>Reducing the emphasis on standardized tests.</li>
-<li>Empowering teachers to utilize their creativity and intuition.</li>
-<li>Encouraging experimentation and the exploration of diverse methods.</li>
-</ul></li>
-<li>Finland’s education system, which grants greater autonomy to teachers and doesn’t impose standardized tests, serves as an example of a non-objective approach.</li>
-</ul>
-</section>
-<section id="embracing-uncertainty" class="level4">
-<h4 class="anchored" data-anchor-id="embracing-uncertainty">Embracing Uncertainty</h4>
-<ul>
-<li>Rejecting the myth of the objective in education requires embracing uncertainty.</li>
-<li>We must accept that there may not be a single, objective solution to achieving exceptional education for all students.</li>
-<li>By focusing on exploration, diversity, and the sharing of ideas, we can foster a more dynamic and innovative educational landscape.</li>
-</ul>
-</section>
-</section>
-</section>
-<section id="chapter-8-unchaining-innovation" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-8-unchaining-innovation">Chapter 8: Unchaining Innovation</h2>
-<section id="introduction-the-allure-of-exploration-and-the-myth-of-the-objective" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-the-allure-of-exploration-and-the-myth-of-the-objective">Introduction: The Allure of Exploration and the Myth of the Objective</h3>
-<ul>
-<li>The chapter opens with captivating stories of early explorers like Magellan, Verrazzano, and Scott who braved the unknown, highlighting the inherent risks and potential rewards of exploration.</li>
-<li><strong>Innovation</strong>, particularly in science, is presented as a modern form of exploration with the power to reshape society.</li>
-<li>The chapter aims to explore how the <strong>myth of the objective</strong> hinders innovation in various fields, including science, business, and art.</li>
-<li>The rapid pace of scientific progress is emphasized through examples like George Washington’s letter-writing predicament and the evolution of communication from handwritten letters to real-time video chats.</li>
-<li>The chapter acknowledges that scientific exploration may not be as visually thrilling as geographical expeditions, but the discoveries it yields can be equally transformative, potentially leading to advancements like a universal cure for cancer or cheap energy through nuclear fusion.</li>
-<li>The chapter establishes that the pursuit of scientific innovation is often constrained by the <strong>myth of the objective</strong>, particularly in funding decisions, which tend to prioritize projects with clear objectives and predictable outcomes.</li>
-</ul>
-</section>
-<section id="the-problem-with-consensus-in-science-funding" class="level3">
-<h3 class="anchored" data-anchor-id="the-problem-with-consensus-in-science-funding">The Problem with Consensus in Science Funding</h3>
-<ul>
-<li><strong>Science funding</strong> is identified as a key area where the myth of the objective plays a significant role.</li>
-<li>Government funding agencies like the NSF and ESF rely on <strong>peer review</strong> to evaluate grant proposals, favoring projects that achieve consensus among expert reviewers.</li>
-<li>The chapter argues that <strong>consensus can be detrimental to innovation</strong> because it discourages exploration of diverse and potentially groundbreaking ideas.</li>
-<li><strong>Picbreeder</strong> is used as an analogy to illustrate how consensus can stifle creativity.
-<ul>
-<li>Picbreeder’s success in generating novel images stems from the fact that users are free to explore diverse paths without needing to agree on which images are “better.”</li>
-<li>If a panel of experts were to vote on the next image in Picbreeder, the number of explored paths would be severely limited.</li>
-</ul></li>
-<li>The chapter suggests that <strong>rewarding disagreement</strong> instead of consensus might be a more effective strategy for promoting innovation.
-<ul>
-<li>Unanimous agreement on a project might indicate that it merely echoes the status quo.</li>
-<li><strong>Interesting ideas are more likely to split expert opinions</strong> because they often challenge existing paradigms and explore uncharted territory.</li>
-<li>Examples like Darwin’s theory of evolution and Thomas Kuhn’s concept of paradigm shifts are cited to demonstrate how groundbreaking ideas initially faced resistance from the scientific community.</li>
-</ul></li>
-<li>The chapter clarifies that it’s not advocating for funding all projects with disagreement, but rather suggesting that some resources should be allocated to support <strong>interesting and potentially transformative research</strong>, even if it lacks consensus.</li>
-<li>The emphasis on consensus in science funding is linked to <strong>objective thinking</strong>, which prioritizes reaching a predetermined destination over exploring diverse and potentially serendipitous paths.</li>
-<li>The chapter concludes that <strong>science needs to embrace the role of a treasure hunter and a stepping stone collector</strong>, allowing researchers to explore diverse and unpredictable paths rather than being solely focused on achieving predefined objectives.</li>
-</ul>
-</section>
-<section id="the-illusion-of-predictable-scientific-progress-and-impact" class="level3">
-<h3 class="anchored" data-anchor-id="the-illusion-of-predictable-scientific-progress-and-impact">The Illusion of Predictable Scientific Progress and Impact</h3>
-<ul>
-<li>The myth of the objective leads to the assumption that scientific progress is predictable and that the stepping stones to important discoveries can be laid out in an orderly fashion.</li>
-<li>The chapter challenges this assumption by highlighting the <strong>serendipitous nature of many scientific breakthroughs</strong>.</li>
-<li><strong>Grand, objective-driven projects</strong> aimed at solving specific problems are discussed, with examples like Japan’s Fifth Generation Computer Systems project and the War on Cancer.
-<ul>
-<li>These projects, despite significant funding and targeted research, often fail to achieve their stated objectives or produce unexpected outcomes.</li>
-</ul></li>
-<li>The chapter acknowledges that some ambitious projects, like the space race, can be successful, but emphasizes that such success often relies on <strong>pre-existing stepping stones</strong> developed outside the scope of the project itself.</li>
-<li>The chapter argues that <strong>predicting the impact of scientific research is challenging</strong> and that focusing solely on projects with perceived high impact can be short-sighted.
-<ul>
-<li>Many important discoveries are unexpected and may not seem immediately impactful.</li>
-<li><strong>Interesting research, even if not deemed immediately important, can lead to unanticipated breakthroughs in the future</strong>.</li>
-</ul></li>
-<li><strong>Picbreeder and novelty search</strong> are again used as analogies to illustrate how systems can produce remarkable results even when individual components are not evaluated based on their progress towards a specific objective.</li>
-<li>The chapter suggests that funding agencies should consider supporting <strong>interesting and potentially transformative research</strong>, even if its immediate impact is unclear.</li>
-<li>Examples from pure mathematics, such as group theory and public-key cryptography, are provided to demonstrate how seemingly “useless” research can later have significant practical applications.</li>
-<li>The chapter cautions against <strong>funding science based solely on its alignment with specific national interests or short-term economic goals</strong>.
-<ul>
-<li>This approach can stifle basic research and limit the potential for serendipitous discoveries.</li>
-<li>The chapter criticizes policies that prioritize research with immediate economic benefits over curiosity-driven exploration.</li>
-</ul></li>
-<li>The chapter concludes that while scientific progress is possible, it is not always predictable, and that embracing <strong>curiosity-driven research</strong> and exploring diverse paths is essential for achieving transformative breakthroughs.</li>
-</ul>
-</section>
-<section id="embracing-risk-and-uncertainty-in-scientific-funding" class="level3">
-<h3 class="anchored" data-anchor-id="embracing-risk-and-uncertainty-in-scientific-funding">Embracing Risk and Uncertainty in Scientific Funding</h3>
-<ul>
-<li>The chapter argues that <strong>objectives can hinder scientific progress by promoting risk aversion</strong>.</li>
-<li>Funding agencies often require researchers to clearly define objectives and demonstrate a high likelihood of success, which can discourage exploration of risky but potentially groundbreaking ideas.</li>
-<li>The chapter suggests that <strong>some research should be pursued simply because it’s interesting</strong>, even if the potential outcomes are uncertain.</li>
-<li>The chapter proposes funding researchers with a track record of interesting discoveries without requiring them to specify detailed objectives, similar to the MacArthur Fellowships.</li>
-<li>The chapter acknowledges that <strong>risk is inherent in scientific research</strong>, and that embracing uncertainty is necessary for achieving significant progress.</li>
-<li>The chapter draws a parallel between <strong>business investing and scientific funding</strong>.
-<ul>
-<li>In business, investors tend to favor projects with <strong>realistic, short-term objectives</strong> that are achievable within a few stepping stones.</li>
-<li><strong>Innovative business ideas</strong> often reveal nearby stepping stones that were previously unseen, but investors typically require a clear understanding of these stepping stones before providing funding.</li>
-</ul></li>
-<li>The example of Tesla Motors is used to illustrate how <strong>innovation in business can arise from unexpected combinations of existing technologies</strong>.</li>
-<li>The chapter concludes that both scientists and businesspeople should focus on exploring <strong>nearby stepping stones</strong> rather than setting overly ambitious long-term objectives.</li>
-<li><strong>Innovation often arises from unexpected discoveries</strong> made while exploring seemingly unrelated paths.</li>
-</ul>
-</section>
-<section id="the-role-of-objectives-in-art-and-design" class="level3">
-<h3 class="anchored" data-anchor-id="the-role-of-objectives-in-art-and-design">The Role of Objectives in Art and Design</h3>
-<ul>
-<li>The chapter suggests that <strong>artists and designers</strong> have a more intuitive understanding of the myth of the objective compared to scientists or businesspeople.</li>
-<li><strong>Art is often driven by creative exploration</strong> rather than the pursuit of specific objectives.</li>
-<li>The chapter acknowledges that <strong>objectives can play a role in design</strong>, particularly when functionality and safety are concerned.
-<ul>
-<li>These objectives are compared to the <strong>constraints faced by organisms in natural evolution</strong>, which must survive and reproduce but can do so in a vast array of ways.</li>
-</ul></li>
-<li>The chapter argues that <strong>innovation in art and design often involves finding new ways to work within existing constraints</strong>.</li>
-<li>Examples from art history, such as the evolution from Impressionism to Expressionism to Surrealism, are used to demonstrate how <strong>new artistic movements often arise unexpectedly</strong> from the exploration of previous styles.</li>
-<li>The chapter highlights that <strong>individual artists may also struggle with the pressure to justify their work in terms of objectives</strong>.
-<ul>
-<li>The example of an art student who created sculptures by beating metal with an axe and rusting them is used to illustrate this point.</li>
-</ul></li>
-<li>The chapter concludes that <strong>art is valuable for its own sake</strong> and for the potential it has to inspire future creative explorations.</li>
-</ul>
-</section>
-<section id="conclusion-embracing-non-objective-thinking-for-a-brighter-future" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-embracing-non-objective-thinking-for-a-brighter-future">Conclusion: Embracing Non-Objective Thinking for a Brighter Future</h3>
-<ul>
-<li>The chapter reiterates the <strong>pervasiveness of objective thinking</strong> in various aspects of our lives, from education and science to art and design.</li>
-<li>The chapter emphasizes that <strong>non-objective thinking is not a universal solution</strong>, but rather an alternative approach that can lead to greater creativity and innovation in certain contexts.</li>
-<li><strong>Escaping the myth of the objective</strong> can be challenging but potentially rewarding, as it allows for exploration of diverse and unpredictable paths.</li>
-<li>The chapter encourages readers to <strong>consider the potential of non-objective thinking</strong> in their own lives and endeavors.</li>
-<li>The chapter concludes with a call to <strong>embrace the uncertainty and freedom</strong> that comes with abandoning the rigid pursuit of predefined objectives.</li>
-<li>The chapter suggests that <strong>non-objective thinking can help us move forward</strong> and achieve breakthroughs in various fields, acting as a stepping stone towards a brighter future.</li>
-<li>The book concludes with two case studies exploring non-objective thinking in the context of natural evolution and AI research (found after the book’s main conclusion).</li>
-</ul>
-</section>
-</section>
-<section id="chapter-9-farewell-to-the-mirage" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-9-farewell-to-the-mirage">Chapter 9: Farewell to the Mirage</h2>
-<section id="introduction-the-problem-with-objectives-1" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-the-problem-with-objectives-1">Introduction: The Problem with Objectives</h3>
-<ul>
-<li><strong>Objectives</strong>, especially ambitious ones, can hinder progress in various fields, from education to scientific research.
-<ul>
-<li>Overemphasis on objectives often leads to suboptimal outcomes.</li>
-<li>Examples include stifling creativity in education and biasing funding decisions in science.</li>
-</ul></li>
-<li>This book challenges the conventional wisdom that objectives are essential for success, particularly in ambitious endeavors.</li>
-<li>It proposes a <strong>non-objective perspective</strong>, suggesting that focusing on what we love and believe in can lead to more significant achievements.</li>
-</ul>
-</section>
-<section id="beyond-objectives-embracing-a-new-perspective" class="level3">
-<h3 class="anchored" data-anchor-id="beyond-objectives-embracing-a-new-perspective">Beyond Objectives: Embracing a New Perspective</h3>
-<ul>
-<li><strong>Ambitious objectives</strong> are the focus of this critique, not everyday objectives like following a recipe or meeting a project deadline.</li>
-<li>The authors argue that objectives become less effective when we aim for breakthroughs, deep insights, or radical innovation in areas such as:
-<ul>
-<li>Scientific discoveries (e.g., cures for diseases)</li>
-<li>Artistic creations (e.g., beautiful structures, soul-stirring melodies)</li>
-<li>Technological advancements (e.g., travel beyond the stars)</li>
-</ul></li>
-<li>In these ambitious domains, objectives can become deceptive, hindering our potential.</li>
-</ul>
-</section>
-<section id="the-stepping-stone-principle-a-paradoxical-approach-to-achievement" class="level3">
-<h3 class="anchored" data-anchor-id="the-stepping-stone-principle-a-paradoxical-approach-to-achievement">The Stepping Stone Principle: A Paradoxical Approach to Achievement</h3>
-<ul>
-<li>The book proposes a <strong>paradoxical approach</strong>: We can achieve ambitious outcomes by <em>not</em> directly aiming for them.</li>
-<li><strong>Evolution</strong> serves as a prime example:
-<ul>
-<li>It produced complex organisms without a predetermined objective.</li>
-<li>Humans have created incredible machines without initially envisioning the final product.</li>
-</ul></li>
-<li>This approach involves <strong>conceding control of the final destination</strong> and focusing on the process of discovery.</li>
-</ul>
-</section>
-<section id="the-illusion-of-control-objectives-as-deceptive-guides" class="level3">
-<h3 class="anchored" data-anchor-id="the-illusion-of-control-objectives-as-deceptive-guides">The Illusion of Control: Objectives as Deceptive Guides</h3>
-<ul>
-<li><strong>Ambitious objectives often offer an illusion of control.</strong>
-<ul>
-<li>They may seem like a roadmap to success, but they can lead us down unproductive paths.</li>
-<li>The complexity of the search space makes it impossible to predict the steps required for groundbreaking discoveries.</li>
-</ul></li>
-<li>Examples:
-<ul>
-<li>No breeder could have intentionally steered evolution from single-celled organisms to complex brains.</li>
-<li>No Stone Age human could have conceived of a computer.</li>
-</ul></li>
-<li><strong>Conceding control of the destination is like discarding a faulty compass.</strong>
-<ul>
-<li>Great achievements often seem mysterious because there’s no clear, predictable path to them.</li>
-<li>Objectives can become mere good luck charms, providing a false sense of direction.</li>
-</ul></li>
-</ul>
-</section>
-<section id="the-treasure-hunter-embracing-interestingness-and-novelty" class="level3">
-<h3 class="anchored" data-anchor-id="the-treasure-hunter-embracing-interestingness-and-novelty">The Treasure Hunter: Embracing Interestingness and Novelty</h3>
-<ul>
-<li><strong>The alternative to objective-driven pursuit is to become a treasure hunter.</strong>
-<ul>
-<li>This involves exploring the unknown and seeking out valuable discoveries, even if they weren’t the initial target.</li>
-<li><strong>Stepping stones</strong> are the key: One good idea leads to another, creating a chain of discoveries.</li>
-</ul></li>
-<li><strong>Clues</strong> guide the treasure hunter, but these clues are not about the objective itself. Instead, they indicate the potential for something worthwhile nearby.
-<ul>
-<li><strong>Novelty</strong> can be a clue: Something new may lead to something even newer.
-<ul>
-<li>Novelty search algorithms in robotics demonstrate this principle: Robots discover complex behaviors by pursuing novelty.</li>
-</ul></li>
-<li><strong>Interestingness</strong> is another crucial clue, particularly for humans:
-<ul>
-<li>We are drawn to things that pique our interest, whether it’s music, writing, or exploration.</li>
-<li>Interestingness is subjective and varies among individuals, but this diversity benefits society.</li>
-<li>Following interestingness leads us across unique chains of stepping stones.</li>
-</ul></li>
-</ul></li>
-</ul>
-</section>
-<section id="interestingness-a-principled-guide-in-the-unknown" class="level3">
-<h3 class="anchored" data-anchor-id="interestingness-a-principled-guide-in-the-unknown">Interestingness: A Principled Guide in the Unknown</h3>
-<ul>
-<li><strong>Following interestingness</strong> may seem subjective, but it can be a more effective principle than objectivity, especially in the pursuit of discovery and innovation.</li>
-<li>The book provides numerous examples where ignoring objectives led to superior results compared to pursuing them.</li>
-<li><strong>Justification for following interestingness:</strong>
-<ul>
-<li>We don’t know the structure of the search space, so we can’t predict which discoveries will be crucial stepping stones.</li>
-<li>Interestingness forms a network of interconnected discoveries, leading us from one valuable finding to another.</li>
-</ul></li>
-<li><strong>Objectives, in contrast, act as false beacons, limiting our exploration to a single, predetermined direction.</strong></li>
-</ul>
-</section>
-<section id="the-innovators-mindset-focusing-on-the-edge-of-the-possible" class="level3">
-<h3 class="anchored" data-anchor-id="the-innovators-mindset-focusing-on-the-edge-of-the-possible">The Innovator’s Mindset: Focusing on the Edge of the Possible</h3>
-<ul>
-<li>True innovators don’t focus on distant, grandiose visions. Instead, they concentrate on the <strong>edge of what’s currently possible</strong>.</li>
-<li>They ask: “Where can we get from here?” rather than “How can we get there?”</li>
-<li>They build upon existing capabilities and knowledge, taking small but significant steps forward.</li>
-<li><strong>Examples:</strong>
-<ul>
-<li><strong>Markus “Notch” Persson</strong> created Minecraft by combining elements from existing games, resulting in a groundbreaking success despite its unconventional design.</li>
-<li><strong>Steve Jobs</strong> and Apple recognized the opportune moment for a commercially viable tablet computer (the iPad), capitalizing on existing technological advancements and societal trends.</li>
-<li><strong>The Wright brothers</strong> built upon their expertise in bicycles to achieve flight, demonstrating that stepping stones can come from unexpected sources.</li>
-</ul></li>
-<li><strong>Objective-driven companies</strong> often struggle, clinging to ambitious visions that are not yet feasible.</li>
-<li><strong>Success often comes from recognizing the potential in the present</strong>, rather than trying to force a preconceived future into existence.</li>
-</ul>
-</section>
-<section id="embracing-divergence-letting-go-of-the-right-path" class="level3">
-<h3 class="anchored" data-anchor-id="embracing-divergence-letting-go-of-the-right-path">Embracing Divergence: Letting Go of the “Right Path”</h3>
-<ul>
-<li><strong>Letting go of objectives also means abandoning the idea of a single “right path.”</strong></li>
-<li>Instead of judging projects based on their likelihood of achieving a specific objective, we should assess their <strong>potential to spawn new projects, new stepping stones.</strong></li>
-<li><strong>The value of a stepping stone lies in its ability to lead to further exploration, regardless of its immediate outcome.</strong></li>
-<li><strong>Divergence is a virtue:</strong>
-<ul>
-<li>Different people pursuing different paths lead to a greater diversity of discoveries.</li>
-<li>Consensus can stifle innovation by limiting the exploration of alternative approaches.</li>
-</ul></li>
-<li><strong>The world is too complex to know with certainty which path is “right” in the long run.</strong></li>
-<li><strong>Embracing diverse paths allows for a wider range of possibilities to be explored.</strong></li>
-</ul>
-</section>
-<section id="following-your-instinct-the-power-of-interestingness" class="level3">
-<h3 class="anchored" data-anchor-id="following-your-instinct-the-power-of-interestingness">Following Your Instinct: The Power of Interestingness</h3>
-<ul>
-<li><strong>To escape the myth of the objective, do things because they’re interesting.</strong></li>
-<li><strong>Trust your gut feelings:</strong> If you feel drawn to a particular direction, explore it, even if you don’t have a clear objective.</li>
-<li><strong>Don’t be afraid to deviate from your initial plans:</strong>
-<ul>
-<li>If you’ve shifted from computer programming to filmmaking, or from AI research to art, you might be on the right track.</li>
-<li><strong>Stepping stones lead to unexpected and potentially valuable destinations.</strong></li>
-</ul></li>
-<li><strong>Great achievements often arise from chains of innovation that weren’t initially planned.</strong></li>
-</ul>
-</section>
-<section id="conclusion-abandoning-objectives-to-achieve-greatness" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-abandoning-objectives-to-achieve-greatness">Conclusion: Abandoning Objectives to Achieve Greatness</h3>
-<ul>
-<li><strong>The prevailing culture often prioritizes objectives and chains exploration to them.</strong></li>
-<li><strong>However, evidence suggests that a treasure-hunting approach, guided by interestingness and novelty, is more effective for achieving breakthroughs.</strong></li>
-<li><strong>We should encourage divergence and allow people to pursue different paths, even if they seem unconventional or “wrong.”</strong></li>
-<li><strong>Ultimately, to achieve our highest goals, we must be willing to abandon them temporarily and embrace the unpredictable journey of exploration.</strong></li>
-<li><strong>By following the scent of interestingness, we can unlock our potential and contribute to a future filled with unexpected and valuable discoveries.</strong></li>
-</ul>
-</section>
-</section>
-<section id="chapter-10-case-study-1---reinterpreting-natural-evolution" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-10-case-study-1---reinterpreting-natural-evolution">Chapter 10: Case Study 1 - Reinterpreting Natural Evolution</h2>
-<section id="introduction-1" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-1">Introduction</h3>
-<ul>
-<li>Every living organism, including humans, is a product of <strong>natural evolution</strong>.</li>
-<li><strong>Natural evolution</strong> is an unguided process that has designed every organism on Earth.</li>
-<li>Unlike most things, evolution continually creates new from old.</li>
-<li><strong>Intelligent design</strong> movement skeptics argue that the complexity of life suggests an intelligent creator.</li>
-<li>Charles Darwin’s theory of <strong>natural selection</strong> offers an alternative explanation: slightly imperfect self-copying can lead to the appearance of intelligent design.</li>
-<li><strong>Natural selection:</strong> Genes that enhance survival and reproduction are more likely to spread throughout a population.</li>
-<li>Evolutionary biologists debate the importance of <strong>natural selection</strong> compared to other evolutionary forces (e.g., chance, history).</li>
-<li>This chapter explores an alternative interpretation of <strong>natural evolution</strong> inspired by <strong>non-objective search</strong>.</li>
-</ul>
-</section>
-<section id="common-interpretations-of-evolution" class="level3">
-<h3 class="anchored" data-anchor-id="common-interpretations-of-evolution">Common Interpretations of Evolution</h3>
-<section id="survival-of-the-fittest" class="level4">
-<h4 class="anchored" data-anchor-id="survival-of-the-fittest">Survival of the Fittest</h4>
-<ul>
-<li>“Survival of the fittest” is a popular catchphrase summarizing a core concept of evolution, though it wasn’t coined by Darwin himself.</li>
-<li><strong>Fitness</strong>, in biology, refers to the average number of offspring an organism produces.</li>
-<li>“Survival of the fittest” implies a <strong>competitive search</strong> for ever-more-fit organisms.</li>
-<li>This perspective aligns with <strong>objective thinking</strong>, suggesting that evolution aims to achieve the objective of maximizing fitness.</li>
-</ul>
-</section>
-<section id="evolution-as-a-progressive-force" class="level4">
-<h4 class="anchored" data-anchor-id="evolution-as-a-progressive-force">Evolution as a Progressive Force</h4>
-<ul>
-<li>“Survival of the fittest” can lead to the view of evolution as a <strong>bloody competition</strong> where only the fittest survive.</li>
-<li>Early evolutionists believed that evolution is <strong>progressive</strong>, striving for an <strong>objective perfection</strong> or an <strong>über-organism</strong>.</li>
-<li>Some interpretations place humans as the pinnacle of evolution, suggesting objective superiority over other organisms.</li>
-<li>However, a <strong>human-centric view</strong> is not supported by modern biology and leads to the <strong>objective paradox</strong>.
-<ul>
-<li>If evolution aimed directly at humans, the intermediate steps (e.g., flatworms) wouldn’t resemble the final product, making the path implausible.</li>
-</ul></li>
-</ul>
-</section>
-<section id="survival-and-reproduction-as-the-objective" class="level4">
-<h4 class="anchored" data-anchor-id="survival-and-reproduction-as-the-objective">Survival and Reproduction as the Objective</h4>
-<ul>
-<li>Most scientists consider <strong>survival and reproduction</strong> as evolution’s objective.</li>
-<li>All living species inherently survive and reproduce; otherwise, they wouldn’t exist.</li>
-<li><strong>Natural selection</strong> drives towards improved survival and reproduction, leading to the view that increasing fitness is evolution’s objective.</li>
-<li>This perspective fits the <strong>objective paradigm</strong> and aligns with common understanding.</li>
-<li>However, this interpretation faces some challenges:
-<ul>
-<li><strong>Survive and reproduce</strong> was already achieved at the start of evolution with the first reproducing cell, contradicting the typical notion of an objective as something to be achieved.</li>
-<li>If the objective is to maximize fitness, bacteria (with high reproductive rates) would be considered more “successful” than humans, which doesn’t align with our intuition about evolution’s most interesting products.</li>
-<li>The diversity of life suggests an <strong>accumulation of stepping stones</strong>, similar to other <strong>non-objective creative processes</strong> (e.g., Picbreeder, human innovation).</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="a-non-objective-interpretation-of-evolution" class="level3">
-<h3 class="anchored" data-anchor-id="a-non-objective-interpretation-of-evolution">A Non-Objective Interpretation of Evolution</h3>
-<section id="survive-and-reproduce-as-a-constraint" class="level4">
-<h4 class="anchored" data-anchor-id="survive-and-reproduce-as-a-constraint">Survive and Reproduce as a Constraint</h4>
-<ul>
-<li>Instead of an objective, <strong>survive and reproduce</strong> can be viewed as a <strong>constraint</strong>.</li>
-<li>Organisms that fail to reproduce are eliminated, while those that reproduce persist.</li>
-<li>This perspective suggests that selection <strong>restricts exploration</strong> by pruning away parts of the search space.</li>
-</ul>
-</section>
-<section id="gentle-earth-thought-experiment" class="level4">
-<h4 class="anchored" data-anchor-id="gentle-earth-thought-experiment">Gentle Earth Thought Experiment</h4>
-<ul>
-<li>Imagine <strong>Gentle Earth</strong>: a hypothetical world without natural selection where every organism reproduces.</li>
-<li>Even organisms that wouldn’t survive on their own are helped to reproduce.</li>
-<li>This removes the pressure of selection and allows for broader exploration of the search space.</li>
-<li>On Gentle Earth, we would observe all the variety of life on Earth, plus many more organisms that wouldn’t have survived under selection.</li>
-<li>This thought experiment demonstrates that selection is not a creative force, but rather a <strong>restrictive force</strong> that limits exploration.</li>
-</ul>
-</section>
-<section id="evolution-as-a-treasure-hunter" class="level4">
-<h4 class="anchored" data-anchor-id="evolution-as-a-treasure-hunter">Evolution as a Treasure Hunter</h4>
-<ul>
-<li>Evolution accumulates <strong>novelty and diversity</strong>, similar to other <strong>non-objective search processes</strong>.</li>
-<li>The <strong>tree of life</strong> branches outward, collecting new stepping stones as it goes.</li>
-<li><strong>Diversity arises from avoiding competition</strong> by founding new niches.</li>
-<li>New niches often make founding newer niches possible, leading to a chain reaction of diversification.</li>
-<li>Examples:
-<ul>
-<li>An organism developing the ability to digest a new compound.</li>
-<li>The first land animal to fly escaping land-based predation.</li>
-<li>The invention of the computer enabling the ecosystem of software.</li>
-<li>The discovery of grass providing a platform for herbivores and their associated ecosystems.</li>
-</ul></li>
-</ul>
-</section>
-<section id="serendipity-and-exaptation" class="level4">
-<h4 class="anchored" data-anchor-id="serendipity-and-exaptation">Serendipity and Exaptation</h4>
-<ul>
-<li><strong>Serendipity</strong> plays a significant role in evolution through <strong>mutation</strong>.</li>
-<li><strong>Mutation:</strong> Slight copying errors during reproduction that can lead to variations in offspring.</li>
-<li><strong>Neutral genetic changes</strong> (not affecting fitness) evolve through <strong>genetic drift</strong>.</li>
-<li><strong>Exaptation:</strong> A feature evolved for one function becomes useful in a different context.</li>
-<li>Examples:
-<ul>
-<li>Birds’ feathers initially evolved for temperature regulation, later exapted for flight.</li>
-<li>Bones initially evolved for mineral storage, later exapted for structural support.</li>
-<li>The Picbreeder Car’s wheels exapted from the eyes of the Alien Face.</li>
-<li>The vacuum tube exapted from early electrical investigations to enable computation.</li>
-</ul></li>
-</ul>
-</section>
-</section>
-<section id="abstraction-and-interpretation" class="level3">
-<h3 class="anchored" data-anchor-id="abstraction-and-interpretation">Abstraction and Interpretation</h3>
-<section id="evolution-as-a-minimal-criteria-search" class="level4">
-<h4 class="anchored" data-anchor-id="evolution-as-a-minimal-criteria-search">Evolution as a Minimal Criteria Search</h4>
-<ul>
-<li><strong>Abstraction</strong> helps to understand natural processes by focusing on essential features and discarding unimportant details.</li>
-<li>Viewing “survive and reproduce” as a <strong>constraint</strong> allows us to abstract away fitness differences between successful organisms.</li>
-<li>The <strong>single-cell bottleneck</strong> highlights the diversity of methods nature has found to start from one cell and ultimately produce another.</li>
-<li>Organisms can be seen as <strong>Rube Goldberg machines</strong>, performing complex processes to achieve the simple goal of reproduction.</li>
-<li>Evolution can be viewed as a <strong>minimal criteria search</strong>, accumulating all the different ways to survive and reproduce.</li>
-<li>As simple means of living are exhausted, the search explores more complex ones, driven by the “spill” of possibilities expanding in the search space.</li>
-<li><strong>Minimal Criteria Novelty Search:</strong> An algorithm inspired by this perspective, demonstrating the practical implications of the abstraction.</li>
-</ul>
-</section>
-<section id="the-role-of-competition" class="level4">
-<h4 class="anchored" data-anchor-id="the-role-of-competition">The Role of Competition</h4>
-<ul>
-<li>The <strong>spilled-milk view</strong> abstracts away competition entirely.</li>
-<li>However, <strong>competition</strong> does play a role in natural evolution, though it may be less important for creativity than <strong>diversity</strong>.</li>
-<li><strong>Local competition</strong> (within niches) shapes organisms but encourages the founding of new niches to escape competition.</li>
-<li><strong>Global competition</strong> (across all organisms) would lead to convergence towards a single optimal organism.</li>
-<li><strong>Evolution can be seen as a novelty-generating search with local competition</strong>, balancing creativity and optimization.</li>
-<li><strong>Novelty Search with Local Competition:</strong> Another algorithm formalizing this abstraction, demonstrating its ability to generate diverse virtual creatures.</li>
-</ul>
-</section>
-</section>
-<section id="the-fossil-record-and-non-objective-evolution" class="level3">
-<h3 class="anchored" data-anchor-id="the-fossil-record-and-non-objective-evolution">The Fossil Record and Non-Objective Evolution</h3>
-<ul>
-<li>Evolution’s successes result from its <strong>mindless accumulation of stepping stones</strong>, not from planning or intelligence.</li>
-<li>The <strong>tree of life</strong> branches outward, reflecting the exploration of diverse niches without a specific objective.</li>
-<li>The fossil record shows a constant branching and diversification, with the earliest life forms (bacteria) still persisting today.</li>
-<li>The <strong>Cambrian explosion</strong> represents a period of rapid diversification, similar to the early stages of other creative processes.</li>
-<li>The fossil record can be seen as a testament to the power of <strong>non-objective search</strong> and <strong>serendipity</strong>.</li>
-</ul>
-</section>
-<section id="conclusion-2" class="level3">
-<h3 class="anchored" data-anchor-id="conclusion-2">Conclusion</h3>
-<ul>
-<li>Evolution’s creativity arises from <strong>escaping competition</strong> to form new niches, not just from out-competing others.</li>
-<li><strong>Diversity</strong> and the <strong>accumulation of stepping stones</strong> are key to evolution’s success.</li>
-<li>Evolution is more like <strong>open-ended brainstorming</strong> than single-minded pursuit of a goal.</li>
-<li>It’s more about <strong>exploration</strong> than about <strong>bloody competition</strong>.</li>
-<li>It’s more like constructing novel <strong>Rube Goldberg machines</strong> than aspiring towards perfection.</li>
-<li>Evolution is the ultimate <strong>treasure hunter</strong>, searching for nothing and finding everything as it explores the space of possible organisms.</li>
-<li>It’s the world’s most prolific inventor, achieving its discoveries without pre-defined objectives.</li>
-<li>This <strong>non-objective perspective</strong> offers a deeper understanding of evolution’s creative power, challenging the myth of the objective.</li>
-</ul>
-</section>
-</section>
-<section id="chapter-11-case-study-2---objectives-and-the-quest-for-ai" class="level2">
-<h2 class="anchored" data-anchor-id="chapter-11-case-study-2---objectives-and-the-quest-for-ai">Chapter 11: Case Study 2 - Objectives and the Quest for AI</h2>
-<section id="introduction-science-objectives-and-the-ai-community" class="level3">
-<h3 class="anchored" data-anchor-id="introduction-science-objectives-and-the-ai-community">Introduction: Science, Objectives, and the AI Community</h3>
-<ul>
-<li><strong>Science</strong> is a search for knowledge, expanding possibilities and shaping the quality of our lives.</li>
-<li>Scientific progress is influenced by how scientists communicate and interact, particularly within specialized communities called <strong>disciplines</strong>.</li>
-<li><strong>Objectives</strong>, while useful for measurement and encouragement, can introduce risks and unintended consequences in the scientific process.</li>
-<li>The <strong>Artificial Intelligence (AI) community</strong> serves as a case study for examining the impact of objective-driven thinking on science due to its ambitious objective of creating highly intelligent machines.</li>
-<li>The AI community’s focus on this objective allows us to analyze the effects of objective thinking in a field where it’s particularly prominent.</li>
-<li>Understanding the role of objectives in AI research provides insights into how objectives affect decision-making in broader contexts, including other scientific fields and society.</li>
-</ul>
-</section>
-<section id="the-ai-community-a-search-for-algorithms" class="level3">
-<h3 class="anchored" data-anchor-id="the-ai-community-a-search-for-algorithms">The AI Community: A Search for Algorithms</h3>
-<ul>
-<li><strong>Algorithms</strong> are the core product of AI research.
-<ul>
-<li>AI algorithms are designed to perform a wide range of tasks, from object recognition to game playing.</li>
-<li>The ultimate goal is a single algorithm capable of performing all human (and potentially more) tasks.</li>
-</ul></li>
-<li>The field of AI can be viewed as a <strong>search for algorithms</strong>.
-<ul>
-<li>Researchers work together to find new and improved algorithms.</li>
-<li>AI researchers also study how to search effectively, creating algorithms that automate search processes.</li>
-</ul></li>
-<li>This creates a <strong>meta-search</strong>, where AI researchers search for algorithms that themselves search.
-<ul>
-<li>This is analogous to searching for a curious puppy or hiring a skilled treasure hunter.</li>
-</ul></li>
-<li>The connection between the AI community’s meta-search and the insights from search algorithms is rarely discussed.
-<ul>
-<li>While research analyzes search at the algorithm level, the AI community’s own search for algorithms is less examined.</li>
-</ul></li>
-<li>The question arises whether AI researchers, experts in search, are immune to the pitfalls of objective-driven search or if they are also susceptible to its deceptive nature.</li>
-</ul>
-</section>
-<section id="gradients-and-heuristics-in-ai-research" class="level3">
-<h3 class="anchored" data-anchor-id="gradients-and-heuristics-in-ai-research">Gradients and Heuristics in AI Research</h3>
-<ul>
-<li>AI researchers use <strong>heuristics</strong> (rules of thumb) to guide their search for promising algorithms.</li>
-<li>Two main heuristics dominate AI research:
-<ul>
-<li><strong>Experimentalist Heuristic:</strong> Judges algorithms based on their performance in benchmark tasks. Better performance indicates a more promising algorithm.</li>
-<li><strong>Theoretical Heuristic:</strong> Favors algorithms that have desirable properties proven through mathematical guarantees.</li>
-</ul></li>
-<li>These heuristics act as <strong>gatekeepers</strong> in the AI community, influencing which ideas are published and explored further.</li>
-<li>The widespread acceptance of these heuristics shapes the direction of AI research and can lead to unintended consequences.</li>
-</ul>
-</section>
-<section id="problems-with-the-experimentalist-heuristic" class="level3">
-<h3 class="anchored" data-anchor-id="problems-with-the-experimentalist-heuristic">Problems with the Experimentalist Heuristic</h3>
-<ul>
-<li>The experimentalist heuristic can lead to <strong>deception</strong>: Algorithms that appear promising based on performance may not lead to further advancements.</li>
-<li>Focusing solely on performance can <strong>stifle exploration</strong> and prevent the discovery of novel algorithms that may not initially outperform existing ones.</li>
-<li><strong>Example: Algorithm “Weird”</strong>
-<ul>
-<li>Weird is a novel algorithm that performs 5% worse than the established algorithm “OldReliable” in a standard benchmark.</li>
-<li>The experimentalist heuristic would favor rejecting Weird due to its lower performance.</li>
-<li>However, rejecting Weird prevents the exploration of its unique potential and the stepping stones it could open up.</li>
-</ul></li>
-<li>The experimentalist heuristic can be likened to a <strong>Chinese finger trap</strong>, encouraging pulling harder (improving performance) when pushing (exploring novel, even if initially worse-performing, directions) might be necessary.</li>
-<li><strong>Comparisons between algorithms can be misleading</strong>: The reasons for finding an algorithm interesting may be unrelated to its performance compared to others.
-<ul>
-<li><strong>Example: Humanoid Robot vs.&nbsp;Windup Toy Footrace</strong>
-<ul>
-<li>The windup toy wins easily, but this doesn’t invalidate humanoid robot research.</li>
-<li>The comparison is irrelevant to the reasons for finding humanoid robots interesting.</li>
-</ul></li>
-</ul></li>
-<li>The experimentalist heuristic may be suitable for <strong>AI practitioners</strong> who need to choose the best currently available algorithm for a specific task.</li>
-<li>However, it is not ideal for <strong>AI researchers</strong> who are searching for future innovations and breakthroughs.</li>
-<li>The experimentalist heuristic promotes an <strong>objective-driven search</strong> for perfect performance, which can be counterproductive in complex search spaces like the space of AI algorithms.</li>
-</ul>
-</section>
-<section id="problems-with-the-theoretical-heuristic" class="level3">
-<h3 class="anchored" data-anchor-id="problems-with-the-theoretical-heuristic">Problems with the Theoretical Heuristic</h3>
-<ul>
-<li>The <strong>theoretical heuristic</strong> prioritizes algorithms with strong theoretical guarantees.</li>
-<li>While guarantees provide certainty, the theoretical heuristic also has limitations.</li>
-<li><strong>“Theoretical Heuristic” as a Paradox:</strong>
-<ul>
-<li>Heuristics are rules of thumb, while theorems offer absolute guarantees.</li>
-<li>The term “theoretical heuristic” refers to using theorems (theoretical) as a rule of thumb (heuristic) for judging an algorithm’s potential as a stepping stone.</li>
-</ul></li>
-<li><strong>Theorems about individual algorithms do not guarantee progress in the meta-search</strong>:
-<ul>
-<li>A theorem about algorithm OldReliable doesn’t guarantee that future algorithms derived from it will inherit the same guarantees or be better.</li>
-<li>Focusing solely on algorithms with proven guarantees can restrict exploration and prevent the discovery of novel algorithms that may not initially have strong theoretical backing.</li>
-</ul></li>
-<li>The theoretical heuristic assumes a specific structure of the search space, where more guarantees indicate closer proximity to AI objectives.
-<ul>
-<li>This assumption may not hold true in the vast and complex space of AI algorithms.</li>
-</ul></li>
-<li><strong>Waiting for guarantees can hinder progress</strong>:
-<ul>
-<li>If algorithm Weird lacks guarantees but has the potential to lead to an interesting algorithm Weirder, waiting for Weird’s guarantees delays or prevents the discovery of Weirder.</li>
-</ul></li>
-<li><strong>Natural Evolution as a Counterexample</strong>:
-<ul>
-<li>Evolution produced human intelligence without proving any theorems.</li>
-<li>This demonstrates that guarantees are not a necessity for achieving complex outcomes.</li>
-</ul></li>
-<li>The theoretical heuristic, like the experimentalist heuristic, fosters an <strong>objective-driven search</strong> within the space of AI algorithms, which may not be the most effective approach.</li>
-</ul>
-</section>
-<section id="the-iron-yardsticks-and-their-consequences" class="level3">
-<h3 class="anchored" data-anchor-id="the-iron-yardsticks-and-their-consequences">The Iron Yardsticks and Their Consequences</h3>
-<ul>
-<li>The experimentalist and theoretical heuristics act as <strong>iron yardsticks</strong> wielded by gatekeepers in the AI community.</li>
-<li>They heavily influence which ideas are shared and explored, limiting the search to algorithms that satisfy these heuristics.</li>
-<li>These heuristics can hinder discovery and progress by:
-<ul>
-<li><strong>Pruning away large parts of the search space</strong>: Algorithms that don’t meet the heuristics are ignored, preventing the exploration of their potential and the stepping stones beyond them.</li>
-<li><strong>Fostering a competitive environment</strong>: Researchers focus on outperforming each other in benchmarks rather than collaborating to explore the space of algorithms.</li>
-<li><strong>Shifting the focus away from the substance of ideas</strong>: Discussions revolve around performance and guarantees instead of exploring the intrinsic value and potential of new algorithms.</li>
-</ul></li>
-</ul>
-</section>
-<section id="rethinking-good-ai-algorithms-and-a-non-objective-approach" class="level3">
-<h3 class="anchored" data-anchor-id="rethinking-good-ai-algorithms-and-a-non-objective-approach">Rethinking “Good” AI Algorithms and a Non-Objective Approach</h3>
-<ul>
-<li><strong>A “good” AI algorithm should be judged by its potential to inspire new algorithms and research directions</strong>, not solely by its performance.</li>
-<li>The AI community’s obsession with performance improvements often leads to incremental advancements that lack significant insights.</li>
-<li><strong>Algorithms should be evaluated as stepping stones</strong>: The focus should be on whether an algorithm leads to new and interesting algorithms, regardless of its initial performance.</li>
-<li><strong>Picbreeder as an Example</strong>:
-<ul>
-<li>The Picbreeder community successfully finds complex and meaningful images without relying on objective rules, expert panels, or performance comparisons.</li>
-<li>This demonstrates that communities can achieve significant results without rigid objective heuristics.</li>
-</ul></li>
-<li><strong>The Role of Experts</strong>:
-<ul>
-<li>Expertise is crucial in evaluating new ideas, but objective heuristics should not replace expert judgment.</li>
-<li>Experts should be trusted to use their knowledge and intuition to assess the potential of new algorithms, even if they don’t meet traditional performance or theoretical standards.</li>
-</ul></li>
-<li><strong>The Journal of AI Discovery (JAID) Thought Experiment</strong>:
-<ul>
-<li>JAID is a hypothetical journal where reviewers are not allowed to consider experimental or theoretical results in their reviews.</li>
-<li>This forces reviewers to engage with the core ideas of an algorithm and judge its potential as a stepping stone based on its intrinsic value.</li>
-<li>The success or failure of JAID would reveal insights about the effectiveness of current heuristics and the role of expert judgment in AI research.</li>
-</ul></li>
-</ul>
-</section>
-<section id="embracing-non-objective-clues-and-the-importance-of-open-mindedness" class="level3">
-<h3 class="anchored" data-anchor-id="embracing-non-objective-clues-and-the-importance-of-open-mindedness">Embracing Non-Objective Clues and the Importance of Open-mindedness</h3>
-<ul>
-<li>Relying solely on objective heuristics can hinder the discovery of truly groundbreaking ideas.</li>
-<li><strong>Non-objective clues</strong> can provide valuable insights into an algorithm’s potential:
-<ul>
-<li>Inspiration, elegance, potential to provoke creativity, thought-provoking construction, challenge to the status quo, novelty, analogy to nature, beauty, simplicity, and imagination.</li>
-</ul></li>
-<li><strong>Experts should embrace open-mindedness and consider a broader range of factors when evaluating new ideas</strong>:
-<ul>
-<li>It’s more challenging to deeply consider an idea’s potential than to rely on simple heuristics.</li>
-<li>However, this effort is crucial for fostering innovation and progress in AI research.</li>
-</ul></li>
-<li><strong>Science cannot rely on a fixed method for discovering great ideas</strong>:
-<ul>
-<li>The most significant advancements often come from unexpected sources and don’t necessarily follow predictable paths.</li>
-<li>Open-mindedness and a willingness to explore unconventional ideas are essential for scientific progress.</li>
-</ul></li>
-<li><strong>Conclusion</strong>:
-<ul>
-<li>The AI community, and scientific communities in general, should move beyond rigid objective heuristics and embrace a more open-minded approach to evaluating new ideas, focusing on their potential to inspire further creativity and lead to unforeseen discoveries.<br>
-</li>
-<li>This shift requires trusting experts to use their judgment and considering a broader range of factors beyond performance and guarantees, ultimately fostering a more fruitful and innovative scientific landscape.</li>
-</ul></li>
-</ul>
-<hr>
-<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-About Me:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>I’m Christian Mills, a deep learning consultant specializing in practical AI implementations. I help clients leverage cutting-edge AI technologies to solve real-world problems.</p>
-<p>Interested in working together? Fill out my <a href="https://docs.google.com/forms/d/e/1FAIpQLScKDKPJF9Be47LA3nrEDXTVpzH2UMLz8SzHMHM9hWT5qlvjkw/viewform?usp=sf_link">Quick AI Project Assessment</a> form or learn more <a href="../../about.html">about me</a>.</p>
-</div>
-</div>
-
-
-</section>
-</section>
-
- ]]></description>
-  <category>book</category>
-  <category>notes</category>
-  <category>personal-growth</category>
-  <category>professional-growth</category>
-  <category>ai</category>
-  <guid>https://christianjmills.com/posts/why-greatness-cannot-be-planned-book-notes/</guid>
-  <pubDate>Sun, 01 Sep 2024 07:00:00 GMT</pubDate>
   <media:content url="https://christianjmills.com/images/empty.gif" medium="image" type="image/gif"/>
 </item>
 </channel>

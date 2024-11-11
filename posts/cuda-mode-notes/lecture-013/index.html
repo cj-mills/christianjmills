@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-11-11">
+<meta name="description" content="Lecture #13 explores ring attention, a distributed computing technique for training long-context transformers, discussing its motivation and underlying mechanisms.">
+
+<title>GPU MODE Lecture 13: Ring Attention – Christian Mills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-2486e1f0a3ee9ee1fc393803a1361cdb.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-6561bbde787c299e21493071c8edc6ff.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-89d229de977f041b86c4df3322a16784.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script src="../../../site_libs/quarto-contrib/videojs/video.min.js"></script>
+<link href="../../../site_libs/quarto-contrib/videojs/video-js.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="GPU MODE Lecture 13: Ring Attention – Christian Mills">
+<meta property="og:description" content="Lecture #13 explores ring attention, a distributed computing technique for training long-context transformers, discussing its motivation and underlying mechanisms.">
+<meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta property="og:site_name" content="Christian Mills">
+<meta property="og:image:height" content="284">
+<meta property="og:image:width" content="526">
+<meta name="twitter:title" content="GPU MODE Lecture 13: Ring Attention – Christian Mills">
+<meta name="twitter:description" content="Lecture #13 explores ring attention, a distributed computing technique for training long-context transformers, discussing its motivation and underlying mechanisms.">
+<meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="284">
+<meta name="twitter:image-width" content="526">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction-and-overview" id="toc-introduction-and-overview" class="nav-link active" data-scroll-target="#introduction-and-overview">Introduction and Overview</a></li>
+  <li><a href="#motivation-long-context-transformers-and-applications" id="toc-motivation-long-context-transformers-and-applications" class="nav-link" data-scroll-target="#motivation-long-context-transformers-and-applications">Motivation: Long Context Transformers and Applications</a></li>
+  <li><a href="#background-multimodal-input-and-transformers" id="toc-background-multimodal-input-and-transformers" class="nav-link" data-scroll-target="#background-multimodal-input-and-transformers">Background: Multimodal Input and Transformers</a></li>
+  <li><a href="#challenge-memory-limitations" id="toc-challenge-memory-limitations" class="nav-link" data-scroll-target="#challenge-memory-limitations">Challenge: Memory Limitations</a></li>
+  <li><a href="#vanilla-attention-recap" id="toc-vanilla-attention-recap" class="nav-link" data-scroll-target="#vanilla-attention-recap">Vanilla Attention Recap</a></li>
+  <li><a href="#compute-scaling-with-context-length" id="toc-compute-scaling-with-context-length" class="nav-link" data-scroll-target="#compute-scaling-with-context-length">Compute Scaling with Context Length</a></li>
+  <li><a href="#online-softmax-and-logsumexp-trick" id="toc-online-softmax-and-logsumexp-trick" class="nav-link" data-scroll-target="#online-softmax-and-logsumexp-trick">Online Softmax and LogSumExp Trick</a></li>
+  <li><a href="#ring-attention-details" id="toc-ring-attention-details" class="nav-link" data-scroll-target="#ring-attention-details">Ring Attention Details</a></li>
+  <li><a href="#causal-masking-and-stripe-attention" id="toc-causal-masking-and-stripe-attention" class="nav-link" data-scroll-target="#causal-masking-and-stripe-attention">Causal Masking and Stripe Attention</a></li>
+  <li><a href="#flash-decoding" id="toc-flash-decoding" class="nav-link" data-scroll-target="#flash-decoding">Flash Decoding</a></li>
+  <li><a href="#history-and-resources" id="toc-history-and-resources" class="nav-link" data-scroll-target="#history-and-resources">History and Resources</a></li>
+  <li><a href="#qa" id="toc-qa" class="nav-link" data-scroll-target="#qa">Q&amp;A</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">GPU MODE Lecture 13: Ring Attention</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #13 explores ring attention, a distributed computing technique for training long-context transformers, discussing its motivation and underlying mechanisms.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 11, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>GPU MODE Lecture Notes</strong></a>: My notes from the <strong>GPU MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction-and-overview">Introduction and Overview</a></li>
+<li><a href="#motivation-long-context-transformers-and-applications">Motivation: Long Context Transformers and Applications</a></li>
+<li><a href="#background-multimodal-input-and-transformers">Background: Multimodal Input and Transformers</a></li>
+<li><a href="#challenge-memory-limitations">Challenge: Memory Limitations</a></li>
+<li><a href="#vanilla-attention-recap">Vanilla Attention Recap</a></li>
+<li><a href="#compute-scaling-with-context-length">Compute Scaling with Context Length</a></li>
+<li><a href="#online-softmax-and-logsumexp-trick">Online Softmax and LogSumExp Trick</a></li>
+<li><a href="#ring-attention-details">Ring Attention Details</a></li>
+<li><a href="#causal-masking-and-stripe-attention">Causal Masking and Stripe Attention</a></li>
+<li><a href="#flash-decoding">Flash Decoding</a></li>
+<li><a href="#history-and-resources">History and Resources</a></li>
+<li><a href="#qa">Q&amp;A</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=ws7angQYIxI">Lecture 13: Ring Attention</a></li>
+<li><strong>Slides:</strong> <a href="https://docs.google.com/presentation/d/180lS8XbeR1_bTMaldg21LKYQkjXftHuh9VnZ3xk27qQ/edit#slide=id.p">Ring Attention - Sequence Parallel Attention Across Devices</a></li>
+<li><strong>Code:</strong>
+<ul>
+<li><a href="https://github.com/gpu-mode/lectures/blob/main/lecture_013/howto_log_sum_exp.ipynb">lecture_013/howto_log_sum_exp.ipynb</a></li>
+<li><a href="https://github.com/gpu-mode/ring-attention">gpu-mode/ring-attention</a></li>
+</ul></li>
+</ul>
+</div>
+</div>
+<section id="introduction-and-overview" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-and-overview">Introduction and Overview</h2>
+<ul>
+<li><strong>Speaker</strong>: Andreas Kopf, co-founder of the CUDA/GPU Mode Discord server, AI engineer at <a href="https://aleph-alpha.com/">Aleph Alpha</a>.</li>
+<li><strong>Lecture Date:</strong> April 6, 2024</li>
+<li><strong>Topic</strong>: Ring Attention, a method for sequence parallel attention across multiple devices.</li>
+<li><strong>Focus</strong>: High-level orchestration of multiple GPUs, rather than individual GPU utilization.</li>
+</ul>
+</section>
+<section id="motivation-long-context-transformers-and-applications" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-long-context-transformers-and-applications">Motivation: Long Context Transformers and Applications</h2>
+<ul>
+<li><strong>Long Context LLMs</strong>: Models like Gemini (1 million token context, up to 10 million in research) enable processing of extremely long inputs.</li>
+<li><strong>Comparison of Models</strong>:
+<ul>
+<li><strong><a href="https://deepmind.google/technologies/gemini/pro/">Gemini 1.5 Pro</a></strong>: ~1 million tokens (now 2 million tokens)</li>
+<li><strong><a href="https://github.com/LargeWorldModel/LWM">Large World Model (LWM)</a></strong>: ~1 million tokens</li>
+<li><strong><a href="https://huggingface.co/NousResearch/Yarn-Mistral-7b-128k">Yarn-Mistral</a></strong>: 128k tokens</li>
+<li><strong><a href="https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo">GPT-4 Turbo</a>/<a href="https://www.databricks.com/blog/introducing-dbrx-new-state-art-open-llm">DBRX</a></strong>: 128k tokens</li>
+<li><strong><a href="https://huggingface.co/mosaicml/mpt-7b">MPT</a> (<a href="https://arxiv.org/abs/2108.12409">Alibi Linear Bias Attention</a>)</strong>: 65k tokens</li>
+<li><strong><a href="https://huggingface.co/xai-org/grok-1">xAI GROK-1</a></strong>: 8k tokens</li>
+</ul></li>
+<li><strong>New Capabilities</strong>:
+<ul>
+<li>Processing books, long documents, web content, chat histories, complete code bases, high-resolution images, audio recordings, and videos.</li>
+<li>Videos and text descriptions provide complementary information for world modeling.</li>
+<li>Improved future prediction and world simulation.</li>
+</ul></li>
+<li><strong>Example (<a href="https://largeworldmodel.github.io/lwm/">LWM</a>)</strong>: Video Question Answering on a one-hour video with multiple embedded videos. LWM correctly answered a question about the number of lemons in a person’s car, referencing a specific frame.
+<ul>
+<li>This example demonstrates improved capabilities, though acknowledged to be somewhat cherry-picked.</li>
+</ul></li>
+<li><strong>Open Question (Unanswered)</strong>: How Claude, Gemini, and GPT-4 support long context lengths remains undisclosed.
+<ul>
+<li>Andreas suggests it may not be ring attention due to high inference costs, especially for extremely long sequences like 10 million tokens.</li>
+</ul></li>
+</ul>
+</section>
+<section id="background-multimodal-input-and-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="background-multimodal-input-and-transformers">Background: Multimodal Input and Transformers</h2>
+<ul>
+<li><strong>Transformer Architecture</strong>: Multi-headed attention and feedforward network in multiple layers.</li>
+<li><strong>Multimodal Input Encoding</strong>:
+<ul>
+<li><strong>Vision Transformers</strong>: Direct linear projection of images into token dimensions.</li>
+<li><strong>LLaVA</strong>: Vision encoder converts images into tokens, combined with language queries and autoregressive answer generation.</li>
+<li><strong>LWM</strong>: VQGAN encodes 256x256 images into 144 tokens, allowing for video processing and next-text token prediction.</li>
+</ul></li>
+<li><strong>Multimodal Applications</strong>: Text, image, and video as individual or combined inputs and outputs, including text-to-image, text-to-video, image-to-text, video-to-text, and image-text combinations.
+<ul>
+<li><strong><a href="https://huggingface.co/papers/2207.12598">Classifier-Free Guidance</a></strong>: Used in LWM to steer autoregressive generation and produce images as output.</li>
+</ul></li>
+</ul>
+</section>
+<section id="challenge-memory-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="challenge-memory-limitations">Challenge: Memory Limitations</h2>
+<ul>
+<li><strong>Memory Requirements</strong>: A 100 million token sequence with a hidden size of 1024 requires over 1000 gigabytes of memory, even with a batch size of one. This highlights the need to store inputs, outputs, and gradients, even with online computation of the score matrix and softmax.</li>
+<li><strong>High-End GPU Memory</strong>:
+<ul>
+<li><a href="https://www.nvidia.com/en-us/data-center/h200/">NVIDIA H200</a>: 141 GB</li>
+<li><a href="https://www.amd.com/en/products/accelerators/instinct/mi300.html">AMD MI300X</a>: 192 GB</li>
+<li><a href="https://www.nvidia.com/en-us/data-center/gb200-nvl2/">NVIDIA GB200</a>: 288 GB up to 960GB</li>
+</ul></li>
+<li><strong>Alternative Approaches</strong>:
+<ul>
+<li>Approximation: (e.g., Sparse, LoRA)</li>
+<li>RAG/Vector-DBs (Approximate Nearest Neighbor Search, Locality Sensitive Hashing)</li>
+<li>Brute-force compute (tiling, blockwise)</li>
+</ul></li>
+<li><strong>Ring Attention Approach</strong>: Brute-force computation of all attention scores, but with memory optimizations to avoid quadratic memory scaling.</li>
+</ul>
+</section>
+<section id="vanilla-attention-recap" class="level2">
+<h2 class="anchored" data-anchor-id="vanilla-attention-recap">Vanilla Attention Recap</h2>
+<ul>
+<li><p><strong>Process</strong>: Two matrix multiplications: (1) Query x Transposed Keys = Attention Scores; (2) Softmax(Attention Scores) x Values = Output.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/vanilla-attention-slide-8.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 8: Vanilla Attention</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Parallel Computation Potential</strong>: Each query’s output can be computed independently, though typically done in batches for efficiency. Individual query processing is a potential memory optimization, though quadratic attention scaling remains a problem.</p></li>
+</ul>
+</section>
+<section id="compute-scaling-with-context-length" class="level2">
+<h2 class="anchored" data-anchor-id="compute-scaling-with-context-length">Compute Scaling with Context Length</h2>
+<ul>
+<li><p><strong>Formula for FLOPs</strong> (from the <a href="https://arxiv.org/abs/2310.01889">Ring Attention paper</a> appendix): <span class="math display">\[
+24 \cdot \text{sequence\_length} \cdot \text{hidden\_size}^2 + 4 \cdot \text{sequence\_length}^2 \cdot \text{hidden\_size}
+\]</span></p></li>
+<li><p><strong>Surprising Result</strong>: Increasing context length has a less dramatic impact on compute than expected, especially for larger models.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/ring-attention-figure-5.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://arxiv.org/abs/2310.01889">Ring Attention Paper</a>: Figure 5</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Example:</strong> Training a 65B parameter model with 256k context length (64x increase) requires only 5.8x the compute compared to 4k context length.
+<ul>
+<li>This is partly due to requiring fewer batches.<br>
+</li>
+<li>However, quadratic scaling still dominates at extremely long context lengths (e.g., 100 million tokens).</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="online-softmax-and-logsumexp-trick" class="level2">
+<h2 class="anchored" data-anchor-id="online-softmax-and-logsumexp-trick">Online Softmax and LogSumExp Trick</h2>
+<ul>
+<li><p><strong>Softmax Formula</strong>:<br>
+<span class="math display">\[
+s(x_i) = \frac{e^{x_i}}{\sum_{j=1}^n e^{x_j}}
+\]</span></p></li>
+<li><p><strong>Challenge</strong>: The denominator requires the sum of all exponentiated elements, hindering blockwise computation.</p></li>
+<li><p><strong>Naive Softmax Implementation (Python)</strong>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> naive_softmax(x: torch.Tensor) <span class="op">-&gt;</span> torch.Tensor:</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x.exp() <span class="op">/</span> x.exp().<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">10</span>)  <span class="co"># generate normally distributed random numbers</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> torch.softmax(x, dim<span class="op">=-</span><span class="dv">1</span>) <span class="co"># reference output</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> naive_softmax(x) <span class="co"># our naive version</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"a"</span>, a)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"b"</span>, b)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"allclose"</span>, torch.allclose(a, b, atol<span class="op">=</span><span class="fl">1e-6</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>a tensor([0.1022, 0.1295, 0.0292, 0.0882, 0.0455, 0.1041, 0.1491, 0.1286, 0.1785,
+        0.0451])
+b tensor([0.1022, 0.1295, 0.0292, 0.0882, 0.0455, 0.1041, 0.1491, 0.1286, 0.1785,
+        0.0451])
+allclose True</code></pre></li>
+<li><p><strong>Instability of Naive Softmax</strong>: Scaling input by large values leads to NaN values.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>naive_softmax(x <span class="op">*</span> <span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([0., 0., 0., 0., 0., nan, nan, 0., 0., 0.])</code></pre></li>
+<li><p><strong>Blockwise Computation Goal</strong>: Compute softmax on chunks (blocks) of the input and combine the results to match the full softmax output.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">10</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>x1,x2 <span class="op">=</span> torch.chunk(x, <span class="dv">2</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>s1 <span class="op">=</span> naive_softmax(x1)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>s2 <span class="op">=</span> naive_softmax(x2)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"We have:"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"s1 = </span><span class="sc">{</span>s1<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"s2 = </span><span class="sc">{</span>s2<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> naive_softmax(x)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"We want:"</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"target = </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>We have:</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>s1 <span class="op">=</span> tensor([<span class="fl">0.1187</span>, <span class="fl">0.0524</span>, <span class="fl">0.4145</span>, <span class="fl">0.0082</span>, <span class="fl">0.4062</span>])</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>s2 <span class="op">=</span> tensor([<span class="fl">0.2311</span>, <span class="fl">0.2720</span>, <span class="fl">0.2980</span>, <span class="fl">0.0114</span>, <span class="fl">0.1874</span>])</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>We want:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> tensor([<span class="fl">0.0879</span>, <span class="fl">0.0388</span>, <span class="fl">0.3070</span>, <span class="fl">0.0061</span>, <span class="fl">0.3008</span>, <span class="fl">0.0600</span>, <span class="fl">0.0706</span>, <span class="fl">0.0773</span>, <span class="fl">0.0030</span>, <span class="fl">0.0486</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<li><p><strong>Correction Factor</strong>: Multiplying intermediate softmax outputs by the full sum of exponentiated values (sum_exp) allows reconstruction of the target softmax.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>sum_exp_x1 <span class="op">=</span> x1.exp().<span class="bu">sum</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>sum_exp_x2 <span class="op">=</span> x2.exp().<span class="bu">sum</span>()</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>s1_corrected <span class="op">=</span> s1 <span class="op">*</span> sum_exp_x1 <span class="op">/</span> (sum_exp_x1 <span class="op">+</span> sum_exp_x2)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>s2_corrected <span class="op">=</span> s2 <span class="op">*</span> sum_exp_x2 <span class="op">/</span> (sum_exp_x1 <span class="op">+</span> sum_exp_x2)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"After correction with help of sum_exp values:"</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>s_combined <span class="op">=</span> torch.cat([s1_corrected, s2_corrected])</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"s_combined"</span>, s_combined)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"allclose(s_combined, target):"</span>, torch.allclose(s_combined, target))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>After correction with help of sum_exp values:
+s_combined tensor([0.0879, 0.0388, 0.3070, 0.0061, 0.3008, 0.0600, 0.0706, 0.0773, 0.0030, 0.0486])
+allclose(s_combined, target): True</code></pre></li>
+<li><p><strong>Stable Softmax Implementation (Python)</strong>:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> stable_softmax2(x):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""returns softmax result and log sum exp"""</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    m <span class="op">=</span> x.<span class="bu">max</span>()</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> (x <span class="op">-</span> m).exp()</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    b <span class="op">=</span> a.<span class="bu">sum</span>()</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    lse <span class="op">=</span> m <span class="op">+</span> torch.log(b)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> a <span class="op">/</span> b, lse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>Shift Invariance</strong>: Softmax is invariant to adding or subtracting a constant value.</li>
+<li><strong>Stabilization Technique</strong>: Subtract the maximum input value from all inputs, ensuring all values are &lt;= 0 before exponentiation.</li>
+<li><strong>Returning Log Sum Exp</strong>: Return the logarithm of the sum of exponentiated values, corrected for the subtracted maximum, for numerical stability.</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">20</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> torch.softmax(x, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>x1, x2 <span class="op">=</span> x.chunk(<span class="dv">2</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>b1, lse1 <span class="op">=</span> stable_softmax2(x1)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>b2, lse2 <span class="op">=</span> stable_softmax2(x2)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>c1 <span class="op">=</span> b1 <span class="op">*</span> torch.exp(lse1) <span class="op">/</span> (torch.exp(lse1) <span class="op">+</span> torch.exp(lse2))</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>c2 <span class="op">=</span> b2 <span class="op">*</span> torch.exp(lse2) <span class="op">/</span> (torch.exp(lse1) <span class="op">+</span> torch.exp(lse2))</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(a)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(torch.cat([c1, c2]), torch.allclose(a, torch.cat([c1, c2])))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035])
+tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035]) True</code></pre></li>
+<li><p><strong>Combining Blocks in Log Space</strong>: Using the formula <code>1 / (1 + B/A)</code> (equivalent to <code>A / (A + B)</code>), blocks can be combined in log space, avoiding exponentiation and improving numerical stability.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="op">=</span> b1 <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> torch.exp(lse2 <span class="op">-</span> lse1))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>d2 <span class="op">=</span> b2 <span class="op">/</span> (<span class="dv">1</span> <span class="op">+</span> torch.exp(lse1 <span class="op">-</span> lse2))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(a)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(torch.cat([d1, d2]))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"allclose: "</span>, torch.allclose(a, torch.cat([d1, d2])))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035])
+tensor([0.0282, 0.0414, 0.1438, 0.0472, 0.0405, 0.0106, 0.1492, 0.0036, 0.0155,
+        0.0238, 0.1013, 0.0547, 0.0169, 0.0209, 0.0151, 0.0770, 0.0067, 0.0551,
+        0.0449, 0.1035])
+allclose:  True</code></pre>
+<ul>
+<li><p>This formula is used directly in the <a href="https://github.com/zhuzilin/ring-flash-attention/blob/55ff66fd35f329dfcc24ce7a448bfdd532865966/ring_flash_attn/utils.py#L10-L24">ring attention code</a>.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _update_out_and_lse(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    out: torch.Tensor,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    lse: torch.Tensor,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    block_out: torch.Tensor,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    block_lse: torch.Tensor,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[torch.Tensor, torch.Tensor]:</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    block_out <span class="op">=</span> block_out.to(torch.float32)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    block_lse <span class="op">=</span> block_lse.transpose(<span class="op">-</span><span class="dv">2</span>, <span class="op">-</span><span class="dv">1</span>).unsqueeze(dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    new_lse <span class="op">=</span> lse <span class="op">+</span> torch.log(<span class="dv">1</span> <span class="op">+</span> torch.exp(block_lse <span class="op">-</span> lse))</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    out <span class="op">=</span> torch.exp(lse <span class="op">-</span> new_lse) <span class="op">*</span> out <span class="op">+</span> torch.exp(block_lse <span class="op">-</span> new_lse) <span class="op">*</span> block_out</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    lse <span class="op">=</span> new_lse</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out, lse</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p><strong>Application to Value Projections</strong>: The same log-sum-exp trick can be applied to value projections and accumulated value projections, enabling efficient blockwise computation in flash and ring attention.</p></li>
+<li><p><strong>Visualization</strong>: Animation illustrates the blockwise computation process. (<a href="https://x.com/fvsmassa/status/1580229170629849089">Source</a>)</p>
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" class="video-js vjs-default-skin vjs-fluid" controls="" preload="auto" data-setup="{}" title=""><source src="./videos/memory-efficient-attention-computation-in-xformers.mp4"></video></div>
+<ul>
+<li>Queries are processed against blocks of keys, intermediate outputs are generated, and these outputs are combined using the log-sum-exp trick to produce the final output.</li>
+</ul></li>
+</ul>
+</section>
+<section id="ring-attention-details" class="level2">
+<h2 class="anchored" data-anchor-id="ring-attention-details">Ring Attention Details</h2>
+<ul>
+<li><p><strong>Paper:</strong> <a href="https://arxiv.org/abs/2310.01889">Ring Attention with Blockwise Transformers for Near-Infinite Context</a></p></li>
+<li><p><strong>Open-source implementation:</strong> <a href="https://github.com/zhuzilin/ring-flash-attention/tree/main">zhuzilin/ring-flash-attention</a></p></li>
+<li><p><strong>Sequence Parallelism</strong>: Distributing the input sequence across multiple devices, with each device processing a portion of the sequence.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/sequence-parallelism-figure-1.png" class="img-fluid figure-img"></p>
+<figcaption><a href="https://arxiv.org/abs/2105.13120">Sequence Parallelism Paper</a>: Figure 1</figcaption>
+</figure>
+</div>
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2105.13120">Sequence Parallelism: Long Sequence Training from System Perspective</a></li>
+<li><strong>Other Parallelism Forms</strong>: Data parallelism, tensor parallelism, pipeline parallelism.</li>
+</ul></li>
+<li><p><strong>Ring Attention Concept</strong>: Blockwise computation across multiple devices, similar to flash attention but at a higher level.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/ring-attention-slide-21.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 21: Ring Attention</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Process</strong>:</p>
+<ol type="1">
+<li><strong>Data Distribution</strong>: Queries, keys, and values are split across N devices (forming a ring).</li>
+<li><strong>Key-Value Exchange</strong>: Keys and values are circulated around the ring, with each device receiving blocks from its predecessor and sending blocks to its successor.</li>
+<li><strong>Computation</strong>: Each device performs attention (e.g., flash attention) on its local queries and the received key-value blocks.</li>
+<li><strong>Iteration</strong>: This process repeats N-1 times, ensuring each device sees all key-value blocks.</li>
+<li><strong>Output Combination</strong>: Each device computes the output for its local queries, and these outputs are then combined (method not fully detailed in this section).</li>
+</ol></li>
+<li><p><strong>Benefit</strong>: Allows scaling memory by the number of GPUs, with communication overhead amortized for sufficiently long sequences.</p>
+<ul>
+<li>The paper suggests a sequence length of approximately 6000 for effective amortization, though this depends on transfer speed.</li>
+</ul></li>
+<li><p><strong>Pseudocode:</strong></p>
+<p><strong>Required</strong>: Input sequence <span class="math inline">\(x\)</span>. Number of hosts <span class="math inline">\(N_h\)</span>.</p>
+<ol type="1">
+<li><strong>Initialize</strong></li>
+<li>Split input sequence into <span class="math inline">\(N_h\)</span> blocks such that each host has one input block.</li>
+<li>Compute query, key, and value for its input block on each host.</li>
+<li><strong>For each transformer layer</strong> do:
+<ol type="1">
+<li><strong>For <span class="math inline">\(\text{count} = 1\)</span> to <span class="math inline">\(N_h - 1\)</span></strong> do:
+<ol type="1">
+<li><strong>For each host concurrently</strong>, do:
+<ul>
+<li>Compute memory efficient attention incrementally using local query, key, value blocks.</li>
+<li>Send key and value blocks to next host and receive key and value blocks from previous host.</li>
+</ul></li>
+<li><strong>End for</strong></li>
+</ol></li>
+<li><strong>End for</strong></li>
+<li><strong>For each host concurrently</strong>, do:
+<ol type="1">
+<li>Compute memory efficient feedforward using local attention output.</li>
+</ol></li>
+<li><strong>End for</strong></li>
+</ol></li>
+<li><strong>End for</strong></li>
+</ol></li>
+</ul>
+</section>
+<section id="causal-masking-and-stripe-attention" class="level2">
+<h2 class="anchored" data-anchor-id="causal-masking-and-stripe-attention">Causal Masking and Stripe Attention</h2>
+<ul>
+<li><p><strong>Causal Masking</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/causal-masking-slide-23.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 23: Causal Masking</figcaption>
+</figure>
+</div>
+<ul>
+<li>Prevents tokens from attending to future tokens during autoregressive decoding.</li>
+<li>Achieved by setting attention scores for future tokens to minus infinity before softmax.</li>
+</ul></li>
+<li><p><strong>Causal Masking in Ring Attention</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/ring-attention-problem-slide-24.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 24: Ring Attention Problem</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/ring-attention-problem-slide-25.png" class="img-fluid figure-img"></p>
+<figcaption>Slide 25: Ring Attention Problem</figcaption>
+</figure>
+</div>
+<ul>
+<li>Naive implementation leads to idle nodes, as some devices finish computation early due to masking, while others are still working.<br>
+</li>
+<li>The slowest node determines the overall speed.</li>
+</ul></li>
+<li><p><strong>Stripe Attention Solution</strong>: Reorders queries, keys, and values to distribute work more evenly, minimizing idle time.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/striped-attention-slide-26.png" class="img-fluid figure-img"></p>
+<figcaption>Slide-26: Striped Attention</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/striped-attention-slide-27.png" class="img-fluid figure-img"></p>
+<figcaption>Slide-27: Striped Attention</figcaption>
+</figure>
+</div></li>
+<li><p><strong>Permutation Pattern</strong>: Andreas describes a specific pattern that assigns specific token indices to each device.</p></li>
+<li><p><strong>Post-Processing</strong>: Requires undoing the permutation to reconstruct the original output sequence.</p></li>
+<li><p><strong>Benefits of Stripe Attention</strong>: Even distribution of work and data, allowing more efficient use of all devices. By dropping the first query and last key, standard causal masking and flash attention can be used within the stripe attention framework.</p></li>
+</ul>
+</section>
+<section id="flash-decoding" class="level2">
+<h2 class="anchored" data-anchor-id="flash-decoding">Flash Decoding</h2>
+<ul>
+<li><p><strong>Webpage:</strong> <a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Flash-Decoding for long-context inference</a></p></li>
+<li><p><strong>Motivation</strong>: Flash attention and ring attention are not optimized for token-by-token inference in long contexts, as they are designed for larger query sets.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flash-decoding-slide-28.gif" class="img-fluid figure-img"></p>
+<figcaption><a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Stanford CRFM Blog: Multi-head attention for decoding</a></figcaption>
+</figure>
+</div></li>
+<li><p><strong>Flash Decoding Approach</strong>: Sends queries to all devices, computes blockwise attention and value projections locally, and then uses a reduction step to combine the results.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/flash-decoding-slide-29.gif" class="img-fluid figure-img"></p>
+<figcaption><a href="https://crfm.stanford.edu/2023/10/12/flashdecoding.html">Stanford CRFM Blog: Flash Decoding</a></figcaption>
+</figure>
+</div>
+<ul>
+<li>Developed by Tri Dao, Daniel Haziza, Francisco Massa, and Grigory Sizov.</li>
+</ul></li>
+<li><p><strong>Benefits</strong>: Leverages compute of all devices, potentially achieving up to N times speedup with N devices.</p></li>
+<li><p><strong>Open Questions</strong>:</p>
+<ul>
+<li>Performance impact of the reduction step.</li>
+<li>How keys and values are reorganized during token-by-token generation.</li>
+</ul></li>
+<li><p><strong>Implementation</strong>: Andreas hasn’t found a production-ready implementation (might be in <a href="https://github.com/facebookresearch/xformers">xformers</a>).</p></li>
+</ul>
+</section>
+<section id="history-and-resources" class="level2">
+<h2 class="anchored" data-anchor-id="history-and-resources">History and Resources</h2>
+<ul>
+<li><strong>Paper History</strong>:
+<ul>
+<li><strong>Flash Attention</strong>: Foundation for memory-efficient attention.
+<ul>
+<li>May 2022, Tri Dao et al: <a href="https://arxiv.org/abs/2205.14135">FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness</a></li>
+</ul></li>
+<li><strong>Blockwise Parallel Transformer</strong>: Early work leading to ring attention.
+<ul>
+<li>Aug 2023 Hao Liu et al: <a href="https://arxiv.org/abs/2305.19370">Blockwise Parallel Transformer for Large Context Models</a></li>
+</ul></li>
+<li><strong>Ring Attention with Blockwise Transformers</strong>: Refinement of the initial concept.
+<ul>
+<li>Nov 2023, Hao Liu et al: <a href="https://arxiv.org/abs/2310.01889">Ring Attention with Blockwise Transformers for Near-Infinite Context</a></li>
+</ul></li>
+<li><strong>Stripe Attention</strong>: Addressing causal masking challenges in ring attention.
+<ul>
+<li>Nov 2023, Brandon et al: <a href="https://arxiv.org/abs/2311.09431">Striped Attention: Faster Ring Attention for Causal Transformers</a></li>
+</ul></li>
+<li><strong>Large World Models on Medium Length Video Language</strong>: Combining ring attention and stripe attention for long context video processing.
+<ul>
+<li>Feb 2024, Hao Liu et al: <a href="https://arxiv.org/abs/2402.08268">World Models on Million-Length Video and Language With RingAttention</a></li>
+</ul></li>
+</ul></li>
+<li><strong>Code Repositories</strong>:
+<ul>
+<li><strong><a href="https://github.com/zhuzilin">Zilin Zhu</a>’s Ring Flash Attention</strong>: <a href="https://github.com/zhuzilin/ring-flash-attention">zhuzilin/ring-flash-attention</a></li>
+<li><strong>GPU Mode Implementation</strong>: <a href="https://github.com/gpu-mode/ring-attention">gpu-mode/ring-attention</a></li>
+</ul></li>
+<li><strong>Other Resources</strong>: <a href="https://github.com/gpu-mode/lectures/blob/main/lecture_013/howto_log_sum_exp.ipynb">Andreas’ “LogSumExp” IPython notebook</a></li>
+</ul>
+</section>
+<section id="qa" class="level2">
+<h2 class="anchored" data-anchor-id="qa">Q&amp;A</h2>
+<ul>
+<li><strong>Flash Decoding vs.&nbsp;Speculative Decoding</strong>:
+<ul>
+<li><strong>Flash Decoding</strong>: Optimizes inference for a single model.</li>
+<li><strong>Speculative Decoding</strong>: Uses a smaller “drafting” model to propose outputs, verified by a larger model. Orthogonal techniques and can be used together.</li>
+</ul></li>
+<li><strong>Ring Attention on Consumer GPUs (PCIe)</strong>:
+<ul>
+<li>Feasible, even with consumer GPUs like the A5000 or RTX 3090, especially with NVLink.</li>
+<li>Allows doubling memory for a single sequence across two GPUs.<br>
+</li>
+<li>However, consumer GPUs generally do not support peer-to-peer (P2P) communication over PCIe.</li>
+</ul></li>
+<li><strong>Shared Memory for Sequence Parallelism</strong>:
+<ul>
+<li>Not strictly required.</li>
+<li>Sequence parallelism operates at a higher level than shared memory within individual GPUs.</li>
+<li>Shared memory benefits flash attention within each device, but sequence parallelism handles distribution across devices.</li>
+</ul></li>
+<li><strong>Gemini’s Approach</strong>: Unknown. Andreas suggests it may not be ring attention due to scaling challenges.</li>
+<li><strong>Ring Attention in Inference</strong>:
+<ul>
+<li>Primarily a training technique.</li>
+<li>The LWM paper describes an optimized inference version, but details are unclear.<br>
+</li>
+<li>Flash decoding seems more suitable for token-by-token inference.</li>
+</ul></li>
+<li><strong>Batch Size One Inference (Memory Bound)</strong>:
+<ul>
+<li>Batch size one leads to matrix-vector multiplications, which are memory bandwidth bound.</li>
+<li>Production deployments often use larger batch sizes to improve throughput and efficiency.</li>
+<li>Batch size one is common in local or resource-constrained deployments, but it’s not optimal.</li>
+<li>The “two stages” of inference (prompt processing and token-by-token generation) have different memory and compute characteristics.</li>
+</ul></li>
+<li><strong>Flash Decoding as MapReduce</strong>: Analogy holds, with queries duplicated (mapped) to all devices and results combined (reduced).</li>
+<li><strong>Why LLMs Are Memory Bound in Inference</strong>: Token-by-token generation requires accessing previous token outputs (key-value cache), leading to memory bandwidth limitations.</li>
+<li><strong>On-Premise vs.&nbsp;Cloud Deployments</strong>:
+<ul>
+<li>Cloud deployments often have larger batch sizes due to higher throughput requirements.</li>
+<li>On-premise deployments may face batch size one scenarios more frequently, impacting cost-effectiveness of high-end GPUs.</li>
+<li>The business case and specific requirements (privacy, cost, latency) determine the optimal deployment strategy.</li>
+</ul></li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’m Christian Mills, a deep learning consultant specializing in practical AI implementations. I help clients leverage cutting-edge AI technologies to solve real-world problems.</p>
+<p>Interested in working together? Fill out my <a href="https://docs.google.com/forms/d/e/1FAIpQLScKDKPJF9Be47LA3nrEDXTVpzH2UMLz8SzHMHM9hWT5qlvjkw/viewform?usp=sf_link">Quick AI Project Assessment</a> form or learn more <a href="../../../about.html">about me</a>.</p>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+<script>videojs(video_shortcode_videojs_video1);</script>
+
+
+
+
+</body></html>
