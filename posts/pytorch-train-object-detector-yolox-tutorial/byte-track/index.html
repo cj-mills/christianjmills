@@ -959,76 +959,77 @@ Frames:
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>tracker <span class="op">=</span> BYTETracker(track_thresh<span class="op">=</span><span class="fl">0.25</span>, track_buffer<span class="op">=</span><span class="dv">30</span>, match_thresh<span class="op">=</span><span class="fl">0.8</span>, frame_rate<span class="op">=</span>frame_fps)</span>
 <span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> tqdm(total<span class="op">=</span>frames, desc<span class="op">=</span><span class="st">"Processing frames"</span>) <span class="im">as</span> pbar:</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> video_capture.isOpened():</span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>        ret, frame <span class="op">=</span> video_capture.read()</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ret:</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Prepare an input image for inference</span></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>            rgb_img, input_dims, offsets, min_img_scale, input_img <span class="op">=</span> prepare_image_for_inference(frame, test_sz, max_stride)</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>                        </span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert the existing input image to NumPy format</span></span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>            input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Start performance counter</span></span>
-<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>            start_time <span class="op">=</span> time.perf_counter()</span>
-<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>                        </span>
-<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Run inference</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Iterate through each frame in the video</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> video_capture.isOpened():</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>        ret, frame <span class="op">=</span> video_capture.read()</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> ret:</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>            start_time <span class="op">=</span> time.perf_counter()</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Prepare the input image for inference</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>            rgb_img, input_dims, offsets, min_img_scale, input_img <span class="op">=</span> prepare_image_for_inference(frame, test_sz, max_stride)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert the input image to NumPy format for the model</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>            input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>                            </span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Run inference using the ONNX session</span></span>
 <span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>            outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
-<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Process the model output</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Process the model output to get object proposals</span></span>
 <span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>            proposals <span class="op">=</span> process_outputs(outputs, input_tensor_np.shape[input_dim_slice], bbox_conf_thresh)</span>
 <span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Apply non-max suppression to the proposals with the specified threshold</span></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Apply non-max suppression to filter overlapping proposals</span></span>
 <span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>            proposal_indices <span class="op">=</span> nms_sorted_boxes(calc_iou(proposals[:, :<span class="op">-</span><span class="dv">2</span>]), iou_thresh)</span>
 <span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>            proposals <span class="op">=</span> proposals[proposal_indices]</span>
 <span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>            bbox_list <span class="op">=</span> (proposals[:,:<span class="dv">4</span>]<span class="op">+</span>[<span class="op">*</span>offsets, <span class="dv">0</span>, <span class="dv">0</span>])<span class="op">*</span>min_img_scale</span>
-<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>            label_list <span class="op">=</span> [class_names[<span class="bu">int</span>(idx)] <span class="cf">for</span> idx <span class="kw">in</span> proposals[:,<span class="dv">4</span>]]</span>
-<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>            probs_list <span class="op">=</span> proposals[:,<span class="dv">5</span>]</span>
-<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Update tracker with detections.</span></span>
-<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>            track_ids <span class="op">=</span> [<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="bu">len</span>(bbox_list)</span>
-<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert to tlbr format</span></span>
-<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>            tlbr_boxes <span class="op">=</span> bbox_list.copy()</span>
-<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>            tlbr_boxes[:, <span class="dv">2</span>:<span class="dv">4</span>] <span class="op">+=</span> tlbr_boxes[:, :<span class="dv">2</span>]</span>
-<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Update tracker with detections</span></span>
-<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>            tracks <span class="op">=</span> tracker.update(</span>
-<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>                output_results<span class="op">=</span>np.concatenate([tlbr_boxes, probs_list[:, np.newaxis]], axis<span class="op">=</span><span class="dv">1</span>),</span>
-<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>                img_info<span class="op">=</span>rgb_img.size,</span>
-<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>                img_size<span class="op">=</span>rgb_img.size)</span>
-<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>            track_ids <span class="op">=</span> match_detections_with_tracks(tlbr_boxes<span class="op">=</span>tlbr_boxes, track_ids<span class="op">=</span>track_ids, tracks<span class="op">=</span>tracks)</span>
-<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>            <span class="co"># End performance counter</span></span>
-<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>            end_time <span class="op">=</span> time.perf_counter()</span>
-<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Calculate the combined FPS for object detection and tracking</span></span>
-<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>            fps <span class="op">=</span> <span class="dv">1</span> <span class="op">/</span> (end_time <span class="op">-</span> start_time)</span>
-<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Display the frame rate in the progress bar</span></span>
-<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>            pbar.set_postfix(fps<span class="op">=</span>fps)</span>
-<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Filter object detections based on tracking results</span></span>
-<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>            bbox_list, label_list, probs_list, track_ids <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>[(bbox, label, prob, track_id) </span>
-<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>                                                                 <span class="cf">for</span> bbox, label, prob, track_id </span>
-<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>                                                                 <span class="kw">in</span> <span class="bu">zip</span>(bbox_list, label_list, probs_list, track_ids) <span class="cf">if</span> track_id <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span>])</span>
-<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Annotate the current frame with bounding boxes and tracking IDs</span></span>
-<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>            annotated_img <span class="op">=</span> draw_bboxes_pil(</span>
-<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a>                image<span class="op">=</span>rgb_img, </span>
-<span id="cb20-61"><a href="#cb20-61" aria-hidden="true" tabindex="-1"></a>                boxes<span class="op">=</span>bbox_list, </span>
-<span id="cb20-62"><a href="#cb20-62" aria-hidden="true" tabindex="-1"></a>                labels<span class="op">=</span>[<span class="ss">f"</span><span class="sc">{</span>track_id<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> track_id, label <span class="kw">in</span> <span class="bu">zip</span>(track_ids, label_list)],</span>
-<span id="cb20-63"><a href="#cb20-63" aria-hidden="true" tabindex="-1"></a>                probs<span class="op">=</span>probs_list,</span>
-<span id="cb20-64"><a href="#cb20-64" aria-hidden="true" tabindex="-1"></a>                colors<span class="op">=</span>[int_colors[class_names.index(i)] <span class="cf">for</span> i <span class="kw">in</span> label_list],  </span>
-<span id="cb20-65"><a href="#cb20-65" aria-hidden="true" tabindex="-1"></a>                font<span class="op">=</span>font_file,</span>
-<span id="cb20-66"><a href="#cb20-66" aria-hidden="true" tabindex="-1"></a>            )</span>
-<span id="cb20-67"><a href="#cb20-67" aria-hidden="true" tabindex="-1"></a>            annotated_frame <span class="op">=</span> cv2.cvtColor(np.array(annotated_img), cv2.COLOR_RGB2BGR)</span>
-<span id="cb20-68"><a href="#cb20-68" aria-hidden="true" tabindex="-1"></a>            </span>
-<span id="cb20-69"><a href="#cb20-69" aria-hidden="true" tabindex="-1"></a>            video_writer.write(annotated_frame)</span>
-<span id="cb20-70"><a href="#cb20-70" aria-hidden="true" tabindex="-1"></a>            pbar.update(<span class="dv">1</span>)</span>
-<span id="cb20-71"><a href="#cb20-71" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
-<span id="cb20-72"><a href="#cb20-72" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
-<span id="cb20-73"><a href="#cb20-73" aria-hidden="true" tabindex="-1"></a>video_capture.release()</span>
-<span id="cb20-74"><a href="#cb20-74" aria-hidden="true" tabindex="-1"></a>video_writer.release()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Extract bounding boxes, labels, and probabilities from proposals</span></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>            bbox_list <span class="op">=</span> (proposals[:,:<span class="dv">4</span>]<span class="op">+</span>[<span class="op">*</span>offsets, <span class="dv">0</span>, <span class="dv">0</span>])<span class="op">*</span>min_img_scale</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>            label_list <span class="op">=</span> [class_names[<span class="bu">int</span>(idx)] <span class="cf">for</span> idx <span class="kw">in</span> proposals[:,<span class="dv">4</span>]]</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>            probs_list <span class="op">=</span> proposals[:,<span class="dv">5</span>]</span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Initialize track IDs for detected objects</span></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>            track_ids <span class="op">=</span> [<span class="op">-</span><span class="dv">1</span>]<span class="op">*</span><span class="bu">len</span>(bbox_list)</span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Convert bounding boxes to top-left bottom-right (tlbr) format</span></span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a>            tlbr_boxes <span class="op">=</span> bbox_list.copy()</span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a>            tlbr_boxes[:, <span class="dv">2</span>:<span class="dv">4</span>] <span class="op">+=</span> tlbr_boxes[:, :<span class="dv">2</span>]</span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Update tracker with detections</span></span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a>            tracks <span class="op">=</span> tracker.update(</span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a>                output_results<span class="op">=</span>np.concatenate([tlbr_boxes, probs_list[:, np.newaxis]], axis<span class="op">=</span><span class="dv">1</span>),</span>
+<span id="cb20-43"><a href="#cb20-43" aria-hidden="true" tabindex="-1"></a>                img_info<span class="op">=</span>rgb_img.size,</span>
+<span id="cb20-44"><a href="#cb20-44" aria-hidden="true" tabindex="-1"></a>                img_size<span class="op">=</span>rgb_img.size)</span>
+<span id="cb20-45"><a href="#cb20-45" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-46"><a href="#cb20-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="bu">len</span>(tlbr_boxes) <span class="op">&gt;</span> <span class="dv">0</span> <span class="kw">and</span> <span class="bu">len</span>(tracks) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb20-47"><a href="#cb20-47" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Match detections with tracks</span></span>
+<span id="cb20-48"><a href="#cb20-48" aria-hidden="true" tabindex="-1"></a>                track_ids <span class="op">=</span> match_detections_with_tracks(tlbr_boxes<span class="op">=</span>tlbr_boxes, track_ids<span class="op">=</span>track_ids, tracks<span class="op">=</span>tracks)</span>
+<span id="cb20-49"><a href="#cb20-49" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb20-50"><a href="#cb20-50" aria-hidden="true" tabindex="-1"></a>                <span class="co"># Filter object detections based on tracking results</span></span>
+<span id="cb20-51"><a href="#cb20-51" aria-hidden="true" tabindex="-1"></a>                bbox_list, label_list, probs_list, track_ids <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>[(bbox, label, prob, track_id) </span>
+<span id="cb20-52"><a href="#cb20-52" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="cf">for</span> bbox, label, prob, track_id </span>
+<span id="cb20-53"><a href="#cb20-53" aria-hidden="true" tabindex="-1"></a>                                                                    <span class="kw">in</span> <span class="bu">zip</span>(bbox_list, label_list, probs_list, track_ids) <span class="cf">if</span> track_id <span class="op">!=</span> <span class="op">-</span><span class="dv">1</span>])</span>
+<span id="cb20-54"><a href="#cb20-54" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb20-55"><a href="#cb20-55" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> <span class="bu">len</span>(bbox_list) <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb20-56"><a href="#cb20-56" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># Annotate the current frame with bounding boxes and tracking IDs</span></span>
+<span id="cb20-57"><a href="#cb20-57" aria-hidden="true" tabindex="-1"></a>                    annotated_img <span class="op">=</span> draw_bboxes_pil(</span>
+<span id="cb20-58"><a href="#cb20-58" aria-hidden="true" tabindex="-1"></a>                        image<span class="op">=</span>rgb_img, </span>
+<span id="cb20-59"><a href="#cb20-59" aria-hidden="true" tabindex="-1"></a>                        boxes<span class="op">=</span>bbox_list, </span>
+<span id="cb20-60"><a href="#cb20-60" aria-hidden="true" tabindex="-1"></a>                        labels<span class="op">=</span>[<span class="ss">f"</span><span class="sc">{</span>track_id<span class="sc">}</span><span class="ss">-</span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> track_id, label <span class="kw">in</span> <span class="bu">zip</span>(track_ids, label_list)],</span>
+<span id="cb20-61"><a href="#cb20-61" aria-hidden="true" tabindex="-1"></a>                        probs<span class="op">=</span>probs_list,</span>
+<span id="cb20-62"><a href="#cb20-62" aria-hidden="true" tabindex="-1"></a>                        colors<span class="op">=</span>[int_colors[class_names.index(i)] <span class="cf">for</span> i <span class="kw">in</span> label_list],  </span>
+<span id="cb20-63"><a href="#cb20-63" aria-hidden="true" tabindex="-1"></a>                        font<span class="op">=</span>font_file,</span>
+<span id="cb20-64"><a href="#cb20-64" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb20-65"><a href="#cb20-65" aria-hidden="true" tabindex="-1"></a>                    annotated_frame <span class="op">=</span> cv2.cvtColor(np.array(annotated_img), cv2.COLOR_RGB2BGR)</span>
+<span id="cb20-66"><a href="#cb20-66" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb20-67"><a href="#cb20-67" aria-hidden="true" tabindex="-1"></a>                <span class="co"># If no detections, use the original frame</span></span>
+<span id="cb20-68"><a href="#cb20-68" aria-hidden="true" tabindex="-1"></a>                annotated_frame <span class="op">=</span> frame</span>
+<span id="cb20-69"><a href="#cb20-69" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb20-70"><a href="#cb20-70" aria-hidden="true" tabindex="-1"></a>            video_writer.write(annotated_frame)</span>
+<span id="cb20-71"><a href="#cb20-71" aria-hidden="true" tabindex="-1"></a>            pbar.update(<span class="dv">1</span>)</span>
+<span id="cb20-72"><a href="#cb20-72" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb20-73"><a href="#cb20-73" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span>
+<span id="cb20-74"><a href="#cb20-74" aria-hidden="true" tabindex="-1"></a>video_capture.release()</span>
+<span id="cb20-75"><a href="#cb20-75" aria-hidden="true" tabindex="-1"></a>video_writer.release()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Finally, we can check the annotated video to see how the object tracker performed.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
