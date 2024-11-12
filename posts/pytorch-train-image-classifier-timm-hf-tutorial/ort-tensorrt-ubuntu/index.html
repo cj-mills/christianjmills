@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Christian Mills">
-<meta name="dcterms.date" content="2024-04-07">
+<meta name="dcterms.date" content="2024-11-11">
 <meta name="description" content="Learn how to quantize timm image classification models with ONNX Runtime and TensorRT for int8 inference.">
 
 <title>Quantizing timm Image Classifiers with ONNX Runtime and TensorRT in Ubuntu – Christian Mills</title>
@@ -281,7 +281,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 7, 2024</p>
+      <p class="date">November 11, 2024</p>
     </div>
   </div>
   
@@ -388,25 +388,69 @@ TensorRT Hardware Requirements:
 <p>First, we must add a few new libraries to our <a href="../onnx-export/#setting-up-your-python-environment">Python environment</a>.</p>
 <section id="install-cuda-package" class="level3">
 <h3 class="anchored" data-anchor-id="install-cuda-package">Install CUDA Package</h3>
-<p>Both ONNX Runtime and TensorRT require CUDA for use with NVIDIA GPUs. The most recent CUDA version supported by ONNX Runtime is <code>12.2</code>.</p>
+<p>Both ONNX Runtime and TensorRT require CUDA for use with NVIDIA GPUs and support CUDA <code>12.x</code>.</p>
+<p>We can view the available CUDA package versions using the following command:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> search cuda <span class="at">-c</span> nvidia/label/cuda-<span class="pp">*</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled" title="Available CUDA versions:">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Available CUDA versions:
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre class="text"><code>Loading channels: done
+# Name                       Version           Build  Channel             
+cuda                          12.0.0      h7428d3b_0  conda-forge         
+cuda                          12.0.0      h7428d3b_1  conda-forge         
+cuda                          12.0.0      ha770c72_0  conda-forge         
+cuda                          12.0.0      ha804496_0  conda-forge         
+cuda                          12.0.0      ha804496_1  conda-forge         
+cuda                          12.1.1      h7428d3b_0  conda-forge         
+cuda                          12.1.1      ha804496_0  conda-forge         
+cuda                          12.2.2      h7428d3b_0  conda-forge         
+cuda                          12.2.2      ha804496_0  conda-forge         
+cuda                          12.3.2      h7428d3b_0  conda-forge         
+cuda                          12.3.2      ha804496_0  conda-forge         
+cuda                          12.4.0      h7428d3b_0  conda-forge         
+cuda                          12.4.0      ha804496_0  conda-forge         
+cuda                          12.4.1      h7428d3b_0  conda-forge         
+cuda                          12.4.1      ha804496_0  conda-forge         
+cuda                          12.5.0      h7428d3b_0  conda-forge         
+cuda                          12.5.0      ha804496_0  conda-forge         
+cuda                          12.5.1      h7428d3b_0  conda-forge         
+cuda                          12.5.1      ha804496_0  conda-forge         
+cuda                          12.6.0      h7428d3b_0  conda-forge         
+cuda                          12.6.0      ha804496_0  conda-forge         
+cuda                          12.6.1      h7428d3b_0  conda-forge         
+cuda                          12.6.1      ha804496_0  conda-forge         
+cuda                          12.6.2      h7428d3b_0  conda-forge         
+cuda                          12.6.2      ha804496_0  conda-forge</code></pre>
+</div>
+</div>
+</div>
 <p>Run the following command to install CUDA in our Python environment with <a href="https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#conda-installation">Conda/Mamba</a>.</p>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true">Conda</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Mamba</a></li></ul>
 <div class="tab-content">
 <div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install cuda <span class="at">-c</span> nvidia/label/cuda-12.2.0 <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install cuda <span class="at">-c</span> nvidia/label/cuda-12.4.0 <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> install cuda <span class="at">-c</span> nvidia/label/cuda-12.2.0 <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">mamba</span> install cuda <span class="at">-c</span> nvidia/label/cuda-12.4.0 <span class="at">-y</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
 </section>
 <section id="install-onnx-runtime-and-tensorrt" class="level3">
 <h3 class="anchored" data-anchor-id="install-onnx-runtime-and-tensorrt">Install ONNX Runtime and TensorRT</h3>
-<p>The only additional libraries we need are ONNX Runtime with GPU support and TensorRT, assuming the packages used in the previous two tutorials are already in the Python environment.</p>
+<p>The only additional libraries we need are ONNX Runtime with GPU support and TensorRT, assuming the packages used in the previous two tutorials are already in the Python environment. At the time of writing, ONNX Runtime supports TensorRT <code>10.x</code>.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="Package Descriptions">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -415,7 +459,7 @@ Package Descriptions
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <table class="caption-top table">
 <thead>
@@ -439,46 +483,72 @@ Package Descriptions
 </div>
 </div>
 <p>Run the following commands to install the libraries:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install TensorRT packages</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="st">'tensorrt==10.0.1'</span> <span class="at">--extra-index-url</span> https://pypi.nvidia.com</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Install ONNX Runtime for CUDA 12</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-U</span> <span class="st">'onnxruntime-gpu==1.18.0'</span> <span class="at">--extra-index-url</span> https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install TensorRT packages</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-U</span> tensorrt</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Install ONNX Runtime for CUDA 12</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-U</span> <span class="st">'onnxruntime-gpu==1.20.0'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>With our environment updated, we can dive into the code.</p>
 </section>
 </section>
 <section id="importing-the-required-dependencies" class="level2">
 <h2 class="anchored" data-anchor-id="importing-the-required-dependencies">Importing the Required Dependencies</h2>
-<p>First, we will import the necessary Python dependencies into our Jupyter Notebook.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import Python Standard Library dependencies</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Import utility functions</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_psl_utils.core <span class="im">import</span> download_file, file_extract</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pil_utils.core <span class="im">import</span> resize_img, get_img_files</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Import numpy</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the pandas package</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Do not truncate the contents of cells and display all rows and columns</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'max_colwidth'</span>, <span class="va">None</span>, <span class="st">'display.max_rows'</span>, <span class="va">None</span>, <span class="st">'display.max_columns'</span>, <span class="va">None</span>)</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PIL for image manipulation</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Import ONNX dependencies</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnxruntime <span class="im">as</span> ort <span class="co"># Import the ONNX Runtime</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> onnxruntime.tools.symbolic_shape_infer <span class="im">import</span> SymbolicShapeInference</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> onnxruntime.quantization <span class="im">import</span> CalibrationDataReader, CalibrationMethod, create_calibrator, write_calibration_table</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Import tensorrt_libs</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorrt_libs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>First, we will import the necessary Python dependencies into our Jupyter Notebook. The ONNX Runtime package does not know where to look for the cuDNN libraries included with the <code>cuda</code> package, so we load those first using the following approach adapted from the <a href="https://github.com/NVIDIA/TensorRT/blob/release/10.6/python/packaging/libs_wheel/tensorrt_libs/__init__.py">tensorrt package</a>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load cuDNN libraries</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> ctypes</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> glob</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> nvidia <span class="im">import</span> cudnn</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> try_load(library):</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        ctypes.CDLL(library, mode<span class="op">=</span>ctypes.RTLD_GLOBAL)  <span class="co"># Use RTLD_GLOBAL to make symbols available</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span> <span class="pp">OSError</span>:</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> try_load_libs_from_dir(path):</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load all .so files (Linux)</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lib <span class="kw">in</span> glob.iglob(os.path.join(path, <span class="st">"*.so*"</span>)):</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        try_load(lib)</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Load all .dll files (Windows)</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lib <span class="kw">in</span> glob.iglob(os.path.join(path, <span class="st">"*.dll*"</span>)):</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        try_load(lib)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the cudnn library path</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>CUDNN_LIB_DIR <span class="op">=</span> os.path.join(cudnn.__path__[<span class="dv">0</span>], <span class="st">"lib"</span>)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Try loading all libraries in the cudnn lib directory</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>try_load_libs_from_dir(CUDNN_LIB_DIR)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Import Python Standard Library dependencies</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Import utility functions</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_psl_utils.core <span class="im">import</span> download_file, file_extract</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_pil_utils.core <span class="im">import</span> resize_img, get_img_files</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Import numpy</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Import the pandas package</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Do not truncate the contents of cells and display all rows and columns</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>pd.set_option(<span class="st">'max_colwidth'</span>, <span class="va">None</span>, <span class="st">'display.max_rows'</span>, <span class="va">None</span>, <span class="st">'display.max_columns'</span>, <span class="va">None</span>)</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Import PIL for image manipulation</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> PIL <span class="im">import</span> Image</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Import ONNX dependencies</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> onnxruntime <span class="im">as</span> ort <span class="co"># Import the ONNX Runtime</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> onnxruntime.tools.symbolic_shape_infer <span class="im">import</span> SymbolicShapeInference</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> onnxruntime.quantization <span class="im">import</span> CalibrationDataReader, CalibrationMethod, create_calibrator, write_calibration_table</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Import tensorrt_libs</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorrt_libs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -499,34 +569,34 @@ Important
 <section id="setting-the-directory-paths" class="level3">
 <h3 class="anchored" data-anchor-id="setting-the-directory-paths">Setting the Directory Paths</h3>
 <p>Readers following the tutorial on their local machine should select locations with read and write access to store the archived and extracted dataset. For a cloud service like Google Colab, you can set it to the current directory.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The name for the project</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>project_name <span class="op">=</span> <span class="ss">f"pytorch-timm-image-classifier"</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The path for the project folder</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>project_dir <span class="op">=</span> Path(<span class="ss">f"./</span><span class="sc">{</span>project_name<span class="sc">}</span><span class="ss">/"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the project directory if it does not already exist</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>project_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define path to store datasets</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>dataset_dir <span class="op">=</span> Path(<span class="st">"/mnt/980_1TB_2/Datasets/"</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the dataset directory if it does not exist</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>dataset_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Define path to store archive files</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>archive_dir <span class="op">=</span> dataset_dir<span class="op">/</span><span class="st">'../Archive'</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the archive directory if it does not exist</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>archive_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="co"># The path to the checkpoint folder</span></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span><span class="ss">f"2024-02-02_15-41-23"</span>)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Project Directory:"</span>: project_dir, </span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dataset Directory:"</span>: dataset_dir, </span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Archive Directory:"</span>: archive_dir,</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Checkpoint Directory:"</span>: checkpoint_dir,</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The name for the project</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>project_name <span class="op">=</span> <span class="ss">f"pytorch-timm-image-classifier"</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The path for the project folder</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>project_dir <span class="op">=</span> Path(<span class="ss">f"./</span><span class="sc">{</span>project_name<span class="sc">}</span><span class="ss">/"</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the project directory if it does not already exist</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>project_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define path to store datasets</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>dataset_dir <span class="op">=</span> Path(<span class="st">"/mnt/Storage/Datasets/"</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the dataset directory if it does not exist</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>dataset_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Define path to store archive files</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>archive_dir <span class="op">=</span> dataset_dir<span class="op">/</span><span class="st">'../Archive'</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the archive directory if it does not exist</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>archive_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="co"># The path to the checkpoint folder</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>checkpoint_dir <span class="op">=</span> Path(project_dir<span class="op">/</span><span class="ss">f"2024-02-02_15-41-23"</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Project Directory:"</span>: project_dir, </span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dataset Directory:"</span>: dataset_dir, </span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Archive Directory:"</span>: archive_dir,</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Checkpoint Directory:"</span>: checkpoint_dir,</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto; max-height:500px">
 <table id="T_98a20">
 <thead>
@@ -545,7 +615,7 @@ pytorch-timm-image-classifier
 Dataset Directory:
 </th>
 <td id="T_98a20_row1_col0" class="data row1 col0">
-/mnt/980_1TB_2/Datasets
+/mnt/Storage/Datasets
 </td>
 </tr>
 <tr>
@@ -553,7 +623,7 @@ Dataset Directory:
 Archive Directory:
 </th>
 <td id="T_98a20_row2_col0" class="data row2 col0">
-/mnt/980_1TB_2/Datasets/../Archive
+/mnt/Storage/Datasets/../Archive
 </td>
 </tr>
 <tr>
@@ -588,18 +658,18 @@ Those following along on Google Colab can drag the contents of their checkpoint 
 <p>Now, we can load the class labels, set the path for the ONNX model.</p>
 <section id="load-the-class-labels" class="level3">
 <h3 class="anchored" data-anchor-id="load-the-class-labels">Load the Class Labels</h3>
-<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The class labels path</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>class_labels_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*classes.json'</span>))[<span class="dv">0</span>]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the JSON class labels data</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(class_labels_path, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        class_labels_json <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the list of classes</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>class_names <span class="op">=</span> class_labels_json[<span class="st">'classes'</span>]</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the list of classes</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(class_names)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The class labels path</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>class_labels_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*classes.json'</span>))[<span class="dv">0</span>]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the JSON class labels data</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> <span class="bu">open</span>(class_labels_path, <span class="st">'r'</span>) <span class="im">as</span> <span class="bu">file</span>:</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        class_labels_json <span class="op">=</span> json.load(<span class="bu">file</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the list of classes</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>class_names <span class="op">=</span> class_labels_json[<span class="st">'classes'</span>]</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the list of classes</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(class_names)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto; max-height:500px">
 <table class="dataframe table table-sm table-striped small">
 <thead>
@@ -770,8 +840,8 @@ two_up_inverted
 </section>
 <section id="set-model-checkpoint-information" class="level3">
 <h3 class="anchored" data-anchor-id="set-model-checkpoint-information">Set Model Checkpoint Information</h3>
-<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The onnx model path</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*.onnx'</span>))[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># The onnx model path</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>onnx_file_path <span class="op">=</span> <span class="bu">list</span>(checkpoint_dir.glob(<span class="st">'*.onnx'</span>))[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="loading-the-dataset" class="level2">
@@ -780,24 +850,24 @@ two_up_inverted
 <section id="setting-the-dataset-path" class="level3">
 <h3 class="anchored" data-anchor-id="setting-the-dataset-path">Setting the Dataset Path</h3>
 <p>We first need to construct the name for the Hugging Face Hub dataset and define where to download and extract the dataset.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the dataset</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>dataset_name <span class="op">=</span> <span class="st">'hagrid-classification-512p-no-gesture-150k-zip'</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the HuggingFace Hub dataset name by combining the username and dataset name</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>hf_dataset <span class="op">=</span> <span class="ss">f'cj-mills/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">'</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the path to the zip file that contains the dataset</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>archive_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>archive_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">.</span>removesuffix(<span class="st">"-zip"</span>)<span class="sc">}</span><span class="ss">.zip'</span>)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the path to the directory where the dataset will be extracted</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>dataset_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>dataset_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">.</span>removesuffix(<span class="st">"-zip"</span>)<span class="sc">}</span><span class="ss">'</span>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a Series with the dataset name and paths and converting it to a DataFrame for display</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"HuggingFace Dataset:"</span>: hf_dataset, </span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Archive Path:"</span>: archive_path, </span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dataset Path:"</span>: dataset_path</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the name of the dataset</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>dataset_name <span class="op">=</span> <span class="st">'hagrid-classification-512p-no-gesture-150k-zip'</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the HuggingFace Hub dataset name by combining the username and dataset name</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>hf_dataset <span class="op">=</span> <span class="ss">f'cj-mills/</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the path to the zip file that contains the dataset</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>archive_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>archive_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">.</span>removesuffix(<span class="st">"-zip"</span>)<span class="sc">}</span><span class="ss">.zip'</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the path to the directory where the dataset will be extracted</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>dataset_path <span class="op">=</span> Path(<span class="ss">f'</span><span class="sc">{</span>dataset_dir<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>dataset_name<span class="sc">.</span>removesuffix(<span class="st">"-zip"</span>)<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating a Series with the dataset name and paths and converting it to a DataFrame for display</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"HuggingFace Dataset:"</span>: hf_dataset, </span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Archive Path:"</span>: archive_path, </span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Dataset Path:"</span>: dataset_path</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto; max-height:500px">
 <table id="T_04900">
 <thead>
@@ -816,7 +886,7 @@ cj-mills/hagrid-classification-512p-no-gesture-150k-zip
 Archive Path:
 </th>
 <td id="T_04900_row1_col0" class="data row1 col0">
-/mnt/980_1TB_2/Datasets/../Archive/hagrid-classification-512p-no-gesture-150k.zip
+/mnt/Storage/Datasets/../Archive/hagrid-classification-512p-no-gesture-150k.zip
 </td>
 </tr>
 <tr>
@@ -824,7 +894,7 @@ Archive Path:
 Dataset Path:
 </th>
 <td id="T_04900_row2_col0" class="data row2 col0">
-/mnt/980_1TB_2/Datasets/hagrid-classification-512p-no-gesture-150k
+/mnt/Storage/Datasets/hagrid-classification-512p-no-gesture-150k
 </td>
 </tr>
 </tbody>
@@ -834,37 +904,37 @@ Dataset Path:
 <section id="downloading-the-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="downloading-the-dataset">Downloading the Dataset</h3>
 <p>We can now download the dataset archive file and extract the dataset. We can delete the archive afterward to save space.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the HuggingFace Hub dataset URL</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>dataset_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/</span><span class="sc">{</span>hf_dataset<span class="sc">}</span><span class="ss">/resolve/main/</span><span class="sc">{</span>dataset_name<span class="sc">.</span>removesuffix(<span class="st">'-zip'</span>)<span class="sc">}</span><span class="ss">.zip"</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"HuggingFace Dataset URL: </span><span class="sc">{</span>dataset_url<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set whether to delete the archive file after extracting the dataset</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>delete_archive <span class="op">=</span> <span class="va">True</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the dataset if not present</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> dataset_path.is_dir():</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Dataset folder already exists"</span>)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Downloading dataset..."</span>)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    download_file(dataset_url, archive_dir)    </span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Extracting dataset..."</span>)</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    file_extract(fname<span class="op">=</span>archive_path, dest<span class="op">=</span>dataset_dir)</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Delete the archive if specified</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> delete_archive: archive_path.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Construct the HuggingFace Hub dataset URL</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>dataset_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/</span><span class="sc">{</span>hf_dataset<span class="sc">}</span><span class="ss">/resolve/main/</span><span class="sc">{</span>dataset_name<span class="sc">.</span>removesuffix(<span class="st">'-zip'</span>)<span class="sc">}</span><span class="ss">.zip"</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"HuggingFace Dataset URL: </span><span class="sc">{</span>dataset_url<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Set whether to delete the archive file after extracting the dataset</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>delete_archive <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the dataset if not present</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> dataset_path.is_dir():</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Dataset folder already exists"</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Downloading dataset..."</span>)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    download_file(dataset_url, archive_dir)    </span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Extracting dataset..."</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    file_extract(fname<span class="op">=</span>archive_path, dest<span class="op">=</span>dataset_dir)</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Delete the archive if specified</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> delete_archive: archive_path.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="get-image-file-paths" class="level3">
 <h3 class="anchored" data-anchor-id="get-image-file-paths">Get Image File Paths</h3>
 <p>Once downloaded, we can get the paths to the images in the dataset.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of all JPG image files in the dataset</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>img_file_paths <span class="op">=</span> <span class="bu">list</span>(dataset_path.glob(<span class="st">"./**/*.jpeg"</span>))</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the number of image files</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of Images: </span><span class="sc">{</span><span class="bu">len</span>(img_file_paths)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first five entries from the dictionary using a Pandas DataFrame</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(img_file_paths).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of all JPG image files in the dataset</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>img_file_paths <span class="op">=</span> <span class="bu">list</span>(dataset_path.glob(<span class="st">"./**/*.jpeg"</span>))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the number of image files</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Number of Images: </span><span class="sc">{</span><span class="bu">len</span>(img_file_paths)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first five entries from the dictionary using a Pandas DataFrame</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>pd.DataFrame(img_file_paths).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>Number of Images: 153735</code></pre>
 <div style="overflow-x:auto; max-height:500px">
 <table class="dataframe table table-sm table-striped small">
@@ -883,7 +953,7 @@ Dataset Path:
 0
 </th>
 <td>
-/mnt/980_1TB_2/Datasets/hagrid-classification-512p-no-gesture-150k/call/3ffbf0a0-1837-42cd-8f13-33977a2b47aa.jpeg
+/mnt/Storage/Datasets/hagrid-classification-512p-no-gesture-150k/call/3ffbf0a0-1837-42cd-8f13-33977a2b47aa.jpeg
 </td>
 </tr>
 <tr>
@@ -891,7 +961,7 @@ Dataset Path:
 1
 </th>
 <td>
-/mnt/980_1TB_2/Datasets/hagrid-classification-512p-no-gesture-150k/call/7f4d415e-f570-42c3-aa5a-7c907d2d461e.jpeg
+/mnt/Storage/Datasets/hagrid-classification-512p-no-gesture-150k/call/7f4d415e-f570-42c3-aa5a-7c907d2d461e.jpeg
 </td>
 </tr>
 <tr>
@@ -899,7 +969,7 @@ Dataset Path:
 2
 </th>
 <td>
-/mnt/980_1TB_2/Datasets/hagrid-classification-512p-no-gesture-150k/call/0003d6d1-3489-4f57-ab7a-44744dba93fd.jpeg
+/mnt/Storage/Datasets/hagrid-classification-512p-no-gesture-150k/call/0003d6d1-3489-4f57-ab7a-44744dba93fd.jpeg
 </td>
 </tr>
 <tr>
@@ -907,7 +977,7 @@ Dataset Path:
 3
 </th>
 <td>
-/mnt/980_1TB_2/Datasets/hagrid-classification-512p-no-gesture-150k/call/00084dfa-60a2-4c8e-9bd9-25658382b8b7.jpeg
+/mnt/Storage/Datasets/hagrid-classification-512p-no-gesture-150k/call/00084dfa-60a2-4c8e-9bd9-25658382b8b7.jpeg
 </td>
 </tr>
 <tr>
@@ -915,7 +985,7 @@ Dataset Path:
 4
 </th>
 <td>
-/mnt/980_1TB_2/Datasets/hagrid-classification-512p-no-gesture-150k/call/0010543c-be59-49e7-8f6d-fbea8f5fdc6b.jpeg
+/mnt/Storage/Datasets/hagrid-classification-512p-no-gesture-150k/call/0010543c-be59-49e7-8f6d-fbea8f5fdc6b.jpeg
 </td>
 </tr>
 </tbody>
@@ -925,10 +995,10 @@ Dataset Path:
 <section id="select-sample-images" class="level3">
 <h3 class="anchored" data-anchor-id="select-sample-images">Select Sample Images</h3>
 <p>Using every image in the dataset for the calibration process would be unnecessary and time-consuming, so we’ll select a random subset.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">1234</span>) <span class="co"># Set random seed for consistency </span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>sample_percentage <span class="op">=</span> <span class="fl">0.05</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>random.shuffle(img_file_paths)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>sample_img_paths <span class="op">=</span> random.sample(img_file_paths, <span class="bu">int</span>(<span class="bu">len</span>(img_file_paths)<span class="op">*</span>sample_percentage))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>random.seed(<span class="dv">1234</span>) <span class="co"># Set random seed for consistency </span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>sample_percentage <span class="op">=</span> <span class="fl">0.05</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>random.shuffle(img_file_paths)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>sample_img_paths <span class="op">=</span> random.sample(img_file_paths, <span class="bu">int</span>(<span class="bu">len</span>(img_file_paths)<span class="op">*</span>sample_percentage))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled" title="Other Datasets:">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -950,54 +1020,54 @@ Other Datasets:
 <section id="implement-a-calibrationdatareader" class="level3">
 <h3 class="anchored" data-anchor-id="implement-a-calibrationdatareader">Implement a CalibrationDataReader</h3>
 <p>First, we will implement a <a href="https://github.com/microsoft/onnxruntime/blob/07788e082ef2c78c3f4e72f49e7e7c3db6f09cb0/onnxruntime/python/tools/quantization/calibrate.py#L30"><code>CalibrationDataReader</code></a> class to load and prepare samples to feed through the model.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CalibrationDataReaderCV(CalibrationDataReader):</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A subclass of CalibrationDataReader specifically designed for handling</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co">    image data for calibration in computer vision tasks. This reader loads,</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="co">    preprocesses, and provides images for model calibration.</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, img_file_paths, target_sz, input_name<span class="op">=</span><span class="st">'input'</span>):</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co">        Initializes a new instance of the CalibrationDataReaderCV class.</span></span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co">            img_file_paths (list): A list of image file paths.</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co">            target_sz (tuple): The target size (width, height) to resize images to.</span></span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="co">            input_name (str, optional): The name of the input node in the ONNX model. Default is 'input'.</span></span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()  <span class="co"># Initialize the base class</span></span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Initialization of instance variables</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._img_file_paths <span class="op">=</span> img_file_paths</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.input_name <span class="op">=</span> input_name</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.enum <span class="op">=</span> <span class="bu">iter</span>(img_file_paths)  <span class="co"># Create an iterator over the image paths</span></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.target_sz <span class="op">=</span> target_sz</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get_next(<span class="va">self</span>):</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="co">        Retrieves, processes, and returns the next image in the sequence as a NumPy array suitable for model input.</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="co">        Returns:</span></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="co">            dict: A dictionary with a single key-value pair where the key is `input_name` and the value is the</span></span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="co">                  preprocessed image as a NumPy array, or None if there are no more images.</span></span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>        img_path <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.enum, <span class="va">None</span>)  <span class="co"># Get the next image path</span></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> img_path:</span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">None</span>  <span class="co"># If there are no more paths, return None</span></span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Load the image from the filepath and convert to RGB</span></span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>        image <span class="op">=</span> Image.<span class="bu">open</span>(img_path).convert(<span class="st">'RGB'</span>)</span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Resize the image to the target size</span></span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>        input_img <span class="op">=</span> resize_img(image, target_sz<span class="op">=</span><span class="va">self</span>.target_sz, divisor<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert the image to a NumPy array, normalize, and add a batch dimension</span></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>        input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>] <span class="op">/</span> <span class="dv">255</span></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Return the image in a dictionary under the specified input name</span></span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {<span class="va">self</span>.input_name: input_tensor_np}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CalibrationDataReaderCV(CalibrationDataReader):</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co">    A subclass of CalibrationDataReader specifically designed for handling</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co">    image data for calibration in computer vision tasks. This reader loads,</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co">    preprocesses, and provides images for model calibration.</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, img_file_paths, target_sz, input_name<span class="op">=</span><span class="st">'input'</span>):</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">        Initializes a new instance of the CalibrationDataReaderCV class.</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co">            img_file_paths (list): A list of image file paths.</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co">            target_sz (tuple): The target size (width, height) to resize images to.</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co">            input_name (str, optional): The name of the input node in the ONNX model. Default is 'input'.</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()  <span class="co"># Initialize the base class</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Initialization of instance variables</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._img_file_paths <span class="op">=</span> img_file_paths</span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.input_name <span class="op">=</span> input_name</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.enum <span class="op">=</span> <span class="bu">iter</span>(img_file_paths)  <span class="co"># Create an iterator over the image paths</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.target_sz <span class="op">=</span> target_sz</span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> get_next(<span class="va">self</span>):</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">"""</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="co">        Retrieves, processes, and returns the next image in the sequence as a NumPy array suitable for model input.</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="co">        </span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="co">        Returns:</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="co">            dict: A dictionary with a single key-value pair where the key is `input_name` and the value is the</span></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="co">                  preprocessed image as a NumPy array, or None if there are no more images.</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="co">        """</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>        img_path <span class="op">=</span> <span class="bu">next</span>(<span class="va">self</span>.enum, <span class="va">None</span>)  <span class="co"># Get the next image path</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> img_path:</span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">None</span>  <span class="co"># If there are no more paths, return None</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Load the image from the filepath and convert to RGB</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>        image <span class="op">=</span> Image.<span class="bu">open</span>(img_path).convert(<span class="st">'RGB'</span>)</span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Resize the image to the target size</span></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>        input_img <span class="op">=</span> resize_img(image, target_sz<span class="op">=</span><span class="va">self</span>.target_sz, divisor<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert the image to a NumPy array, normalize, and add a batch dimension</span></span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a>        input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>] <span class="op">/</span> <span class="dv">255</span></span>
+<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Return the image in a dictionary under the specified input name</span></span>
+<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> {<span class="va">self</span>.input_name: input_tensor_np}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-warning callout-titled" title="Preprocessing Steps:">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1015,71 +1085,61 @@ Preprocessing Steps:
 <section id="specify-a-cache-folder" class="level3">
 <h3 class="anchored" data-anchor-id="specify-a-cache-folder">Specify a Cache Folder</h3>
 <p>Next, we will create a folder to store the collected calibration data and any cache files generated by TensorRT.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>trt_cache_dir <span class="op">=</span> checkpoint_dir<span class="op">/</span><span class="st">'trt_engine_cache'</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>trt_cache_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>trt_cache_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>trt_cache_dir <span class="op">=</span> checkpoint_dir<span class="op">/</span><span class="st">'trt_engine_cache'</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>trt_cache_dir.mkdir(parents<span class="op">=</span><span class="va">True</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>trt_cache_dir</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>PosixPath('pytorch-timm-image-classifier/2024-02-02_15-41-23/trt_engine_cache')</code></pre>
 </section>
 <section id="collect-calibration-data" class="level3">
 <h3 class="anchored" data-anchor-id="collect-calibration-data">Collect Calibration Data</h3>
 <p>Now, we can create a calibrator object and an instance of our custom <code>CalibrationDataReader</code> object to collect the activation values and compute the range of values. The calibrator object creates a temporary ONNX model for the calibration process that we can delete afterward.</p>
 <p>After feeding the data samples through the model, we will save the generated calibration file for TensorRT to use later.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>target_sz <span class="op">=</span> <span class="dv">288</span></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Save path for temporary ONNX model used during calibration process</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>augmented_model_path <span class="op">=</span> onnx_file_path.parent<span class="op">/</span><span class="ss">f"</span><span class="sc">{</span>onnx_file_path<span class="sc">.</span>stem<span class="sc">}</span><span class="ss">-augmented.onnx"</span></span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a calibrator object for the ONNX model.</span></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    calibrator <span class="op">=</span> create_calibrator(</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span>onnx_file_path, </span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>        op_types_to_calibrate<span class="op">=</span><span class="va">None</span>, </span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>        augmented_model_path<span class="op">=</span>augmented_model_path, </span>
-<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>        calibrate_method<span class="op">=</span>CalibrationMethod.MinMax</span>
-<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set the execution providers for the calibrator.</span></span>
-<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    calibrator.set_execution_providers([<span class="st">"CUDAExecutionProvider"</span>, <span class="st">"CPUExecutionProvider"</span>])</span>
-<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize the custom CalibrationDataReader object</span></span>
-<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    calibration_data_reader <span class="op">=</span> CalibrationDataReaderCV(img_file_paths<span class="op">=</span>sample_img_paths, </span>
-<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>                                                      target_sz<span class="op">=</span>target_sz, </span>
-<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>                                                      input_name<span class="op">=</span>calibrator.model.graph.<span class="bu">input</span>[<span class="dv">0</span>].name)</span>
-<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Collect calibration data using the specified data reader.</span></span>
-<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a>    calibrator.collect_data(data_reader<span class="op">=</span>calibration_data_reader)</span>
-<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize an empty dictionary to hold the new compute range values.</span></span>
-<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    new_compute_range <span class="op">=</span> {}</span>
-<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compute data and update the compute range for each key in the calibrator's data.</span></span>
-<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> k, v <span class="kw">in</span> calibrator.compute_data().data.items():</span>
-<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Extract the min and max values from the range_value.</span></span>
-<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a>        v1, v2 <span class="op">=</span> v.range_value</span>
-<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Convert the min and max values to float and store them in the new_compute_range dictionary.</span></span>
-<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a>        new_compute_range[k] <span class="op">=</span> (<span class="bu">float</span>(v1.item()), <span class="bu">float</span>(v2.item()))</span>
-<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Write the computed calibration table to the specified directory.</span></span>
-<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a>    write_calibration_table(new_compute_range, <span class="bu">dir</span><span class="op">=</span><span class="bu">str</span>(trt_cache_dir))</span>
-<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Catch any exceptions that occur during the calibration process.</span></span>
-<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"An error occurred:"</span>, e)</span>
-<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="cf">finally</span>:</span>
-<span id="cb16-46"><a href="#cb16-46" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove temporary ONNX file created during the calibration process</span></span>
-<span id="cb16-47"><a href="#cb16-47" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> augmented_model_path.exists():</span>
-<span id="cb16-48"><a href="#cb16-48" aria-hidden="true" tabindex="-1"></a>        augmented_model_path.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre class="text"><code>CPU times: user 48.1 s, sys: 5.88 s, total: 53.9 s
-Wall time: 1min 4s</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>target_sz <span class="op">=</span> <span class="dv">288</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Save path for temporary ONNX model used during calibration process</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>augmented_model_path <span class="op">=</span> onnx_file_path.parent<span class="op">/</span><span class="ss">f"</span><span class="sc">{</span>onnx_file_path<span class="sc">.</span>stem<span class="sc">}</span><span class="ss">-augmented.onnx"</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create a calibrator object for the ONNX model.</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    calibrator <span class="op">=</span> create_calibrator(</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        model<span class="op">=</span>onnx_file_path, </span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>        op_types_to_calibrate<span class="op">=</span><span class="va">None</span>, </span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>        augmented_model_path<span class="op">=</span>augmented_model_path, </span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>        calibrate_method<span class="op">=</span>CalibrationMethod.MinMax</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set the execution providers for the calibrator.</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    calibrator.set_execution_providers([<span class="st">"CUDAExecutionProvider"</span>, <span class="st">"CPUExecutionProvider"</span>])</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Initialize the custom CalibrationDataReader object</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>    calibration_data_reader <span class="op">=</span> CalibrationDataReaderCV(img_file_paths<span class="op">=</span>sample_img_paths, </span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>                                                      target_sz<span class="op">=</span>target_sz, </span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>                                                      input_name<span class="op">=</span>calibrator.model.graph.<span class="bu">input</span>[<span class="dv">0</span>].name)</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Collect calibration data using the specified data reader.</span></span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>    calibrator.collect_data(data_reader<span class="op">=</span>calibration_data_reader)</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Write the computed calibration table to the specified directory.</span></span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>    write_calibration_table(calibrator.compute_data().data, <span class="bu">dir</span><span class="op">=</span><span class="bu">str</span>(trt_cache_dir))</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Catch any exceptions that occur during the calibration process.</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"An error occurred:"</span>, e)</span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a><span class="cf">finally</span>:</span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove temporary ONNX file created during the calibration process</span></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> augmented_model_path.exists():</span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a>        augmented_model_path.unlink()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>CPU times: user 51.7 s, sys: 679 ms, total: 52.3 s
+Wall time: 54.1 s</code></pre>
 </section>
 <section id="inspect-tensorrt-cache-folder" class="level3">
 <h3 class="anchored" data-anchor-id="inspect-tensorrt-cache-folder">Inspect TensorRT Cache Folder</h3>
 <p>Looking in the cache folder, we should see three new files.</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the content of the module folder as a Pandas DataFrame</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([path.name <span class="cf">for</span> path <span class="kw">in</span> trt_cache_dir.iterdir()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the content of the module folder as a Pandas DataFrame</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([path.name <span class="cf">for</span> path <span class="kw">in</span> trt_cache_dir.iterdir()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto; max-height:500px">
 <table class="dataframe table table-sm table-striped small">
 <thead>
@@ -1127,55 +1187,38 @@ calibration.json
 <p>To have TensorRT quantize the model for int8 inference, we need to specify the path to the cache folder and the calibration table file name and enable int8 precision when initializing the inference session.</p>
 <section id="create-an-inference-session" class="level3">
 <h3 class="anchored" data-anchor-id="create-an-inference-session">Create an Inference Session</h3>
-<div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>ort.get_available_providers()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>ort.get_available_providers()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <pre class="text"><code>['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>providers <span class="op">=</span> [</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'TensorrtExecutionProvider'</span>, {</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">'device_id'</span>: <span class="dv">0</span>, <span class="co"># The device ID</span></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_max_workspace_size'</span>: <span class="fl">4e9</span>, <span class="co"># Maximum workspace size for TensorRT engine (1e9 ≈ 1GB)</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_engine_cache_enable'</span>: <span class="va">True</span>, <span class="co"># Enable TensorRT engine caching</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_engine_cache_path'</span>: <span class="bu">str</span>(trt_cache_dir), <span class="co"># Path for TensorRT engine, profile files, and int8 calibration table</span></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_int8_enable'</span>: <span class="va">True</span>, <span class="co"># Enable int8 mode in TensorRT</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_int8_calibration_table_name'</span>: <span class="st">'calibration.flatbuffers'</span>, <span class="co"># int8 calibration table file for non-QDQ models in int8 mode</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    })</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>sess_opt <span class="op">=</span> ort.SessionOptions()</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and create an InferenceSession</span></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path, sess_options<span class="op">=</span>sess_opt, providers<span class="op">=</span>providers)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="callout callout-style-default callout-note callout-titled" title="TensorRT Warning Messages:">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-TensorRT Warning Messages:
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>You might see warning messages like the example below when creating the inference session with TensorRT. These are normal, and you can safely ignore them.</p>
-<pre class="text"><code>2024-03-28 13:07:04.725964281 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:374: Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.
-2024-03-28 13:07:04.725986806 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped
-2024-03-28 13:07:04.738993049 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:374: Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.
-2024-03-28 13:07:04.739015348 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped</code></pre>
-</div>
-</div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>providers <span class="op">=</span> [</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    (<span class="st">'TensorrtExecutionProvider'</span>, {</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">'device_id'</span>: <span class="dv">0</span>, <span class="co"># The device ID</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_max_workspace_size'</span>: <span class="fl">4e9</span>, <span class="co"># Maximum workspace size for TensorRT engine (1e9 ≈ 1GB)</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_engine_cache_enable'</span>: <span class="va">True</span>, <span class="co"># Enable TensorRT engine caching</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_engine_cache_path'</span>: <span class="bu">str</span>(trt_cache_dir), <span class="co"># Path for TensorRT engine, profile files, and int8 calibration table</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_int8_enable'</span>: <span class="va">True</span>, <span class="co"># Enable int8 mode in TensorRT</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">'trt_int8_calibration_table_name'</span>: <span class="st">'calibration.flatbuffers'</span>, <span class="co"># int8 calibration table file for non-QDQ models in int8 mode</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>sess_opt <span class="op">=</span> ort.SessionOptions()</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the model and create an InferenceSession</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>session <span class="op">=</span> ort.InferenceSession(onnx_file_path, sess_options<span class="op">=</span>sess_opt, providers<span class="op">=</span>providers)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="select-a-test-image" class="level3">
 <h3 class="anchored" data-anchor-id="select-a-test-image">Select a Test Image</h3>
 <p>We can use the same test image and input size from the <a href="../onnx-export/#select-a-test-image">previous tutorial</a>.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>test_img_name <span class="op">=</span> <span class="st">'pexels-elina-volkova-16191659.jpg'</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>test_img_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/</span><span class="sc">{</span>test_img_name<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>download_file(test_img_url, <span class="st">'./'</span>, <span class="va">False</span>)</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> Image.<span class="bu">open</span>(test_img_name)</span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test Image Size:"</span>: test_img.size, </span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>test_img_name <span class="op">=</span> <span class="st">'pexels-elina-volkova-16191659.jpg'</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>test_img_url <span class="op">=</span> <span class="ss">f"https://huggingface.co/datasets/cj-mills/pexel-hand-gesture-test-images/resolve/main/</span><span class="sc">{</span>test_img_name<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>download_file(test_img_url, <span class="st">'./'</span>, <span class="va">False</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>test_img <span class="op">=</span> Image.<span class="bu">open</span>(test_img_name)</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Test Image Size:"</span>: test_img.size, </span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_41_1.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
@@ -1200,17 +1243,17 @@ Test Image Size:
 </section>
 <section id="prepare-the-test-image" class="level3">
 <h3 class="anchored" data-anchor-id="prepare-the-test-image">Prepare the Test Image</h3>
-<div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the input image size</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">288</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Resize image without cropping</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>input_img <span class="op">=</span> resize_img(test_img, target_sz<span class="op">=</span>test_sz)</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>display(input_img)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Image Size:"</span>: input_img.size</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the input image size</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>test_sz <span class="op">=</span> <span class="dv">288</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Resize image without cropping</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>input_img <span class="op">=</span> resize_img(test_img, target_sz<span class="op">=</span>test_sz)</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>display(input_img)</span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Image Size:"</span>: input_img.size</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_43_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
@@ -1235,17 +1278,21 @@ Input Image Size:
 </section>
 <section id="prepare-the-input-tensor" class="level3">
 <h3 class="anchored" data-anchor-id="prepare-the-input-tensor">Prepare the Input Tensor</h3>
-<div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the existing input image to NumPy format</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>input_tensor_np <span class="op">=</span> np.array(input_img, dtype<span class="op">=</span>np.float32).transpose((<span class="dv">2</span>, <span class="dv">0</span>, <span class="dv">1</span>))[<span class="va">None</span>]<span class="op">/</span><span class="dv">255</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="build-tensorrt-engine" class="level3">
 <h3 class="anchored" data-anchor-id="build-tensorrt-engine">Build TensorRT Engine</h3>
 <p>TensorRT will build an optimized and quantized representation of our model called an engine when we first pass input to the inference session. It will save a copy of this engine object to the cache folder we specified earlier. The build process can take a bit, so caching the engine will save time for future use.</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform a single inference run to build the TensorRT engine for the current input dimensions</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre><code>CPU times: user 25.4 s, sys: 1.88 s, total: 27.3 s
-Wall time: 35 s</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform a single inference run to build the TensorRT engine for the current input dimensions</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})<span class="op">;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>2024-11-11 18:00:16.983451530 [W:onnxruntime:Default, tensorrt_execution_provider.h:90 log] [2024-11-12 02:00:16 WARNING] Calibrator is not being used. Users must provide dynamic range for all tensors that are not Int32 or Bool.
+2024-11-11 18:00:16.983548953 [W:onnxruntime:Default, tensorrt_execution_provider.h:90 log] [2024-11-12 02:00:16 WARNING] Missing scale and zero-point for tensor /model/fc/Gemm_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+2024-11-11 18:00:16.983552890 [W:onnxruntime:Default, tensorrt_execution_provider.h:90 log] [2024-11-12 02:00:16 WARNING] Missing scale and zero-point for tensor ONNXTRT_Broadcast_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor
+2024-11-11 18:00:16.983555175 [W:onnxruntime:Default, tensorrt_execution_provider.h:90 log] [2024-11-12 02:00:16 WARNING] Missing scale and zero-point for tensor /softmax/Softmax_output, expect fall back to non-int8 implementation for any layer consuming or producing given tensor</code></pre>
+<pre><code>CPU times: user 13.8 s, sys: 1.85 s, total: 15.6 s
+Wall time: 25.4 s</code></pre>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1263,8 +1310,8 @@ Note
 <section id="inspect-tensorrt-cache-folder-1" class="level3">
 <h3 class="anchored" data-anchor-id="inspect-tensorrt-cache-folder-1">Inspect TensorRT Cache Folder</h3>
 <p>If we look in the cache folder again, we can see a new <code>.engine</code> file and a new <code>.profile</code> file.</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the content of the module folder as a Pandas DataFrame</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([path.name <span class="cf">for</span> path <span class="kw">in</span> trt_cache_dir.iterdir()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the content of the module folder as a Pandas DataFrame</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>pd.DataFrame([path.name <span class="cf">for</span> path <span class="kw">in</span> trt_cache_dir.iterdir()])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div style="overflow-x:auto; max-height:500px">
 <table class="dataframe table table-sm table-striped small">
 <thead>
@@ -1306,7 +1353,7 @@ calibration.json
 3
 </th>
 <td>
-TensorrtExecutionProvider_TRTKernel_graph_main_graph_9370993215447387188_0_0_int8_sm89.engine
+TensorrtExecutionProvider_TRTKernel_graph_main_graph_2087346457130887064_0_0_int8_sm89.engine
 </td>
 </tr>
 <tr>
@@ -1314,7 +1361,7 @@ TensorrtExecutionProvider_TRTKernel_graph_main_graph_9370993215447387188_0_0_int
 4
 </th>
 <td>
-TensorrtExecutionProvider_TRTKernel_graph_main_graph_9370993215447387188_0_0_int8_sm89.profile
+TensorrtExecutionProvider_TRTKernel_graph_main_graph_2087346457130887064_0_0_int8_sm89.profile
 </td>
 </tr>
 </tbody>
@@ -1324,32 +1371,32 @@ TensorrtExecutionProvider_TRTKernel_graph_main_graph_9370993215447387188_0_0_int
 <section id="benchmark-quantized-model" class="level3">
 <h3 class="anchored" data-anchor-id="benchmark-quantized-model">Benchmark Quantized Model</h3>
 <p>With the TensorRT engine built, we can benchmark our quantized model to gauge the raw inference speeds.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>timeit</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<pre class="text"><code>376 µs ± 3.92 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>timeit</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<pre class="text"><code>361 μs ± 3.09 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)</code></pre>
 <p>In my testing for this model, TensoRT int8 inference tends to be about 3x faster than the CUDA execution provider with the original float32 model.</p>
 <p>Of course, it does not matter how much faster the quantized model is if there is a significant drop in accuracy, so let’s verify the prediction results.</p>
 </section>
 <section id="compute-the-predictions" class="level3">
 <h3 class="anchored" data-anchor-id="compute-the-predictions">Compute the Predictions</h3>
-<div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the highest confidence score</span></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>confidence_score <span class="op">=</span> outputs.<span class="bu">max</span>()</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the class index with the highest confidence score and convert it to the class name</span></span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>pred_class <span class="op">=</span> class_names[outputs.argmax()]</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image</span></span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Store the prediction data in a Pandas Series for easy formatting</span></span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Size:"</span>: input_img.size,</span>
-<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Predicted Class:"</span>: pred_class,</span>
-<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Confidence Score:"</span>: <span class="ss">f"</span><span class="sc">{</span>confidence_score<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span></span>
-<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run inference</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>outputs <span class="op">=</span> session.run(<span class="va">None</span>, {<span class="st">"input"</span>: input_tensor_np})[<span class="dv">0</span>]</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the highest confidence score</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>confidence_score <span class="op">=</span> outputs.<span class="bu">max</span>()</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the class index with the highest confidence score and convert it to the class name</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>pred_class <span class="op">=</span> class_names[outputs.argmax()]</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the image</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>display(test_img)</span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Store the prediction data in a Pandas Series for easy formatting</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a>pd.Series({</span>
+<span id="cb34-15"><a href="#cb34-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Input Size:"</span>: input_img.size,</span>
+<span id="cb34-16"><a href="#cb34-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Predicted Class:"</span>: pred_class,</span>
+<span id="cb34-17"><a href="#cb34-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Confidence Score:"</span>: <span class="ss">f"</span><span class="sc">{</span>confidence_score<span class="op">*</span><span class="dv">100</span><span class="sc">:.2f}</span><span class="ss">%"</span></span>
+<span id="cb34-18"><a href="#cb34-18" aria-hidden="true" tabindex="-1"></a>}).to_frame().style.hide(axis<span class="op">=</span><span class="st">'columns'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="./images/output_53_0.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
