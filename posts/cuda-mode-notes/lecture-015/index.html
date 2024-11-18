@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2024-11-17">
+<meta name="description" content="Lecture #15 provides an in-depth conceptual explanation of NVIDIA’s Cutlass library’s tensor layout algebra system, focusing on how it handles shapes, strides, and tiling operations for efficient GPU tensor computations.">
+
+<title>GPU MODE Lecture 15: CUTLASS – Christian Mills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-07ba0ad10f5680c660e360ac31d2f3b6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-8b864f0777c60eecff11d75b6b2e1175.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-61f2d351c58b11e1d25c66c489878dfa.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb8cbff63e0d11b0ded76255c6f80362.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="GPU MODE Lecture 15: CUTLASS – Christian Mills">
+<meta property="og:description" content="Lecture #15 provides an in-depth conceptual explanation of NVIDIA’s Cutlass library’s tensor layout algebra system, focusing on how it handles shapes, strides, and tiling operations for efficient GPU tensor computations.">
+<meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta property="og:site_name" content="Christian Mills">
+<meta property="og:image:height" content="284">
+<meta property="og:image:width" content="526">
+<meta name="twitter:title" content="GPU MODE Lecture 15: CUTLASS – Christian Mills">
+<meta name="twitter:description" content="Lecture #15 provides an in-depth conceptual explanation of NVIDIA’s Cutlass library’s tensor layout algebra system, focusing on how it handles shapes, strides, and tiling operations for efficient GPU tensor computations.">
+<meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="284">
+<meta name="twitter:image-width" content="526">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul>
+  <li><a href="#talk-overview" id="toc-talk-overview" class="nav-link" data-scroll-target="#talk-overview">Talk Overview</a></li>
+  <li><a href="#what-is-cutlass" id="toc-what-is-cutlass" class="nav-link" data-scroll-target="#what-is-cutlass">What is Cutlass</a></li>
+  <li><a href="#why-learn-cutlass" id="toc-why-learn-cutlass" class="nav-link" data-scroll-target="#why-learn-cutlass">Why Learn Cutlass</a></li>
+  <li><a href="#recognizing-cutlass-code" id="toc-recognizing-cutlass-code" class="nav-link" data-scroll-target="#recognizing-cutlass-code">Recognizing Cutlass Code</a>
+  <ul class="collapse">
+  <li><a href="#indexing-conventions" id="toc-indexing-conventions" class="nav-link" data-scroll-target="#indexing-conventions">Indexing Conventions</a></li>
+  <li><a href="#common-functions" id="toc-common-functions" class="nav-link" data-scroll-target="#common-functions">Common Functions</a></li>
+  </ul></li>
+  <li><a href="#library-purpose-and-context" id="toc-library-purpose-and-context" class="nav-link" data-scroll-target="#library-purpose-and-context">Library Purpose and Context</a>
+  <ul class="collapse">
+  <li><a href="#comparison-with-other-nvidia-libraries" id="toc-comparison-with-other-nvidia-libraries" class="nav-link" data-scroll-target="#comparison-with-other-nvidia-libraries">Comparison with Other NVIDIA Libraries</a></li>
+  <li><a href="#when-to-use-cutlass" id="toc-when-to-use-cutlass" class="nav-link" data-scroll-target="#when-to-use-cutlass">When to Use Cutlass</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#notation-clarifications" id="toc-notation-clarifications" class="nav-link" data-scroll-target="#notation-clarifications">Notation Clarifications</a>
+  <ul>
+  <li><a href="#interval-notation" id="toc-interval-notation" class="nav-link" data-scroll-target="#interval-notation">Interval Notation</a></li>
+  <li><a href="#definition-of-modes" id="toc-definition-of-modes" class="nav-link" data-scroll-target="#definition-of-modes">Definition of Modes</a></li>
+  <li><a href="#cutlass-3.0-cute" id="toc-cutlass-3.0-cute" class="nav-link" data-scroll-target="#cutlass-3.0-cute">Cutlass 3.0 (CuTe)</a></li>
+  </ul></li>
+  <li><a href="#tensors-in-cutlass" id="toc-tensors-in-cutlass" class="nav-link" data-scroll-target="#tensors-in-cutlass">Tensors in Cutlass</a>
+  <ul>
+  <li><a href="#engine-pointer" id="toc-engine-pointer" class="nav-link" data-scroll-target="#engine-pointer">Engine (Pointer)</a></li>
+  <li><a href="#layout-shape-and-stride" id="toc-layout-shape-and-stride" class="nav-link" data-scroll-target="#layout-shape-and-stride">Layout (Shape and Stride)</a></li>
+  </ul></li>
+  <li><a href="#layout-and-coordinate-systems" id="toc-layout-and-coordinate-systems" class="nav-link" data-scroll-target="#layout-and-coordinate-systems">Layout and Coordinate Systems</a>
+  <ul>
+  <li><a href="#mapping-coordinates-to-linear-offsets" id="toc-mapping-coordinates-to-linear-offsets" class="nav-link" data-scroll-target="#mapping-coordinates-to-linear-offsets">Mapping Coordinates to Linear Offsets</a></li>
+  <li><a href="#shape-and-stride-concepts" id="toc-shape-and-stride-concepts" class="nav-link" data-scroll-target="#shape-and-stride-concepts">Shape and Stride Concepts</a>
+  <ul class="collapse">
+  <li><a href="#shape-definition" id="toc-shape-definition" class="nav-link" data-scroll-target="#shape-definition">Shape Definition</a></li>
+  <li><a href="#layout-notation" id="toc-layout-notation" class="nav-link" data-scroll-target="#layout-notation">Layout Notation</a></li>
+  </ul></li>
+  <li><a href="#layout-concatenation" id="toc-layout-concatenation" class="nav-link" data-scroll-target="#layout-concatenation">Layout Concatenation</a>
+  <ul class="collapse">
+  <li><a href="#basic-concatenation" id="toc-basic-concatenation" class="nav-link" data-scroll-target="#basic-concatenation">Basic Concatenation</a></li>
+  </ul></li>
+  <li><a href="#nested-layouts" id="toc-nested-layouts" class="nav-link" data-scroll-target="#nested-layouts">Nested Layouts</a>
+  <ul class="collapse">
+  <li><a href="#structure" id="toc-structure" class="nav-link" data-scroll-target="#structure">Structure</a></li>
+  <li><a href="#congruence-concept" id="toc-congruence-concept" class="nav-link" data-scroll-target="#congruence-concept">Congruence Concept</a></li>
+  </ul></li>
+  <li><a href="#layout-visualization" id="toc-layout-visualization" class="nav-link" data-scroll-target="#layout-visualization">Layout Visualization</a>
+  <ul class="collapse">
+  <li><a href="#purpose" id="toc-purpose" class="nav-link" data-scroll-target="#purpose">Purpose</a></li>
+  <li><a href="#drawing-conventions" id="toc-drawing-conventions" class="nav-link" data-scroll-target="#drawing-conventions">Drawing Conventions</a></li>
+  <li><a href="#example-simple-2d-layout" id="toc-example-simple-2d-layout" class="nav-link" data-scroll-target="#example-simple-2d-layout">Example: Simple 2D Layout</a></li>
+  <li><a href="#example-3d-layout" id="toc-example-3d-layout" class="nav-link" data-scroll-target="#example-3d-layout">Example: 3D Layout</a></li>
+  </ul></li>
+  <li><a href="#special-stride-types" id="toc-special-stride-types" class="nav-link" data-scroll-target="#special-stride-types">Special Stride Types</a>
+  <ul class="collapse">
+  <li><a href="#layout-left" id="toc-layout-left" class="nav-link" data-scroll-target="#layout-left">Layout Left</a></li>
+  <li><a href="#layout-right" id="toc-layout-right" class="nav-link" data-scroll-target="#layout-right">Layout Right</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#sub-tiles-and-memory-organization" id="toc-sub-tiles-and-memory-organization" class="nav-link" data-scroll-target="#sub-tiles-and-memory-organization">Sub-Tiles and Memory Organization</a>
+  <ul>
+  <li><a href="#sub-tile-concepts" id="toc-sub-tile-concepts" class="nav-link" data-scroll-target="#sub-tile-concepts">Sub-Tile Concepts</a>
+  <ul class="collapse">
+  <li><a href="#basic-properties-of-sub-tiles" id="toc-basic-properties-of-sub-tiles" class="nav-link" data-scroll-target="#basic-properties-of-sub-tiles">Basic Properties of Sub-Tiles</a></li>
+  <li><a href="#sub-tile-example" id="toc-sub-tile-example" class="nav-link" data-scroll-target="#sub-tile-example">Sub-Tile Example</a></li>
+  <li><a href="#understanding-nestedness" id="toc-understanding-nestedness" class="nav-link" data-scroll-target="#understanding-nestedness">Understanding Nestedness</a></li>
+  </ul></li>
+  <li><a href="#qa" id="toc-qa" class="nav-link" data-scroll-target="#qa">Q&amp;A</a>
+  <ul class="collapse">
+  <li><a href="#specifying-sub-tiles-in-tensors" id="toc-specifying-sub-tiles-in-tensors" class="nav-link" data-scroll-target="#specifying-sub-tiles-in-tensors">Specifying Sub-Tiles in Tensors</a></li>
+  <li><a href="#composition-at-compile-time-vs.-runtime" id="toc-composition-at-compile-time-vs.-runtime" class="nav-link" data-scroll-target="#composition-at-compile-time-vs.-runtime">Composition at Compile Time vs.&nbsp;Runtime</a></li>
+  <li><a href="#support-for-negative-strides-in-cutlass" id="toc-support-for-negative-strides-in-cutlass" class="nav-link" data-scroll-target="#support-for-negative-strides-in-cutlass">Support for Negative Strides in Cutlass</a></li>
+  </ul></li>
+  <li><a href="#non-contiguous-layouts" id="toc-non-contiguous-layouts" class="nav-link" data-scroll-target="#non-contiguous-layouts">Non-Contiguous Layouts</a></li>
+  <li><a href="#multiple-sub-tiles" id="toc-multiple-sub-tiles" class="nav-link" data-scroll-target="#multiple-sub-tiles">Multiple Sub-Tiles</a>
+  <ul class="collapse">
+  <li><a href="#common-properties" id="toc-common-properties" class="nav-link" data-scroll-target="#common-properties">Common Properties</a></li>
+  <li><a href="#distinguishing-features" id="toc-distinguishing-features" class="nav-link" data-scroll-target="#distinguishing-features">Distinguishing Features</a></li>
+  </ul></li>
+  <li><a href="#memory-management" id="toc-memory-management" class="nav-link" data-scroll-target="#memory-management">Memory Management</a>
+  <ul class="collapse">
+  <li><a href="#tensor-components-review" id="toc-tensor-components-review" class="nav-link" data-scroll-target="#tensor-components-review">Tensor Components Review</a></li>
+  <li><a href="#bounds-checking" id="toc-bounds-checking" class="nav-link" data-scroll-target="#bounds-checking">Bounds Checking</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#tiling" id="toc-tiling" class="nav-link" data-scroll-target="#tiling">Tiling</a>
+  <ul>
+  <li><a href="#tiling-operations" id="toc-tiling-operations" class="nav-link" data-scroll-target="#tiling-operations">Tiling Operations</a>
+  <ul class="collapse">
+  <li><a href="#basic-tiling-structure" id="toc-basic-tiling-structure" class="nav-link" data-scroll-target="#basic-tiling-structure">Basic Tiling Structure</a></li>
+  <li><a href="#mathematical-representation" id="toc-mathematical-representation" class="nav-link" data-scroll-target="#mathematical-representation">Mathematical Representation</a></li>
+  </ul></li>
+  <li><a href="#partial-tiling" id="toc-partial-tiling" class="nav-link" data-scroll-target="#partial-tiling">Partial Tiling</a>
+  <ul class="collapse">
+  <li><a href="#mode-specific-tiling" id="toc-mode-specific-tiling" class="nav-link" data-scroll-target="#mode-specific-tiling">Mode-Specific Tiling</a></li>
+  </ul></li>
+  <li><a href="#compute-resource-tiling" id="toc-compute-resource-tiling" class="nav-link" data-scroll-target="#compute-resource-tiling">Compute Resource Tiling</a>
+  <ul class="collapse">
+  <li><a href="#purpose-1" id="toc-purpose-1" class="nav-link" data-scroll-target="#purpose-1">Purpose</a></li>
+  <li><a href="#components-to-tile" id="toc-components-to-tile" class="nav-link" data-scroll-target="#components-to-tile">Components to Tile</a></li>
+  </ul></li>
+  <li><a href="#layout-division-and-composition" id="toc-layout-division-and-composition" class="nav-link" data-scroll-target="#layout-division-and-composition">Layout Division and Composition</a>
+  <ul class="collapse">
+  <li><a href="#shape-division-concepts" id="toc-shape-division-concepts" class="nav-link" data-scroll-target="#shape-division-concepts">Shape Division Concepts</a></li>
+  <li><a href="#layout-division-implementation" id="toc-layout-division-implementation" class="nav-link" data-scroll-target="#layout-division-implementation">Layout Division Implementation</a></li>
+  </ul></li>
+  <li><a href="#example-of-tiling" id="toc-example-of-tiling" class="nav-link" data-scroll-target="#example-of-tiling">Example of Tiling</a></li>
+  </ul></li>
+  <li><a href="#cute-framework" id="toc-cute-framework" class="nav-link" data-scroll-target="#cute-framework">CuTe Framework</a>
+  <ul>
+  <li><a href="#overview-and-context" id="toc-overview-and-context" class="nav-link" data-scroll-target="#overview-and-context">Overview and Context</a>
+  <ul class="collapse">
+  <li><a href="#timeline-and-integration" id="toc-timeline-and-integration" class="nav-link" data-scroll-target="#timeline-and-integration">Timeline and Integration</a></li>
+  <li><a href="#framework-components" id="toc-framework-components" class="nav-link" data-scroll-target="#framework-components">Framework Components</a></li>
+  </ul></li>
+  <li><a href="#layout-algebra-concepts" id="toc-layout-algebra-concepts" class="nav-link" data-scroll-target="#layout-algebra-concepts">Layout Algebra Concepts</a>
+  <ul class="collapse">
+  <li><a href="#core-operations" id="toc-core-operations" class="nav-link" data-scroll-target="#core-operations">Core Operations</a></li>
+  </ul></li>
+  <li><a href="#implementation-details" id="toc-implementation-details" class="nav-link" data-scroll-target="#implementation-details">Implementation Details</a>
+  <ul class="collapse">
+  <li><a href="#memory-types" id="toc-memory-types" class="nav-link" data-scroll-target="#memory-types">Memory Types</a></li>
+  <li><a href="#static-vs-dynamic-elements" id="toc-static-vs-dynamic-elements" class="nav-link" data-scroll-target="#static-vs-dynamic-elements">Static vs Dynamic Elements</a></li>
+  </ul></li>
+  <li><a href="#library-architecture" id="toc-library-architecture" class="nav-link" data-scroll-target="#library-architecture">Library Architecture</a>
+  <ul class="collapse">
+  <li><a href="#directory-structure" id="toc-directory-structure" class="nav-link" data-scroll-target="#directory-structure">Directory Structure</a></li>
+  </ul></li>
+  <li><a href="#qa-1" id="toc-qa-1" class="nav-link" data-scroll-target="#qa-1">Q&amp;A</a>
+  <ul class="collapse">
+  <li><a href="#availability-across-different-gpus" id="toc-availability-across-different-gpus" class="nav-link" data-scroll-target="#availability-across-different-gpus">Availability Across Different GPUs</a></li>
+  <li><a href="#operations-beyond-matrix-multiplication" id="toc-operations-beyond-matrix-multiplication" class="nav-link" data-scroll-target="#operations-beyond-matrix-multiplication">Operations Beyond Matrix Multiplication</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#practical-implementation-and-usage" id="toc-practical-implementation-and-usage" class="nav-link" data-scroll-target="#practical-implementation-and-usage">Practical Implementation and Usage</a>
+  <ul>
+  <li><a href="#matrix-multiplication-implementation" id="toc-matrix-multiplication-implementation" class="nav-link" data-scroll-target="#matrix-multiplication-implementation">Matrix Multiplication Implementation</a>
+  <ul class="collapse">
+  <li><a href="#sgemm-single-precision-general-matrix-multiply" id="toc-sgemm-single-precision-general-matrix-multiply" class="nav-link" data-scroll-target="#sgemm-single-precision-general-matrix-multiply">SGEMM (Single Precision General Matrix Multiply)</a></li>
+  <li><a href="#function-parameters" id="toc-function-parameters" class="nav-link" data-scroll-target="#function-parameters">Function Parameters</a></li>
+  </ul></li>
+  <li><a href="#memory-management-features" id="toc-memory-management-features" class="nav-link" data-scroll-target="#memory-management-features">Memory Management Features</a>
+  <ul class="collapse">
+  <li><a href="#memory-types-and-tags" id="toc-memory-types-and-tags" class="nav-link" data-scroll-target="#memory-types-and-tags">Memory Types and Tags</a></li>
+  </ul></li>
+  <li><a href="#example-code-structure" id="toc-example-code-structure" class="nav-link" data-scroll-target="#example-code-structure">Example Code Structure</a>
+  <ul class="collapse">
+  <li><a href="#basic-include-pattern" id="toc-basic-include-pattern" class="nav-link" data-scroll-target="#basic-include-pattern">Basic Include Pattern</a></li>
+  <li><a href="#tensor-creation" id="toc-tensor-creation" class="nav-link" data-scroll-target="#tensor-creation">Tensor Creation</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">GPU MODE Lecture 15: CUTLASS</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">cuda</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Lecture #15 provides an in-depth conceptual explanation of NVIDIA’s Cutlass library’s tensor layout algebra system, focusing on how it handles shapes, strides, and tiling operations for efficient GPU tensor computations.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 17, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+This post is part of the following series:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><a href="../../../series/notes/cuda-mode-notes.html"><strong>GPU MODE Lecture Notes</strong></a>: My notes from the <strong>GPU MODE</strong> reading group lectures run by <strong>Andreas Kopf</strong> and <strong>Mark Saroufim</strong>.</li>
+</ul>
+</div>
+</div>
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#notation-clarifications">Notation Clarifications</a><br>
+</li>
+<li><a href="#tensors-in-cutlass">Tensors in Cutlass</a><br>
+</li>
+<li><a href="#layout-and-coordinate-systems">Layout and Coordinate Systems</a><br>
+</li>
+<li><a href="#sub-tiles-and-memory-organization">Sub-Tiles and Memory Organization</a><br>
+</li>
+<li><a href="#tiling">Tiling</a><br>
+</li>
+<li><a href="#cute-framework">CuTe Framework</a><br>
+</li>
+<li><a href="#practical-implementation-and-usage">Practical Implementation and Usage</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=G6q719ck7ww">Lecture 15: CUTLASS</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<section id="talk-overview" class="level3">
+<h3 class="anchored" data-anchor-id="talk-overview">Talk Overview</h3>
+<ul>
+<li><strong>Speaker:</strong> Eric Auld</li>
+<li><strong>Topic:</strong> <strong>Cutlass</strong> - NVIDIA’s CUDA Templates for Linear Algebra Subroutines
+<ul>
+<li>Focuses on the <strong>conceptual understanding</strong> of Cutlass rather than the API specifics.</li>
+<li>Aims to help attendees <strong>loosen the lid</strong> and get started with learning Cutlass.</li>
+</ul></li>
+</ul>
+</section>
+<section id="what-is-cutlass" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-cutlass">What is Cutlass</h3>
+<ul>
+<li><strong>Cutlass</strong> is a CUDA Templates for Linear Algebra Subroutines library developed by NVIDIA.
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/NVIDIA/cutlass">NVIDIA/cutlass</a></li>
+<li><strong>Authors:</strong> <a href="https://github.com/NVIDIA/cutlass/blob/main/CITATION.cff">https://github.com/NVIDIA/cutlass/blob/main/CITATION.cff</a></li>
+</ul></li>
+<li>It provides low-level control over GPU computations, particularly for <strong>tensor core operations</strong>.</li>
+<li>Used for writing high-performance kernels for <strong>machine learning</strong> and <strong>linear algebra</strong> applications.</li>
+</ul>
+</section>
+<section id="why-learn-cutlass" class="level3">
+<h3 class="anchored" data-anchor-id="why-learn-cutlass">Why Learn Cutlass</h3>
+<ul>
+<li><p>Cutlass allows developers to <strong>spec out new machine learning models</strong> and test their performance.</p></li>
+<li><p>It provides tools to make models <strong>performant</strong> by leveraging GPU capabilities directly.</p></li>
+<li><p>Useful for exploring <strong>performance-oriented machine learning models</strong> that incorporate extensive linear algebra.</p></li>
+<li><p>Understanding Cutlass is essential for working on performance-critical components like Flash Attention.</p>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/Dao-AILab/flash-attention">Dao-AILab/flash-attention</a>
+<ul>
+<li><strong>cutlass code:</strong> <a href="https://github.com/Dao-AILab/flash-attention/tree/main/csrc">flash-attention/csrc</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="recognizing-cutlass-code" class="level3">
+<h3 class="anchored" data-anchor-id="recognizing-cutlass-code">Recognizing Cutlass Code</h3>
+<section id="indexing-conventions" class="level4">
+<h4 class="anchored" data-anchor-id="indexing-conventions">Indexing Conventions</h4>
+<ul>
+<li>Cutlass uses <strong>round parentheses</strong> <code>()</code> for indexing tensors, unlike the typical square brackets <code>[]</code>.</li>
+<li>Uses <strong>underscores <code>_</code></strong> in indexing:
+<ul>
+<li>The underscore acts like the <strong>colon <code>:</code></strong> in Python for slicing.</li>
+<li>Example: <code>some_tensor(_, 2)</code> selects all elements in the first dimension and the third element in the second dimension.</li>
+</ul></li>
+</ul>
+</section>
+<section id="common-functions" class="level4">
+<h4 class="anchored" data-anchor-id="common-functions">Common Functions</h4>
+<ul>
+<li><strong>Greatest Hits Functions</strong> frequently seen in Cutlass code:
+<ul>
+<li><code>local_tile</code></li>
+<li><code>local_partition</code></li>
+<li><code>partition_D</code></li>
+<li><code>partition_S</code></li>
+</ul></li>
+<li><strong>Underscore 3 <code>_3</code></strong>:
+<ul>
+<li>Represents a <strong>static integer 3</strong>.</li>
+<li>The value is embodied in the type rather than the variable’s value.</li>
+<li>Used for compile-time constants.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="library-purpose-and-context" class="level3">
+<h3 class="anchored" data-anchor-id="library-purpose-and-context">Library Purpose and Context</h3>
+<section id="comparison-with-other-nvidia-libraries" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-with-other-nvidia-libraries">Comparison with Other NVIDIA Libraries</h4>
+<ul>
+<li><strong>User-Friendly Libraries</strong> (Called from host):
+<ul>
+<li><a href="https://developer.nvidia.com/cublas">cuBLAS</a></li>
+<li><a href="https://developer.nvidia.com/cudnn">cuDNN</a></li>
+<li>Features:
+<ul>
+<li>No kernel code writing required</li>
+<li>Automatic Tensor core inference</li>
+<li>Some kernel fusion capabilities</li>
+<li>Host-to-device communication overhead</li>
+</ul></li>
+</ul></li>
+<li><strong>Device-Level Libraries</strong>:
+<ul>
+<li>Cutlass</li>
+<li><a href="https://nvidia.github.io/cccl/thrust/">Thrust</a></li>
+<li><a href="https://docs.nvidia.com/cuda/cub/index.html">CUB</a></li>
+<li>Features:
+<ul>
+<li>Low-level control</li>
+<li>Direct tensor core operation exposure</li>
+<li>Greater flexibility for new implementations</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="when-to-use-cutlass" class="level4">
+<h4 class="anchored" data-anchor-id="when-to-use-cutlass">When to Use Cutlass</h4>
+<ul>
+<li><strong>Primary Use Cases</strong>:
+<ul>
+<li>For new ML models requiring performance optimization</li>
+<li>When exploring performance-oriented machine learning models with extensive linear algebra</li>
+<li>When requiring lower-level control than what CUDA BLAS (cuBLAS) provides</li>
+<li>For implementing and testing new model architectures</li>
+</ul></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="notation-clarifications" class="level2">
+<h2 class="anchored" data-anchor-id="notation-clarifications">Notation Clarifications</h2>
+<section id="interval-notation" class="level3">
+<h3 class="anchored" data-anchor-id="interval-notation">Interval Notation</h3>
+<ul>
+<li>Uses the following notation for intervals:
+<ul>
+<li><code>[i..j)</code> represents the <strong>half-open interval</strong> from <code>i</code> to <code>j</code>, including <code>i</code> but excluding <code>j</code>.</li>
+<li>Example: <code>[0..n)</code> includes integers from <code>0</code> up to but not including <code>n</code>.</li>
+</ul></li>
+</ul>
+</section>
+<section id="definition-of-modes" class="level3">
+<h3 class="anchored" data-anchor-id="definition-of-modes">Definition of Modes</h3>
+<ul>
+<li><strong>Mode</strong>:
+<ul>
+<li>An element of a <strong>nested tuple</strong>.</li>
+<li>In a nested tuple of integers, each element (which could be a tuple itself) is called a mode.</li>
+<li>Important in the context of <strong>nested layouts</strong> in Cutlass.</li>
+</ul></li>
+</ul>
+</section>
+<section id="cutlass-3.0-cute" class="level3">
+<h3 class="anchored" data-anchor-id="cutlass-3.0-cute">Cutlass 3.0 (CuTe)</h3>
+<ul>
+<li><strong>CuTe</strong> refers to <strong>Cutlass 3.0</strong>, which introduced new tensor notation.</li>
+<li>Emphasizes <strong>nested structures</strong> and layouts for tensors.</li>
+</ul>
+</section>
+</section>
+<section id="tensors-in-cutlass" class="level2">
+<h2 class="anchored" data-anchor-id="tensors-in-cutlass">Tensors in Cutlass</h2>
+<section id="engine-pointer" class="level3">
+<h3 class="anchored" data-anchor-id="engine-pointer">Engine (Pointer)</h3>
+<ul>
+<li>The <strong>engine</strong> of a tensor represents the <strong>underlying memory pointer</strong>.</li>
+<li>It could be a pointer to <strong>global memory</strong>, <strong>shared memory</strong>, or other memory types.</li>
+</ul>
+</section>
+<section id="layout-shape-and-stride" class="level3">
+<h3 class="anchored" data-anchor-id="layout-shape-and-stride">Layout (Shape and Stride)</h3>
+<ul>
+<li>A tensor’s <strong>layout</strong> consists of:
+<ul>
+<li><strong>Shape</strong>: Specifies the allowable input coordinates.
+<ul>
+<li>Represented as <strong>nested integer tuples</strong>.</li>
+<li>Defines the <strong>dimensions</strong> of the tensor.</li>
+</ul></li>
+<li><strong>Stride</strong>: Defines how to map coordinates to <strong>linear memory offsets</strong>.
+<ul>
+<li>Also represented as nested integer tuples.</li>
+<li>Used in calculating the memory address for a given tensor coordinate.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="layout-and-coordinate-systems" class="level2">
+<h2 class="anchored" data-anchor-id="layout-and-coordinate-systems">Layout and Coordinate Systems</h2>
+<section id="mapping-coordinates-to-linear-offsets" class="level3">
+<h3 class="anchored" data-anchor-id="mapping-coordinates-to-linear-offsets">Mapping Coordinates to Linear Offsets</h3>
+<ul>
+<li>In <strong>C-style indexing</strong>, linear offsets are calculated using strides:
+<ul>
+<li>For a coordinate <code>(i, j)</code>, the offset is <code>i + j * M</code>.</li>
+<li>For <code>(i, j, k)</code>, the offset is <code>i + j * M + k * M * N</code>.</li>
+</ul></li>
+<li>This can be represented as a <strong>dot product</strong>:
+<ul>
+<li>Offset = <code>(i, j, k) • (1, M, M*N)</code>.</li>
+</ul></li>
+<li>The <strong>stride vector</strong> <code>(1, M, M*N)</code> is used to map multi-dimensional indices to linear memory.</li>
+</ul>
+</section>
+<section id="shape-and-stride-concepts" class="level3">
+<h3 class="anchored" data-anchor-id="shape-and-stride-concepts">Shape and Stride Concepts</h3>
+<section id="shape-definition" class="level4">
+<h4 class="anchored" data-anchor-id="shape-definition">Shape Definition</h4>
+<ul>
+<li>Specifies allowable input coordinates</li>
+<li>Uses upper bounds notation</li>
+<li>Example: Shape <code>(M, N, K)</code> means:
+<ul>
+<li>i coordinates: [0, M)</li>
+<li>j coordinates: [0, N)</li>
+<li>k coordinates: [0, K)</li>
+</ul></li>
+</ul>
+</section>
+<section id="layout-notation" class="level4">
+<h4 class="anchored" data-anchor-id="layout-notation">Layout Notation</h4>
+<ul>
+<li>Format: <code>shape:stride</code></li>
+<li>Example: <code>(M,N,K):(1,M,MN)</code>
+<ul>
+<li>Shape component: <code>(M,N,K)</code></li>
+<li>Stride component: <code>(1,M,MN)</code></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="layout-concatenation" class="level3">
+<h3 class="anchored" data-anchor-id="layout-concatenation">Layout Concatenation</h3>
+<section id="basic-concatenation" class="level4">
+<h4 class="anchored" data-anchor-id="basic-concatenation">Basic Concatenation</h4>
+<ul>
+<li>Can combine one-dimensional layouts</li>
+<li>Example: <code>(3:1,2:3) = (3,2):(1,3)</code></li>
+<li>Benefits:
+<ul>
+<li>More convenient representation</li>
+<li>Keeps corresponding shape and stride values closer together</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="nested-layouts" class="level3">
+<h3 class="anchored" data-anchor-id="nested-layouts">Nested Layouts</h3>
+<section id="structure" class="level4">
+<h4 class="anchored" data-anchor-id="structure">Structure</h4>
+<ul>
+<li><strong>Flat Layout</strong>:
+<ul>
+<li>All dimensions are at the same level.</li>
+<li>Coordinates are simple tuples.</li>
+<li>Example: Shape <code>(3, 4, 2)</code>, Stride <code>(1, 3, 40)</code>.
+<ul>
+<li>Accepts coordinates like <code>(1,2,1)</code></li>
+</ul></li>
+</ul></li>
+<li><strong>Nested Layout</strong>:
+<ul>
+<li>Dimensions are grouped into nested tuples.</li>
+<li>Coordinates are nested tuples.</li>
+<li>Example:
+<ul>
+<li>Shape <code>((3,4),2)</code>.</li>
+<li>Stride <code>(1,3),40)</code>.</li>
+</ul></li>
+<li>The first mode is <code>(3,4)</code>, and the second mode is <code>2</code>.</li>
+<li>Accepts coordinates like <code>((1,2),1)</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="congruence-concept" class="level4">
+<h4 class="anchored" data-anchor-id="congruence-concept">Congruence Concept</h4>
+<ul>
+<li><strong>Congruent</strong>: Having the same nesting structure</li>
+<li>Requirements:
+<ul>
+<li>Shape and stride must be congruent</li>
+<li>Coordinates must match the nesting structure</li>
+</ul></li>
+<li>Example:
+<ul>
+<li>Nested layout accepts coordinate like <code>(1,2),1</code></li>
+<li>Flat layout accepts coordinate like <code>1,2,1</code></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="layout-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="layout-visualization">Layout Visualization</h3>
+<section id="purpose" class="level4">
+<h4 class="anchored" data-anchor-id="purpose">Purpose</h4>
+<ul>
+<li>Drawing layouts helps in <strong>visualizing</strong> and <strong>reasoning</strong> about tensor layouts.</li>
+<li>Not meant to provide rigorous definitions but to aid understanding.</li>
+</ul>
+</section>
+<section id="drawing-conventions" class="level4">
+<h4 class="anchored" data-anchor-id="drawing-conventions">Drawing Conventions</h4>
+<ul>
+<li>Positive i direction: downward</li>
+<li>Positive j direction: rightward</li>
+<li>Starting point: always zero</li>
+<li>Compositional approach:
+<ol type="1">
+<li>Draw elements in first direction</li>
+<li>Replicate pattern for second direction</li>
+<li>Continue for additional dimensions</li>
+</ol></li>
+</ul>
+</section>
+<section id="example-simple-2d-layout" class="level4">
+<h4 class="anchored" data-anchor-id="example-simple-2d-layout">Example: Simple 2D Layout</h4>
+<ul>
+<li><p><strong>Layout</strong>:</p>
+<ul>
+<li><code>shape = (3, 4)</code></li>
+<li><code>stride = (1, 3)</code></li>
+</ul></li>
+<li><p><strong>Visualization</strong>:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/layout-visualization-example-2d.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></p>
+</figure>
+</div>
+<ul>
+<li>Along the <code>i</code> (row) direction:
+<ul>
+<li>Elements at offsets <code>0</code>, <code>1</code>, <code>2</code></li>
+</ul></li>
+<li>Along the <code>j</code> (column) direction:
+<ul>
+<li>Each step increases the offset by <code>3</code> (due to stride <code>3</code>).</li>
+</ul></li>
+<li>The overall offsets for each element can be calculated and plotted.</li>
+</ul></li>
+</ul>
+</section>
+<section id="example-3d-layout" class="level4">
+<h4 class="anchored" data-anchor-id="example-3d-layout">Example: 3D Layout</h4>
+<ul>
+<li><p><strong>Layout</strong>:</p>
+<ul>
+<li><code>shape = (2, 2, 4)</code></li>
+<li><code>stride = (1, 2, 4)</code></li>
+</ul></li>
+<li><p><strong>Visualization</strong>:<img src="./images/layout-visualization-example-3d-2.png" class="img-fluid quarto-figure quarto-figure-center"></p>
+<ul>
+<li>Three dimensions: <code>i</code>, <code>j</code>, <code>k</code>.</li>
+<li>Elements are offset according to strides in each dimension.</li>
+<li>Helps in understanding complex memory layouts.</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="special-stride-types" class="level3">
+<h3 class="anchored" data-anchor-id="special-stride-types">Special Stride Types</h3>
+<section id="layout-left" class="level4">
+<h4 class="anchored" data-anchor-id="layout-left">Layout Left</h4>
+<ul>
+<li>Generalized <strong>column-major</strong> ordering</li>
+<li>Stride calculation: Running prefix product from left</li>
+<li>Example for shape <code>(A,B,C,D)</code>:
+<ul>
+<li>Resulting stride: <code>(1,A,AB,ABC)</code></li>
+</ul></li>
+</ul>
+</section>
+<section id="layout-right" class="level4">
+<h4 class="anchored" data-anchor-id="layout-right">Layout Right</h4>
+<ul>
+<li>Generalized <strong>row-major</strong> ordering</li>
+<li>Stride calculation: Running prefix product from right</li>
+<li>Example for shape <code>(A,B,C,D)</code>:
+<ul>
+<li>Resulting stride: <code>(BCD,CD,D,1)</code></li>
+</ul></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="sub-tiles-and-memory-organization" class="level2">
+<h2 class="anchored" data-anchor-id="sub-tiles-and-memory-organization">Sub-Tiles and Memory Organization</h2>
+<section id="sub-tile-concepts" class="level3">
+<h3 class="anchored" data-anchor-id="sub-tile-concepts">Sub-Tile Concepts</h3>
+<section id="basic-properties-of-sub-tiles" class="level4">
+<h4 class="anchored" data-anchor-id="basic-properties-of-sub-tiles">Basic Properties of Sub-Tiles</h4>
+<ul>
+<li><strong>Shape</strong>: Different (smaller) than parent tensor</li>
+<li><strong>Stride</strong>: Identical to parent tensor</li>
+<li><strong>Base Pointer</strong>: Offset from parent tensor’s base</li>
+</ul>
+</section>
+<section id="sub-tile-example" class="level4">
+<h4 class="anchored" data-anchor-id="sub-tile-example">Sub-Tile Example</h4>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./images/sub-tile-example.png" class="img-fluid quarto-figure quarto-figure-center figure-img"></p>
+</figure>
+</div>
+<ul>
+<li><strong>Parent Tensor</strong>: <code>T</code> with shape <code>(M, N)</code> and layout <code>layout_left</code> (1,M) stride.</li>
+<li><strong>Sub-Tile</strong>: <code>t</code> with shape <code>(3, 5)</code> at position (5,6).</li>
+<li>Maintains parent stride (1,M)</li>
+<li>Base pointer offset calculation: <code>5*1 + 6*M</code></li>
+</ul>
+</section>
+<section id="understanding-nestedness" class="level4">
+<h4 class="anchored" data-anchor-id="understanding-nestedness">Understanding Nestedness</h4>
+<ul>
+<li><strong>Question</strong>: <em>“Are you going to explain on an example what nestedness means?”</em></li>
+<li><strong>Answer</strong>:
+<ul>
+<li>Eric elaborated:
+<ul>
+<li><strong>Nested Tuples</strong>: Tuples where elements can themselves be tuples, forming a hierarchical or tree-like structure.</li>
+<li><strong>Example</strong>:
+<ul>
+<li>A nested layout: <code>((3, 4), 2):((1,3),12)</code>
+<ul>
+<li>Coordinates accepted: <code>((i, j), k)</code></li>
+</ul></li>
+<li>Flat layout: <code>(3,4,2):(1,3,12)</code></li>
+</ul></li>
+<li><strong>Usage in Cutlass</strong>:
+<ul>
+<li>Nested modes allow for logical subdivisions of tensors, which can represent different aspects like thread arrangements and value assignments.</li>
+<li>Helps in assigning threads to multi-dimensional data efficiently.</li>
+</ul></li>
+</ul></li>
+<li><strong>Clarification</strong>:
+<ul>
+<li>The nesting structure must be consistent across shape, stride, and the coordinates used.</li>
+<li>Nestedness facilitates operations where dimensions need to be grouped logically.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="qa" class="level3">
+<h3 class="anchored" data-anchor-id="qa">Q&amp;A</h3>
+<section id="specifying-sub-tiles-in-tensors" class="level4">
+<h4 class="anchored" data-anchor-id="specifying-sub-tiles-in-tensors">Specifying Sub-Tiles in Tensors</h4>
+<ul>
+<li><strong>Question</strong>: <em>“How do you tile a tensor in this example? How do you specify that capital <code>T</code> is broken down into lowercase <code>t</code>s?”</em></li>
+<li><strong>Answer</strong>:
+<ul>
+<li>Eric explained that tiling can be achieved using specific methods in Cutlass:
+<ul>
+<li><strong>Methods for Tiling</strong>:
+<ul>
+<li><strong><code>with_shape</code></strong>: Adjusts the shape of a tensor while keeping the same stride, effectively creating a sub-tile.</li>
+<li><strong><code>local_tile</code></strong>: Partitions a tensor into tiles for local computation.</li>
+<li><strong><code>local_partition</code></strong>: Divides a tensor among threads or warps.</li>
+<li><strong>Composition</strong>:
+<ul>
+<li>Using the <strong>compose</strong> function to combine layouts, treating them as functions.</li>
+<li>Allows creating sub-tiles by composing the parent tensor’s layout with the desired sub-tile layout.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><strong>Key Point</strong>:
+<ul>
+<li>Sub-tiles share the same stride as the parent tensor but have different shapes and base pointers.</li>
+<li>The base pointer of a sub-tile is offset based on its position within the parent tensor.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="composition-at-compile-time-vs.-runtime" class="level4">
+<h4 class="anchored" data-anchor-id="composition-at-compile-time-vs.-runtime">Composition at Compile Time vs.&nbsp;Runtime</h4>
+<ul>
+<li><strong>Question</strong>: <em>“Is adding composition of layouts adding some hardware overhead, or is it all at runtime or compile time?”</em></li>
+<li><strong>Answer</strong>:
+<ul>
+<li>Eric explained that it could be either, depending on the situation:
+<ul>
+<li><strong>Compile-Time Composition</strong>:
+<ul>
+<li>If layouts are entirely static and composed of static integers (e.g., <code>_3</code> representing a static <code>3</code>), composition can occur at compile time.</li>
+<li>Benefits include potential performance optimizations and early error detection.</li>
+</ul></li>
+<li><strong>Runtime Composition</strong>:
+<ul>
+<li>If layouts involve dynamic components (e.g., dimensions not known until runtime), composition must occur at runtime.</li>
+<li>Examples include large memory allocations where sizes aren’t predetermined.</li>
+</ul></li>
+</ul></li>
+<li><strong>Implications</strong>:
+<ul>
+<li>Compile-time composition can reduce overhead, but flexibility may require runtime handling.</li>
+<li>Developers can balance between performance and flexibility based on their needs.</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="support-for-negative-strides-in-cutlass" class="level4">
+<h4 class="anchored" data-anchor-id="support-for-negative-strides-in-cutlass">Support for Negative Strides in Cutlass</h4>
+<ul>
+<li><strong>Question</strong>: <em>“Is it allowed in Cutlass to use negative strides?”</em></li>
+<li><strong>Answer</strong>:
+<ul>
+<li>Eric confirmed that negative strides are allowed and elaborated:
+<ul>
+<li><strong>Usage</strong>:
+<ul>
+<li>Negative strides enable traversal of tensors in reverse order along a dimension.</li>
+<li>Useful for operations like flipping tensors or accessing data in a non-standard sequence.</li>
+</ul></li>
+<li><strong>Considerations</strong>:
+<ul>
+<li>While powerful, using negative strides can be complex and requires careful handling to avoid errors.</li>
+</ul></li>
+<li><strong>Example</strong>:
+<ul>
+<li>A tensor with a negative stride in one dimension will decrement the memory offset when indexing along that dimension.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="non-contiguous-layouts" class="level3">
+<h3 class="anchored" data-anchor-id="non-contiguous-layouts">Non-Contiguous Layouts</h3>
+<ul>
+<li><strong>Definition</strong>:
+<ul>
+<li>Layouts where elements are not stored in contiguous memory locations.</li>
+</ul></li>
+<li><strong>Example</strong>:
+<ul>
+<li><strong>Stride with Gaps</strong>:
+<ul>
+<li><code>shape = (3)</code></li>
+<li><code>stride = (2)</code></li>
+<li>Offsets: <code>0</code>, <code>2</code>, <code>4</code> (skipping memory locations).</li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="multiple-sub-tiles" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-sub-tiles">Multiple Sub-Tiles</h3>
+<section id="common-properties" class="level4">
+<h4 class="anchored" data-anchor-id="common-properties">Common Properties</h4>
+<ul>
+<li>All sub-tiles of same size have:
+<ul>
+<li>Identical shape</li>
+<li>Identical stride</li>
+<li>Different base pointers</li>
+</ul></li>
+</ul>
+</section>
+<section id="distinguishing-features" class="level4">
+<h4 class="anchored" data-anchor-id="distinguishing-features">Distinguishing Features</h4>
+<ul>
+<li>Only differ in base pointer offset</li>
+<li>Each maintains parent tensor’s memory layout pattern</li>
+<li>Base pointer calculation uses parent tensor’s layout</li>
+</ul>
+</section>
+</section>
+<section id="memory-management" class="level3">
+<h3 class="anchored" data-anchor-id="memory-management">Memory Management</h3>
+<section id="tensor-components-review" class="level4">
+<h4 class="anchored" data-anchor-id="tensor-components-review">Tensor Components Review</h4>
+<ol type="1">
+<li><strong>Engine</strong> (pointer/memory):
+<ul>
+<li>Base pointer location</li>
+<li>Memory type (shared, global, etc.)</li>
+</ul></li>
+<li><strong>Layout</strong>:
+<ul>
+<li>Shape (dimensions)</li>
+<li>Stride (memory pattern)</li>
+</ul></li>
+</ol>
+</section>
+<section id="bounds-checking" class="level4">
+<h4 class="anchored" data-anchor-id="bounds-checking">Bounds Checking</h4>
+<ul>
+<li>Cutlass performs bounds checking</li>
+<li>Many checks possible at compile time due to static integers</li>
+<li>Type system encodes layout information</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="tiling" class="level2">
+<h2 class="anchored" data-anchor-id="tiling">Tiling</h2>
+<section id="tiling-operations" class="level3">
+<h3 class="anchored" data-anchor-id="tiling-operations">Tiling Operations</h3>
+<section id="basic-tiling-structure" class="level4">
+<h4 class="anchored" data-anchor-id="basic-tiling-structure">Basic Tiling Structure</h4>
+<ul>
+<li>Division of larger tensor into smaller parts</li>
+<li>Two components:
+<ol type="1">
+<li><strong>Outer Part</strong>: Which tile we’re examining</li>
+<li><strong>Inner Part</strong>: Which element within the tile</li>
+</ol></li>
+</ul>
+</section>
+<section id="mathematical-representation" class="level4">
+<h4 class="anchored" data-anchor-id="mathematical-representation">Mathematical Representation</h4>
+<p>For tensor size <code>A×B×C</code> tiled by <code>a×b×c</code>: - Outer dimensions: <code>(A/a) × (B/b) × (C/c)</code> - Inner dimensions: <code>a × b × c</code></p>
+</section>
+</section>
+<section id="partial-tiling" class="level3">
+<h3 class="anchored" data-anchor-id="partial-tiling">Partial Tiling</h3>
+<section id="mode-specific-tiling" class="level4">
+<h4 class="anchored" data-anchor-id="mode-specific-tiling">Mode-Specific Tiling</h4>
+<ul>
+<li>Can tile specific dimensions while leaving others untouched</li>
+<li>Example tiling modes A and C:
+<ul>
+<li>Outer part: <code>(A/a) × B × (C/c)</code></li>
+<li>Inner part: <code>a × 1 × c</code></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="compute-resource-tiling" class="level3">
+<h3 class="anchored" data-anchor-id="compute-resource-tiling">Compute Resource Tiling</h3>
+<section id="purpose-1" class="level4">
+<h4 class="anchored" data-anchor-id="purpose-1">Purpose</h4>
+<ul>
+<li>Maps both data and compute resources</li>
+<li>Common in accelerator operations</li>
+<li>Example: Tensor core operations requiring specific thread counts</li>
+</ul>
+</section>
+<section id="components-to-tile" class="level4">
+<h4 class="anchored" data-anchor-id="components-to-tile">Components to Tile</h4>
+<ol type="1">
+<li><strong>Compute Resources</strong>:
+<ul>
+<li>Thread arrangements</li>
+<li>Warp-level operations</li>
+</ul></li>
+<li><strong>Data Structures</strong>:
+<ul>
+<li>Memory layouts</li>
+<li>Access patterns</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="layout-division-and-composition" class="level3">
+<h3 class="anchored" data-anchor-id="layout-division-and-composition">Layout Division and Composition</h3>
+<section id="shape-division-concepts" class="level4">
+<h4 class="anchored" data-anchor-id="shape-division-concepts">Shape Division Concepts</h4>
+<ul>
+<li><p><strong>Notation:</strong></p>
+<ul>
+<li><p>Uses circle-slash symbol (⊘) to represent division-like operation</p></li>
+<li><p>Format: <code>BigShape ⊘ SmallShape</code></p></li>
+</ul></li>
+<li><p><strong>Convention Rules:</strong></p>
+<ol type="1">
+<li><p><strong>First Mode</strong> (Inner):</p>
+<ul>
+<li>Represents elements within a tile</li>
+<li>Answers “which element in the tile?”</li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Second Mode</strong> (Outer):
+<ul>
+<li>Represents tile identification</li>
+<li>Answers “which tile?”</li>
+</ul></li>
+</ol></li>
+<li><p><strong>Leftover Modes</strong>:</p>
+<ul>
+<li>Placed in outer part</li>
+<li>Represents untiled dimensions</li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+<section id="layout-division-implementation" class="level4">
+<h4 class="anchored" data-anchor-id="layout-division-implementation">Layout Division Implementation</h4>
+<ul>
+<li><p><strong>Example with Layout Left:</strong></p>
+<ul>
+<li>Original Shape: <code>(ABC)</code></li>
+<li>Original Stride: <code>(1, A, AB)</code></li>
+<li>Dividing Shape: <code>(a, b, c)</code></li>
+</ul></li>
+<li><p><strong>Results in Two Parts:</strong></p>
+<ol type="1">
+<li><strong>Inner Part</strong> (Subtile):
+<ul>
+<li>Shape: <code>a, b, c</code></li>
+<li>Stride: Same as original <code>(1, A, AB)</code></li>
+</ul></li>
+<li><strong>Outer Part</strong> (Tile Selection):
+<ul>
+<li>Shape: <code>A/a, B/b, C/c</code></li>
+<li>Stride: Original stride × small shape size</li>
+<li>Calculation: <code>(1×a, A×b, AB×c)</code></li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+</section>
+<section id="example-of-tiling" class="level3">
+<h3 class="anchored" data-anchor-id="example-of-tiling">Example of Tiling</h3>
+<ul>
+<li><strong>Original Shape</strong>: <code>(M, N)</code></li>
+<li><strong>Tile Shape</strong>: <code>(m, n)</code></li>
+<li><strong>Outer Shape</strong>: <code>(M/m, N/n)</code></li>
+<li><strong>Inner Shape</strong>: <code>(m, n)</code></li>
+<li><strong>Inner Stride</strong>: Same as original stride.</li>
+<li><strong>Outer Stride</strong>:
+<ul>
+<li>Calculated as:
+<ul>
+<li><code>(1 * m, M * n)</code></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="cute-framework" class="level2">
+<h2 class="anchored" data-anchor-id="cute-framework">CuTe Framework</h2>
+<section id="overview-and-context" class="level3">
+<h3 class="anchored" data-anchor-id="overview-and-context">Overview and Context</h3>
+<section id="timeline-and-integration" class="level4">
+<h4 class="anchored" data-anchor-id="timeline-and-integration">Timeline and Integration</h4>
+<ul>
+<li>Introduced with Cutlass 3.0</li>
+<li>Released: Late 2022</li>
+<li>Integrated with Hopper architecture features</li>
+</ul>
+</section>
+<section id="framework-components" class="level4">
+<h4 class="anchored" data-anchor-id="framework-components">Framework Components</h4>
+<ul>
+<li>Layout algebra</li>
+<li>Tensor operations</li>
+<li>Shape manipulation</li>
+<li>Memory management</li>
+</ul>
+</section>
+</section>
+<section id="layout-algebra-concepts" class="level3">
+<h3 class="anchored" data-anchor-id="layout-algebra-concepts">Layout Algebra Concepts</h3>
+<section id="core-operations" class="level4">
+<h4 class="anchored" data-anchor-id="core-operations">Core Operations</h4>
+<ol type="1">
+<li><strong>Composition</strong>:
+<ul>
+<li>Combines two layouts</li>
+<li>Used for creating subtiles</li>
+</ul></li>
+<li><strong>Product Types</strong>:
+<ul>
+<li>Different flavors of layout multiplication</li>
+<li>Includes “ranked product”</li>
+</ul></li>
+<li><strong>Division Operations</strong>:
+<ul>
+<li>Various forms of layout division</li>
+<li>Used in tiling operations</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="implementation-details" class="level3">
+<h3 class="anchored" data-anchor-id="implementation-details">Implementation Details</h3>
+<section id="memory-types" class="level4">
+<h4 class="anchored" data-anchor-id="memory-types">Memory Types</h4>
+<ul>
+<li><strong>SMEM Pointer</strong>: Shared memory reference</li>
+<li><strong>GMEM Pointer</strong>: Global memory reference</li>
+</ul>
+</section>
+<section id="static-vs-dynamic-elements" class="level4">
+<h4 class="anchored" data-anchor-id="static-vs-dynamic-elements">Static vs Dynamic Elements</h4>
+<ul>
+<li><strong>Static Elements</strong>:
+<ul>
+<li>Known at compile time</li>
+<li>Uses underscore notation (e.g., <code>_3</code>)</li>
+<li>Enables compile-time optimizations</li>
+</ul></li>
+<li><strong>Dynamic Elements</strong>:
+<ul>
+<li>Determined at runtime</li>
+<li>Example: Input tensor dimensions</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="library-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="library-architecture">Library Architecture</h3>
+<section id="directory-structure" class="level4">
+<h4 class="anchored" data-anchor-id="directory-structure">Directory Structure</h4>
+<ol type="1">
+<li><p><strong>Include Directory</strong>:</p>
+<ul>
+<li>Core library components</li>
+<li>Header-only implementation</li>
+</ul></li>
+<li><p><strong>Arch and Atom Directories:</strong></p>
+<ul>
+<li><strong><code>arch</code></strong> Directory:
+<ul>
+<li>Contains architecture-specific implementations.</li>
+<li>Includes tensor core operations using <strong>inline assembly</strong>.</li>
+</ul></li>
+<li><strong><code>atom</code></strong> Directory:
+<ul>
+<li>Contains abstractions over the architecture-specific implementations.</li>
+<li>Provides templated structures for different operations.</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Architecture-Specific Code</strong>:</p>
+<ul>
+<li>Organized by compute capability</li>
+<li>Examples:
+<ul>
+<li>SM80 (Ampere)</li>
+<li>SM90 (Hopper)</li>
+</ul></li>
+</ul></li>
+<li><p><strong>Operations Categories</strong>:</p>
+<ul>
+<li><p>Copy operations</p></li>
+<li><p>Matrix Multiply Accumulate (MMA)</p></li>
+<li><p>Additional linear algebra operations</p></li>
+<li><p><strong>Inline Assembly</strong>:</p>
+<ul>
+<li><p>Low-level code directly interacts with GPU tensor cores.</p></li>
+<li><p>Example operation: <a href="https://github.com/NVIDIA/cutlass/blob/8aa95dbb888be6d81c6fbf7169718c5244b53227/include/cute/arch/mma_sm80.hpp#L257"><code>SM80_16x8x4_F32TF32TF32F32_TN</code></a> for matrix multiplication.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// MMA 16x8x4 TN</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> SM80_16x8x4_F32TF32TF32F32_TN</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">using</span> DRegisters <span class="op">=</span> <span class="dt">float</span><span class="op">[</span><span class="dv">4</span><span class="op">];</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">using</span> ARegisters <span class="op">=</span> <span class="dt">uint32_t</span><span class="op">[</span><span class="dv">2</span><span class="op">];</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">using</span> BRegisters <span class="op">=</span> <span class="dt">uint32_t</span><span class="op">[</span><span class="dv">1</span><span class="op">];</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">using</span> CRegisters <span class="op">=</span> <span class="dt">float</span><span class="op">[</span><span class="dv">4</span><span class="op">];</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  CUTE_HOST_DEVICE <span class="at">static</span> <span class="dt">void</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  fma<span class="op">(</span><span class="dt">float</span>         <span class="op">&amp;</span> d0<span class="op">,</span> <span class="dt">float</span>         <span class="op">&amp;</span> d1<span class="op">,</span> <span class="dt">float</span>         <span class="op">&amp;</span> d2<span class="op">,</span> <span class="dt">float</span>         <span class="op">&amp;</span> d3<span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="dt">uint32_t</span> <span class="at">const</span><span class="op">&amp;</span> a0<span class="op">,</span> <span class="dt">uint32_t</span> <span class="at">const</span><span class="op">&amp;</span> a1<span class="op">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">uint32_t</span> <span class="at">const</span><span class="op">&amp;</span> b0<span class="op">,</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">float</span> <span class="at">const</span>   <span class="op">&amp;</span> c0<span class="op">,</span> <span class="dt">float</span> <span class="at">const</span>   <span class="op">&amp;</span> c1<span class="op">,</span> <span class="dt">float</span> <span class="at">const</span>   <span class="op">&amp;</span> c2<span class="op">,</span> <span class="dt">float</span> <span class="at">const</span>   <span class="op">&amp;</span> c3<span class="op">)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#if defined(CUTE_ARCH_MMA_SM80_ENABLED)</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">asm</span> <span class="at">volatile</span><span class="op">(</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="st">"mma.sync.aligned.m16n8k4.row.col.f32.tf32.tf32.f32 "</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="st">"{%0,  %1,  %2,  %3},"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="st">"{%4,  %5},"</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      <span class="st">"{%6},"</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="st">"{%7,  %8,  %9,  %10};</span><span class="sc">\n</span><span class="st">"</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="op">:</span> <span class="st">"=f"</span><span class="op">(</span>d0<span class="op">),</span> <span class="st">"=f"</span><span class="op">(</span>d1<span class="op">),</span> <span class="st">"=f"</span><span class="op">(</span>d2<span class="op">),</span> <span class="st">"=f"</span><span class="op">(</span>d3<span class="op">)</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>      <span class="op">:</span>  <span class="st">"r"</span><span class="op">(</span>a0<span class="op">),</span>  <span class="st">"r"</span><span class="op">(</span>a1<span class="op">),</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>         <span class="st">"r"</span><span class="op">(</span>b0<span class="op">),</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>         <span class="st">"f"</span><span class="op">(</span>c0<span class="op">),</span>  <span class="st">"f"</span><span class="op">(</span>c1<span class="op">),</span>  <span class="st">"f"</span><span class="op">(</span>c2<span class="op">),</span>  <span class="st">"f"</span><span class="op">(</span>c3<span class="op">));</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="pp">#else</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    CUTE_INVALID_CONTROL_PATH<span class="op">(</span><span class="st">"Attempting to use SM80_16x8x4_F32TF32TF32F32_TN without CUTE_ARCH_MMA_SM80_ENABLED"</span><span class="op">);</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ul></li>
+<li><p><strong>Template Specializations</strong>:</p>
+<ul>
+<li>Operations are templated based on data types and compute capabilities.</li>
+<li>Allows for <strong>compile-time dispatch</strong> to appropriate implementations.</li>
+</ul></li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="qa-1" class="level3">
+<h3 class="anchored" data-anchor-id="qa-1">Q&amp;A</h3>
+<section id="availability-across-different-gpus" class="level4">
+<h4 class="anchored" data-anchor-id="availability-across-different-gpus">Availability Across Different GPUs</h4>
+<ul>
+<li><strong>Question</strong>: <em>“Is this only available for Hopper, or can it also be used for other GPUs? The architectures look as if older GPUs would also be supported.”</em></li>
+<li><strong>Answer</strong>:
+<ul>
+<li>Eric confirmed that Cutlass supports multiple GPU architectures:
+<ul>
+<li><strong>Supported Architectures</strong>:
+<ul>
+<li>While Cutlass provides extensive support for newer architectures like Hopper (SM90), it also supports older GPUs such as Ampere (SM80) and Volta (SM70).</li>
+</ul></li>
+<li><strong>Extent of Support</strong>:
+<ul>
+<li>Newer architectures have more features and optimizations available.</li>
+<li>Some functionalities may have limited support or performance on older GPUs.</li>
+</ul></li>
+<li><strong>Implications for Developers</strong>:
+<ul>
+<li>Developers can use Cutlass across different GPU generations but should be aware of the available features and potential limitations on older hardware.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="operations-beyond-matrix-multiplication" class="level4">
+<h4 class="anchored" data-anchor-id="operations-beyond-matrix-multiplication">Operations Beyond Matrix Multiplication</h4>
+<ul>
+<li><strong>Question</strong>: <em>“Is Cutlass mostly about copy and matrix multiplications, or are there other linear algebra operations, like inversion of a matrix?”</em></li>
+<li><strong>Answer</strong>:
+<ul>
+<li>Eric explained that while Cutlass focuses on fundamental operations, it is not limited to matrix multiplication:
+<ul>
+<li><strong>Available Operations</strong>:
+<ul>
+<li>Cutlass supports a variety of tensor operations, including convolutions and reductions.</li>
+<li>It provides the building blocks for more complex algorithms.</li>
+</ul></li>
+<li><strong>Advanced Linear Algebra</strong>:
+<ul>
+<li>For higher-level operations like matrix inversion or solving linear systems, libraries like <strong>cuBLAS</strong> or <strong><a href="https://docs.nvidia.com/cuda/cusolver/index.html">cuSOLVER</a></strong> might be more appropriate.</li>
+</ul></li>
+<li><strong>Use Cases</strong>:
+<ul>
+<li>Cutlass is ideal for developers needing low-level control to implement custom algorithms or optimize specific operations not covered by higher-level libraries.</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="practical-implementation-and-usage" class="level2">
+<h2 class="anchored" data-anchor-id="practical-implementation-and-usage">Practical Implementation and Usage</h2>
+<section id="matrix-multiplication-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-multiplication-implementation">Matrix Multiplication Implementation</h3>
+<section id="sgemm-single-precision-general-matrix-multiply" class="level4">
+<h4 class="anchored" data-anchor-id="sgemm-single-precision-general-matrix-multiply">SGEMM (Single Precision General Matrix Multiply)</h4>
+<ul>
+<li>Source Code: <a href="https://github.com/NVIDIA/cutlass/blob/8aa95dbb888be6d81c6fbf7169718c5244b53227/examples/cute/tutorial/sgemm_1.cu#L458">examples/cute/tutorial/sgemm_1.cu</a></li>
+<li><strong>Name Convention Origin</strong>:
+<ul>
+<li>S: Single precision</li>
+<li>GE: General (dense matrices, no special structure)</li>
+<li>MM: Matrix Multiplication</li>
+</ul></li>
+</ul>
+</section>
+<section id="function-parameters" class="level4">
+<h4 class="anchored" data-anchor-id="function-parameters">Function Parameters</h4>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>gemm<span class="op">(</span>transA<span class="op">,</span> transB<span class="op">,</span> m<span class="op">,</span> n<span class="op">,</span> k<span class="op">,</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>     alpha<span class="op">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>     d_A<span class="op">.</span>data<span class="op">().</span>get<span class="op">(),</span> ldA<span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>     d_B<span class="op">.</span>data<span class="op">().</span>get<span class="op">(),</span> ldB<span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>     beta<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>     d_C<span class="op">.</span>data<span class="op">().</span>get<span class="op">(),</span> ldC<span class="op">);</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Common parameters</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>trans_a  <span class="co">// Matrix A transpose flag</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>trans_b  <span class="co">// Matrix B transpose flag</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>lda      <span class="co">// Leading dimension of matrix A</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>alpha    <span class="co">// Scalar multiplier</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>beta     <span class="co">// Scalar multiplier for accumulation</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li><strong>General Operation Form:</strong> <code>D = alpha * (A * B) + beta * C</code></li>
+</ul>
+</section>
+</section>
+<section id="memory-management-features" class="level3">
+<h3 class="anchored" data-anchor-id="memory-management-features">Memory Management Features</h3>
+<section id="memory-types-and-tags" class="level4">
+<h4 class="anchored" data-anchor-id="memory-types-and-tags">Memory Types and Tags</h4>
+<ul>
+<li><strong>Shared Memory</strong>:
+<ul>
+<li>Tag: <code>smem_ptr</code></li>
+<li>Used for thread block local storage</li>
+</ul></li>
+<li><strong>Global Memory</strong>:
+<ul>
+<li>Tag: <code>gmem_ptr</code></li>
+<li>Used for device-wide storage</li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="example-code-structure" class="level3">
+<h3 class="anchored" data-anchor-id="example-code-structure">Example Code Structure</h3>
+<section id="basic-include-pattern" class="level4">
+<h4 class="anchored" data-anchor-id="basic-include-pattern">Basic Include Pattern</h4>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;cute/tensor.hpp&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="tensor-creation" class="level4">
+<h4 class="anchored" data-anchor-id="tensor-creation">Tensor Creation</h4>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Creating tensors</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>make_tensor<span class="op">()</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>make_layout<span class="op">()</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>make_coord<span class="op">()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’m Christian Mills, a deep learning consultant specializing in practical AI implementations. I help clients leverage cutting-edge AI technologies to solve real-world problems.</p>
+<p>Interested in working together? Fill out my <a href="https://docs.google.com/forms/d/e/1FAIpQLScKDKPJF9Be47LA3nrEDXTVpzH2UMLz8SzHMHM9hWT5qlvjkw/viewform?usp=sf_link">Quick AI Project Assessment</a> form or learn more <a href="../../../about.html">about me</a>.</p>
+</div>
+</div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2024 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
