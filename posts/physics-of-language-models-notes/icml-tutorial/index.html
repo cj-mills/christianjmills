@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Christian Mills">
+<meta name="dcterms.date" content="2025-02-17">
+<meta name="description" content="My notes from Zeyuan Allen-Zhu’s ICML presentation, outlining a physics of language models framework using synthetic data, controlled experiments, and probing to reveal how LLMs learn, store, and manipulate knowledge, perform multi-step reasoning, and depend on training conditions for robust, generalizable capabilities.">
+
+<title>Notes on ICML 2024 Tutorial: Physics of Language Models – Christian Mills</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../images/favicon.ico" rel="icon">
+<script src="../../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-07ba0ad10f5680c660e360ac31d2f3b6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-8b864f0777c60eecff11d75b6b2e1175.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-61f2d351c58b11e1d25c66c489878dfa.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-fb8cbff63e0d11b0ded76255c6f80362.min.css" rel="prefetch" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../../styles.css">
+<meta property="og:title" content="Notes on ICML 2024 Tutorial: Physics of Language Models – Christian Mills">
+<meta property="og:description" content="My notes from Zeyuan Allen-Zhu’s ICML presentation, outlining a physics of language models framework using synthetic data, controlled experiments, and probing to reveal how LLMs learn, store, and manipulate knowledge, perform multi-step reasoning, and depend on training conditions for robust, generalizable capabilities.">
+<meta property="og:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta property="og:site_name" content="Christian Mills">
+<meta property="og:image:height" content="284">
+<meta property="og:image:width" content="526">
+<meta name="twitter:title" content="Notes on ICML 2024 Tutorial: Physics of Language Models – Christian Mills">
+<meta name="twitter:description" content="My notes from Zeyuan Allen-Zhu’s ICML presentation, outlining a physics of language models framework using synthetic data, controlled experiments, and probing to reveal how LLMs learn, store, and manipulate knowledge, perform multi-step reasoning, and depend on training conditions for robust, generalizable capabilities.">
+<meta name="twitter:image" content="https://christianjmills.com/images/default-preview-image-black.png">
+<meta name="twitter:creator" content="@cdotjdotmills">
+<meta name="twitter:site" content="@cdotjdotmills">
+<meta name="twitter:image-height" content="284">
+<meta name="twitter:image-width" content="526">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../../index.html">
+    <span class="navbar-title">Christian Mills</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../blog.html"> 
+<span class="menu-text">Blog</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/tutorials/index.html"> 
+<span class="menu-text">Tutorials</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../series/notes/index.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:christian@christianjmills.com"> <i class="bi bi-envelope-fill" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/cj-mills"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/cdotjdotmills"> <i class="bi bi-twitter-x" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/christianjmills"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../../blog.xml"> <i class="bi bi-rss" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul>
+  <li><a href="#spectrum-of-theory-in-language-models" id="toc-spectrum-of-theory-in-language-models" class="nav-link" data-scroll-target="#spectrum-of-theory-in-language-models">Spectrum of “Theory” in Language Models</a></li>
+  <li><a href="#concerns-with-purely-ethological-approaches" id="toc-concerns-with-purely-ethological-approaches" class="nav-link" data-scroll-target="#concerns-with-purely-ethological-approaches">Concerns with Purely Ethological Approaches</a></li>
+  <li><a href="#the-physics-of-language-models-a-proposed-approach" id="toc-the-physics-of-language-models-a-proposed-approach" class="nav-link" data-scroll-target="#the-physics-of-language-models-a-proposed-approach">The Physics of Language Models: A Proposed Approach</a></li>
+  <li><a href="#presentation-structure" id="toc-presentation-structure" class="nav-link" data-scroll-target="#presentation-structure">Presentation Structure</a></li>
+  </ul></li>
+  <li><a href="#part-3-knowledge" id="toc-part-3-knowledge" class="nav-link" data-scroll-target="#part-3-knowledge">Part 3: Knowledge</a>
+  <ul>
+  <li><a href="#knowledge-extraction" id="toc-knowledge-extraction" class="nav-link" data-scroll-target="#knowledge-extraction">3.1 Knowledge Extraction</a>
+  <ul class="collapse">
+  <li><a href="#introduction-1" id="toc-introduction-1" class="nav-link" data-scroll-target="#introduction-1">Introduction</a></li>
+  <li><a href="#synthetic-biography-dataset" id="toc-synthetic-biography-dataset" class="nav-link" data-scroll-target="#synthetic-biography-dataset">Synthetic Biography Dataset</a></li>
+  <li><a href="#experiment-setup" id="toc-experiment-setup" class="nav-link" data-scroll-target="#experiment-setup">Experiment Setup</a></li>
+  <li><a href="#result-mixed-training" id="toc-result-mixed-training" class="nav-link" data-scroll-target="#result-mixed-training">Result: Mixed Training</a></li>
+  <li><a href="#result-knowledge-augmentation" id="toc-result-knowledge-augmentation" class="nav-link" data-scroll-target="#result-knowledge-augmentation">Result: Knowledge Augmentation</a></li>
+  <li><a href="#probing-where-and-how-is-knowledge-stored" id="toc-probing-where-and-how-is-knowledge-stored" class="nav-link" data-scroll-target="#probing-where-and-how-is-knowledge-stored">Probing: Where and How is Knowledge Stored?</a></li>
+  <li><a href="#result-celebrity-helps-minorities" id="toc-result-celebrity-helps-minorities" class="nav-link" data-scroll-target="#result-celebrity-helps-minorities">Result: Celebrity Helps Minorities</a></li>
+  <li><a href="#summary-of-3.1" id="toc-summary-of-3.1" class="nav-link" data-scroll-target="#summary-of-3.1">Summary of 3.1</a></li>
+  </ul></li>
+  <li><a href="#knowledge-manipulation" id="toc-knowledge-manipulation" class="nav-link" data-scroll-target="#knowledge-manipulation">3.2 Knowledge Manipulation</a>
+  <ul class="collapse">
+  <li><a href="#introduction-2" id="toc-introduction-2" class="nav-link" data-scroll-target="#introduction-2">Introduction</a></li>
+  <li><a href="#knowledge-classification-experiment" id="toc-knowledge-classification-experiment" class="nav-link" data-scroll-target="#knowledge-classification-experiment">Knowledge Classification Experiment</a></li>
+  <li><a href="#result-cot-is-crucial-for-knowledge-manipulation" id="toc-result-cot-is-crucial-for-knowledge-manipulation" class="nav-link" data-scroll-target="#result-cot-is-crucial-for-knowledge-manipulation">Result: COT is Crucial for Knowledge Manipulation</a></li>
+  <li><a href="#result-knowledge-inverse-search-is-impossible" id="toc-result-knowledge-inverse-search-is-impossible" class="nav-link" data-scroll-target="#result-knowledge-inverse-search-is-impossible">Result: Knowledge Inverse Search is Impossible</a></li>
+  <li><a href="#connections-to-practice" id="toc-connections-to-practice" class="nav-link" data-scroll-target="#connections-to-practice">Connections to Practice</a></li>
+  <li><a href="#result-skipped-knowledge-partial-search" id="toc-result-skipped-knowledge-partial-search" class="nav-link" data-scroll-target="#result-skipped-knowledge-partial-search">Result (Skipped): Knowledge Partial Search</a></li>
+  <li><a href="#summary-of-3.2" id="toc-summary-of-3.2" class="nav-link" data-scroll-target="#summary-of-3.2">Summary of 3.2</a></li>
+  </ul></li>
+  <li><a href="#scaling-laws-for-knowledge-capacity" id="toc-scaling-laws-for-knowledge-capacity" class="nav-link" data-scroll-target="#scaling-laws-for-knowledge-capacity">3.3 Scaling Laws for Knowledge Capacity</a>
+  <ul class="collapse">
+  <li><a href="#introduction-3" id="toc-introduction-3" class="nav-link" data-scroll-target="#introduction-3">Introduction</a></li>
+  <li><a href="#measuring-information-bits-in-synthetic-data" id="toc-measuring-information-bits-in-synthetic-data" class="nav-link" data-scroll-target="#measuring-information-bits-in-synthetic-data">Measuring Information Bits in Synthetic Data</a></li>
+  <li><a href="#scaling-law-experiment" id="toc-scaling-law-experiment" class="nav-link" data-scroll-target="#scaling-law-experiment">Scaling Law Experiment</a></li>
+  <li><a href="#universality-of-the-two-bits-per-parameter-scaling-law" id="toc-universality-of-the-two-bits-per-parameter-scaling-law" class="nav-link" data-scroll-target="#universality-of-the-two-bits-per-parameter-scaling-law">Universality of the Two Bits Per Parameter Scaling Law</a></li>
+  <li><a href="#conjecture-7-billion-parameters-for-human-knowledge" id="toc-conjecture-7-billion-parameters-for-human-knowledge" class="nav-link" data-scroll-target="#conjecture-7-billion-parameters-for-human-knowledge">Conjecture: 7 Billion Parameters for Human Knowledge</a></li>
+  <li><a href="#sufficient-training-1000-exposures" id="toc-sufficient-training-1000-exposures" class="nav-link" data-scroll-target="#sufficient-training-1000-exposures">Sufficient Training: 1000 Exposures</a></li>
+  <li><a href="#insufficient-training-rare-knowledge" id="toc-insufficient-training-rare-knowledge" class="nav-link" data-scroll-target="#insufficient-training-rare-knowledge">Insufficient Training: Rare Knowledge</a></li>
+  <li><a href="#gated-mlp-is-the-culprit" id="toc-gated-mlp-is-the-culprit" class="nav-link" data-scroll-target="#gated-mlp-is-the-culprit">Gated MLP is the Culprit</a></li>
+  <li><a href="#result-mixed-quality-data" id="toc-result-mixed-quality-data" class="nav-link" data-scroll-target="#result-mixed-quality-data">Result: Mixed Quality Data</a></li>
+  <li><a href="#solution-domain-tokens" id="toc-solution-domain-tokens" class="nav-link" data-scroll-target="#solution-domain-tokens">Solution: Domain Tokens</a></li>
+  <li><a href="#summary-of-3.3" id="toc-summary-of-3.3" class="nav-link" data-scroll-target="#summary-of-3.3">Summary of 3.3</a></li>
+  </ul></li>
+  <li><a href="#reflection-on-the-physics-of-language-models-approach-end-of-part-3" id="toc-reflection-on-the-physics-of-language-models-approach-end-of-part-3" class="nav-link" data-scroll-target="#reflection-on-the-physics-of-language-models-approach-end-of-part-3">Reflection on the “Physics of Language Models” Approach (End of Part 3)</a></li>
+  </ul></li>
+  <li><a href="#part-2-reasoning" id="toc-part-2-reasoning" class="nav-link" data-scroll-target="#part-2-reasoning">Part 2: Reasoning</a>
+  <ul>
+  <li><a href="#hidden-reasoning-process" id="toc-hidden-reasoning-process" class="nav-link" data-scroll-target="#hidden-reasoning-process">2.1 Hidden Reasoning Process</a>
+  <ul class="collapse">
+  <li><a href="#introduction-4" id="toc-introduction-4" class="nav-link" data-scroll-target="#introduction-4">Introduction</a></li>
+  <li><a href="#limitations-of-existing-approaches" id="toc-limitations-of-existing-approaches" class="nav-link" data-scroll-target="#limitations-of-existing-approaches">Limitations of Existing Approaches</a></li>
+  <li><a href="#assumptions-for-the-synthetic-math-dataset" id="toc-assumptions-for-the-synthetic-math-dataset" class="nav-link" data-scroll-target="#assumptions-for-the-synthetic-math-dataset">Assumptions for the Synthetic Math Dataset</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#pre-training-and-testing" id="toc-pre-training-and-testing" class="nav-link" data-scroll-target="#pre-training-and-testing">Pre-training and Testing</a></li>
+  <li><a href="#claim-llms-learn-reasoning-skills" id="toc-claim-llms-learn-reasoning-skills" class="nav-link" data-scroll-target="#claim-llms-learn-reasoning-skills">Claim: LLMs Learn Reasoning Skills</a></li>
+  <li><a href="#what-skills-did-they-learn" id="toc-what-skills-did-they-learn" class="nav-link" data-scroll-target="#what-skills-did-they-learn">What Skills Did They Learn?</a></li>
+  <li><a href="#probing-mental-pre-computation" id="toc-probing-mental-pre-computation" class="nav-link" data-scroll-target="#probing-mental-pre-computation">Probing: Mental Pre-computation</a></li>
+  <li><a href="#level-2-reasoning-beyond-humans" id="toc-level-2-reasoning-beyond-humans" class="nav-link" data-scroll-target="#level-2-reasoning-beyond-humans">Level 2 Reasoning: Beyond Humans</a></li>
+  <li><a href="#how-llms-make-mistakes" id="toc-how-llms-make-mistakes" class="nav-link" data-scroll-target="#how-llms-make-mistakes">How LLMs Make Mistakes</a></li>
+  <li><a href="#scaling-laws-depth-matters-for-reasoning" id="toc-scaling-laws-depth-matters-for-reasoning" class="nav-link" data-scroll-target="#scaling-laws-depth-matters-for-reasoning">Scaling Laws: Depth Matters for Reasoning</a></li>
+  <li><a href="#summary-of-2.1" id="toc-summary-of-2.1" class="nav-link" data-scroll-target="#summary-of-2.1">Summary of 2.1</a></li>
+  </ul></li>
+  <li><a href="#learning-from-mistakes" id="toc-learning-from-mistakes" class="nav-link" data-scroll-target="#learning-from-mistakes">2.2 Learning from Mistakes</a>
+  <ul class="collapse">
+  <li><a href="#introduction-5" id="toc-introduction-5" class="nav-link" data-scroll-target="#introduction-5">Introduction</a></li>
+  <li><a href="#regretful-behavior" id="toc-regretful-behavior" class="nav-link" data-scroll-target="#regretful-behavior">Regretful Behavior</a></li>
+  <li><a href="#experiment-allowing-the-model-to-go-back" id="toc-experiment-allowing-the-model-to-go-back" class="nav-link" data-scroll-target="#experiment-allowing-the-model-to-go-back">Experiment: Allowing the Model to Go Back</a></li>
+  <li><a href="#pre-training-with-mistakes-and-corrections" id="toc-pre-training-with-mistakes-and-corrections" class="nav-link" data-scroll-target="#pre-training-with-mistakes-and-corrections">Pre-training with Mistakes and Corrections</a></li>
+  <li><a href="#properties-of-training-with-mistakes" id="toc-properties-of-training-with-mistakes" class="nav-link" data-scroll-target="#properties-of-training-with-mistakes">Properties of Training with Mistakes</a></li>
+  <li><a href="#pre-training-is-crucial" id="toc-pre-training-is-crucial" class="nav-link" data-scroll-target="#pre-training-is-crucial">Pre-training is Crucial</a></li>
+  <li><a href="#generating-fake-mistakes-in-practice" id="toc-generating-fake-mistakes-in-practice" class="nav-link" data-scroll-target="#generating-fake-mistakes-in-practice">Generating Fake Mistakes in Practice</a></li>
+  <li><a href="#summary-of-2.2" id="toc-summary-of-2.2" class="nav-link" data-scroll-target="#summary-of-2.2">Summary of 2.2</a></li>
+  </ul></li>
+  <li><a href="#reflection-on-the-physics-of-language-models-approach-end-of-part-2" id="toc-reflection-on-the-physics-of-language-models-approach-end-of-part-2" class="nav-link" data-scroll-target="#reflection-on-the-physics-of-language-models-approach-end-of-part-2">Reflection on the “Physics of Language Models” Approach (End of Part 2)</a></li>
+  </ul></li>
+  <li><a href="#part-1-language-structures" id="toc-part-1-language-structures" class="nav-link" data-scroll-target="#part-1-language-structures">Part 1: Language Structures</a>
+  <ul>
+  <li><a href="#introduction-6" id="toc-introduction-6" class="nav-link" data-scroll-target="#introduction-6">Introduction</a></li>
+  <li><a href="#context-free-grammars-cfgs" id="toc-context-free-grammars-cfgs" class="nav-link" data-scroll-target="#context-free-grammars-cfgs">Context-Free Grammars (CFGs)</a></li>
+  <li><a href="#experiment-pre-training-on-cfg-data" id="toc-experiment-pre-training-on-cfg-data" class="nav-link" data-scroll-target="#experiment-pre-training-on-cfg-data">Experiment: Pre-training on CFG Data</a></li>
+  <li><a href="#conclusion-importance-of-relative-attention" id="toc-conclusion-importance-of-relative-attention" class="nav-link" data-scroll-target="#conclusion-importance-of-relative-attention">Conclusion: Importance of Relative Attention</a></li>
+  <li><a href="#how-llms-learn-cfgs-probing" id="toc-how-llms-learn-cfgs-probing" class="nav-link" data-scroll-target="#how-llms-learn-cfgs-probing">How LLMs Learn CFGs: Probing</a></li>
+  <li><a href="#dynamic-programming-dp" id="toc-dynamic-programming-dp" class="nav-link" data-scroll-target="#dynamic-programming-dp">Dynamic Programming (DP)</a></li>
+  <li><a href="#two-levels-of-dynamic-programming" id="toc-two-levels-of-dynamic-programming" class="nav-link" data-scroll-target="#two-levels-of-dynamic-programming">Two Levels of Dynamic Programming</a></li>
+  <li><a href="#summary-of-part-1" id="toc-summary-of-part-1" class="nav-link" data-scroll-target="#summary-of-part-1">Summary of Part 1</a></li>
+  <li><a href="#final-thoughts-future-science" id="toc-final-thoughts-future-science" class="nav-link" data-scroll-target="#final-thoughts-future-science">Final Thoughts: Future Science</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Notes on ICML 2024 Tutorial: Physics of Language Models</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">notes</div>
+    <div class="quarto-category">llms</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    My notes from <strong>Zeyuan Allen-Zhu’s</strong> ICML presentation, outlining a physics of language models framework using synthetic data, controlled experiments, and probing to reveal how LLMs learn, store, and manipulate knowledge, perform multi-step reasoning, and depend on training conditions for robust, generalizable capabilities.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Christian Mills </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 17, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#part-3-knowledge">Part 3: Knowledge</a></li>
+<li><a href="#part-2-reasoning">Part 2: Reasoning</a></li>
+<li><a href="#part-1-language-structures">Part 1: Language Structures</a></li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=yBL7J0kgldU">ICML 2024 Tutorial: Physics of Language Models</a></li>
+<li><strong>Project Page:</strong> <a href="https://physics.allen-zhu.com/home">Physics of Language Models</a></li>
+<li><strong>Speaker:</strong> <a href="http://zeyuan.allen-zhu.com/">Zeyuan Allen-Zhu</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<section id="spectrum-of-theory-in-language-models" class="level3">
+<h3 class="anchored" data-anchor-id="spectrum-of-theory-in-language-models">Spectrum of “Theory” in Language Models</h3>
+<ul>
+<li>The term “theory” in the context of language models encompasses a broad spectrum, ranging from rigorous mathematical proofs to empirical observations (ethology).</li>
+<li><strong>Mathematical Theory:</strong> Involves proving theorems about learnability, often with idealistic assumptions and limited applicability to real-world, deep networks. Progress is slow.</li>
+<li><strong>Ethology (Animal Behavior Science):</strong> Involves experimenting with large language models (LLMs) like GPT-4 through APIs, leading to discoveries like “chain of thought”. Progress is very rapid.</li>
+<li><strong>Pros and Cons:</strong>
+<ul>
+<li><strong>Mathematical Theory:</strong>
+<ul>
+<li><strong>Pros:</strong> Rigorous theorems.</li>
+<li><strong>Cons:</strong> Idealistic assumptions, shallow networks, slow progress, limited practical relevance.</li>
+</ul></li>
+<li><strong>Ethology:</strong>
+<ul>
+<li><strong>Pros:</strong> Accessible to everyone, potential for significant discoveries (e.g., chain of thought).</li>
+<li><strong>Cons:</strong> Concerns about scientific rigor (data contamination, lack of control, model specificity, limited internal understanding).</li>
+</ul></li>
+</ul></li>
+<li><strong>Historical Context:</strong> The slow, patient progress of scientific discovery in the past (e.g., Newton’s laws building upon Kepler’s laws, which in turn built upon Tycho Brahe’s observations) contrasts sharply with the rapid pace of current AI development.</li>
+<li><strong>Analogy:</strong> The analogy of Newton’s laws to mathematical theory and Tycho’s observations to ethology is not entirely accurate. There’s a gap between simply observing LLM behavior and developing a true “physics” of language models.</li>
+</ul>
+</section>
+<section id="concerns-with-purely-ethological-approaches" class="level3">
+<h3 class="anchored" data-anchor-id="concerns-with-purely-ethological-approaches">Concerns with Purely Ethological Approaches</h3>
+<ol type="1">
+<li><strong>Data Concerns:</strong> Studying models trained on internet data may lack scientific rigor due to biases, bugs (e.g., parity check failures in GPT-4), and the need for controlled studies.</li>
+<li><strong>Model Specificity:</strong> Observations might be specific to a particular model version (e.g., a bug in a specific GPT-4 release) and not generalizable.</li>
+<li><strong>Data Contamination:</strong> Benchmarks like <a href="https://huggingface.co/datasets/openai/gsm8k">GSM8K</a> can be compromised by unintentional data leakage (e.g., translating problems into other languages and posting them online).</li>
+<li><strong>Lack of Internal Understanding:</strong> Observing external behavior reveals little about the internal workings and failure modes of LLMs. Geocentrism analogy: Observing the sun and moon’s movement doesn’t reveal the true heliocentric model.</li>
+</ol>
+</section>
+<section id="the-physics-of-language-models-a-proposed-approach" class="level3">
+<h3 class="anchored" data-anchor-id="the-physics-of-language-models-a-proposed-approach">The Physics of Language Models: A Proposed Approach</h3>
+<ul>
+<li><strong>Decomposition:</strong> Break down “intelligence” into building blocks (language structures, knowledge, reasoning) and study them individually.</li>
+<li><strong>Synthetic Data:</strong> Use controlled, idealized synthetic datasets to manipulate variables (difficulty, type, amount, format) and understand their impact.</li>
+<li><strong>Repeatability:</strong> Focus on smaller models (e.g., 100 million parameters) to enable repeated, controlled experiments, which are infeasible with multi-billion parameter models. Universal laws can still be derived.</li>
+<li><strong>Probing:</strong> Investigate the inner workings of language models to understand how they function.</li>
+</ul>
+</section>
+<section id="presentation-structure" class="level3">
+<h3 class="anchored" data-anchor-id="presentation-structure">Presentation Structure</h3>
+<ul>
+<li>The presentation covers three main parts, presented in reverse order:
+<ol type="1">
+<li><strong>Language Structures:</strong> How LLMs learn language structures, focusing on context-free grammars (CFGs) (joint work with Professor Yuanzhi Li).</li>
+<li><strong>Reasoning:</strong> How LLMs perform reasoning, specifically at the level of grade-school math (joint work with Tian Ye, Zicheng Xu, and Yuanzhi Li ).</li>
+<li><strong>Knowledge:</strong> How LLMs acquire and manipulate knowledge (joint work with Professor Yuanzhi Li).</li>
+</ol></li>
+</ul>
+</section>
+</section>
+<section id="part-3-knowledge" class="level2">
+<h2 class="anchored" data-anchor-id="part-3-knowledge">Part 3: Knowledge</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=YSHzKmEianc">Physics of Language Models: Part 3.1 + 3.2, Knowledge Storage, Extraction and Manipulation</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2309.14316">Physics of Language Models: Part 3.1, Knowledge Storage and Extraction</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2309.14402">Physics of Language Models: Part 3.2, Knowledge Manipulation</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2404.05405">Physics of Language Models: Part 3.3, Knowledge Capacity Scaling Laws</a></li>
+</ul>
+</div>
+</div>
+<section id="knowledge-extraction" class="level3">
+<h3 class="anchored" data-anchor-id="knowledge-extraction">3.1 Knowledge Extraction</h3>
+<section id="introduction-1" class="level4">
+<h4 class="anchored" data-anchor-id="introduction-1">Introduction</h4>
+<ul>
+<li>Problem: LLMs often fail simple knowledge manipulation tasks (e.g., parity checks on birth years, comparing celebrity birth dates).</li>
+<li>Prerequisite to Studying Manipulation: Before assessing manipulation, it’s crucial to determine if the model can even <em>extract</em> the relevant knowledge from its pre-training data. Can the model retrieve a celebrity’s birth year?</li>
+<li><strong>Controlled Experiments:</strong> It is essential to conduct controlled experiments to determine the model’s ability to:
+<ul>
+<li>A. Extract knowledge.</li>
+<li>B. Avoid data contamination (e.g., the question being revealed through publication).</li>
+<li>C. Manipulate that knowledge.</li>
+<li>D. Understand the concepts needed for manipulation (e.g., even/odd).</li>
+</ul></li>
+</ul>
+</section>
+<section id="synthetic-biography-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="synthetic-biography-dataset">Synthetic Biography Dataset</h4>
+<ul>
+<li><p><strong>Data Generation:</strong> Create synthetic biography data for <em>N</em> individuals, using sentence templates or LLMs.</p>
+<ul>
+<li><p><strong>Example Biography:</strong></p>
+<blockquote class="blockquote">
+<p>Anya Briar Forger was born on <strong>October 2, 1996</strong>. She spent her early years in <strong>Princeton, NJ</strong>. She received mentorship and guidance from faculty members at <strong>MIT</strong>. She completed her education with a focus on <strong>Communications</strong>. She had a professional role at <strong>Meta Platforms</strong>. She was employed in <strong>Menlo Park, CA</strong>.</p>
+</blockquote></li>
+</ul></li>
+<li><p><strong>Attributes:</strong> Each person has six attributes:</p>
+<ol type="1">
+<li>birth date</li>
+<li>birth city</li>
+<li>university</li>
+<li>major</li>
+<li>employer</li>
+<li>work city</li>
+</ol></li>
+<li><p><strong>Question-Answer (QA) Data:</strong> Generate six QA pairs per person, one for each attribute. This acts as instruction fine-tuning data.</p>
+<ul>
+<li><p><strong>Example QA:</strong></p>
+<blockquote class="blockquote">
+<p><strong>What is the birth date of Anya Briar Forger?</strong> <em>Answer: October 2, 1996.</em></p>
+<p><strong>Which university did Anya Briar Forger study?</strong> <em>Answer: MIT.</em></p>
+<p><strong>Which company did Anya Briar Forger work for?</strong> <em>Answer: Meta Platforms.</em></p>
+<p><strong>What is the birth city of Anya Briar Forger?</strong> <em>Answer: Princeton, NJ.</em></p>
+<p><strong>What major did Anya Briar Forger study?</strong> <em>Answer: Communications.</em></p>
+<p><strong>Where did Anya Briar Forger work?</strong> <em>Answer: Menlo Park, CA.</em></p>
+</blockquote></li>
+</ul></li>
+</ul>
+</section>
+<section id="experiment-setup" class="level4">
+<h4 class="anchored" data-anchor-id="experiment-setup">Experiment Setup</h4>
+<ul>
+<li><strong>Training/Test Split:</strong> Reveal only half of the QA data during training.</li>
+<li><strong>Out-of-Distribution Evaluation:</strong> Evaluate the model on the remaining half of the individuals.</li>
+<li><strong>Knowledge Extraction:</strong> If the model performs well on the test set, it demonstrates <em>knowledge extraction</em> – generalizing the ability to answer questions to new individuals based on their biographies. Performance on the training set only demonstrates memorization.</li>
+</ul>
+</section>
+<section id="result-mixed-training" class="level4">
+<h4 class="anchored" data-anchor-id="result-mixed-training">Result: Mixed Training</h4>
+<ul>
+<li><strong>Mixed Training:</strong> If biography data and QA data are mixed during pre-training, the model achieves high accuracy (<code>86.6%</code>) on out-of-distribution knowledge extraction.</li>
+<li><strong>Practical Scenario (Not Mixed):</strong> In practice, pre-training (e.g., on Wikipedia) and instruction fine-tuning are separate. This leads to very poor knowledge extraction.</li>
+<li><strong>Universality:</strong> This failure is independent of model size, architecture (GPT, GPT-2, LLaMA), data size, and training parameters. Over <code>500</code> experiments consistently showed near-<code>0%</code> accuracy.</li>
+</ul>
+</section>
+<section id="result-knowledge-augmentation" class="level4">
+<h4 class="anchored" data-anchor-id="result-knowledge-augmentation">Result: Knowledge Augmentation</h4>
+<ul>
+<li><strong>Catch:</strong> The initial experiments used only <em>one</em> biography per person.</li>
+<li><strong>Knowledge Augmentation:</strong> Generate multiple biography entries per person, using different writing styles, permutations, or translations.</li>
+<li><strong>Impact:</strong> With knowledge augmentation (e.g., five biographies per person), accuracy dramatically increases (<code>96%)</code>.</li>
+<li><strong>Conclusion:</strong> Unless mixed training is used, knowledge augmentation is <em>absolutely necessary</em> for knowledge extraction.</li>
+</ul>
+</section>
+<section id="probing-where-and-how-is-knowledge-stored" class="level4">
+<h4 class="anchored" data-anchor-id="probing-where-and-how-is-knowledge-stored">Probing: Where and How is Knowledge Stored?</h4>
+<ul>
+<li><strong>Probing Technique:</strong> Feed a pre-trained model (e.g., GPT-2) with a biography entry and examine the hidden states of the last layer.</li>
+<li><strong>Focus:</strong> Probe for specific knowledge (e.g., employer name) at different token positions.</li>
+<li><strong>Observation (No Augmentation):</strong>
+<ul>
+<li>Without knowledge augmentation, previous token positions (before the employer name) show near-zero probing accuracy.</li>
+<li>The model learns the “wrong logic”, storing information jointly with preceding values, rather than associating it directly with the key (person’s name).
+<ul>
+<li><strong>Example:</strong> The model may store that <em>someone</em> born on October 2nd, 1996, in Princeton, who studied communications at MIT works for Meta.</li>
+</ul></li>
+</ul></li>
+<li><strong>Mathematical Form (No Augmentation):</strong> <code>[value 5]</code> (employer) is stored in a tuple defined by the key <em>and</em> all preceding values.</li>
+<li><strong>Observation (With Augmentation):</strong> With knowledge augmentation, the model stores knowledge differently. The hidden state <em>immediately after the person’s name</em> already encodes the employer name.</li>
+<li><strong>Mathematical Form (With Augmentation):</strong> <code>[value 5]</code> is directly stored with the key (person’s name).</li>
+<li><strong>Conclusion:</strong> Knowledge augmentation changes how knowledge is stored, which in turn affects its extractability via instruction fine-tuning.</li>
+</ul>
+</section>
+<section id="result-celebrity-helps-minorities" class="level4">
+<h4 class="anchored" data-anchor-id="result-celebrity-helps-minorities">Result: Celebrity Helps Minorities</h4>
+<ul>
+<li><strong>Controlled Experiment:</strong> Consider a dataset with celebrities (multiple biographies per person) and minorities (one biography per person).</li>
+<li><strong>Training:</strong> Pre-train on both groups, but fine-tune only on the celebrities’ QA data.</li>
+<li><strong>Observation:</strong> Knowledge extraction accuracy for the <em>minorities</em> is high, even though they had no knowledge augmentation and weren’t part of the fine-tuning data.</li>
+<li><strong>Explanation (Probing):</strong> The inclusion of celebrity data teaches the model to store knowledge in the correct format, benefiting even the minorities.</li>
+<li><strong>“Donald Trump Effect”:</strong> The existence of multiple Donald Trump biographies improves LLMs’ ability to extract knowledge about minorities.</li>
+<li><strong>Conclusion:</strong> Augmenting only <em>part</em> of the data (e.g., celebrities) can lead to knowledge extraction for <em>all</em> individuals.</li>
+</ul>
+</section>
+<section id="summary-of-3.1" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-3.1">Summary of 3.1</h4>
+<ul>
+<li><strong>Distinction:</strong> There’s a crucial difference between knowledge <em>storage</em> and knowledge <em>extraction</em>. Memorization doesn’t guarantee extractability.</li>
+<li><strong>Extractability Requirements:</strong>
+<ul>
+<li>Mixed training.</li>
+<li>Knowledge augmentation.</li>
+</ul></li>
+<li><strong>Bidirectional Models (BERT, DeBERTa):</strong> Fail at knowledge extraction even with mixed training and augmentation. (<a href="https://arxiv.org/abs/2309.14316">paper</a>)</li>
+</ul>
+</section>
+</section>
+<section id="knowledge-manipulation" class="level3">
+<h3 class="anchored" data-anchor-id="knowledge-manipulation">3.2 Knowledge Manipulation</h3>
+<section id="introduction-2" class="level4">
+<h4 class="anchored" data-anchor-id="introduction-2">Introduction</h4>
+<ul>
+<li><strong>Assumption:</strong> Assume knowledge is fully extractable (based on the findings of 3.1).</li>
+<li><strong>Focus:</strong> Study LLMs’ ability to <em>manipulate</em> knowledge.</li>
+<li><strong>Simplest Task:</strong> Knowledge <em>classification</em> (e.g., classifying months into even/odd categories).</li>
+</ul>
+</section>
+<section id="knowledge-classification-experiment" class="level4">
+<h4 class="anchored" data-anchor-id="knowledge-classification-experiment">Knowledge Classification Experiment</h4>
+<ul>
+<li><p><strong>Setup:</strong> Pre-train on biographies, fine-tune to extract birth dates.</p></li>
+<li><p><strong>Classification Task:</strong> Classify the 12 months into two categories (even/odd).</p></li>
+<li><p><strong>With and Without Chain of Thought (COT):</strong></p>
+<ul>
+<li><p><strong>Without COT:</strong> Direct answer (yes/no).</p>
+<blockquote class="blockquote">
+<p>Was Anya Briar Forger born in an even month? Answer (without CoT): <strong>Yes</strong></p>
+</blockquote></li>
+<li><p><strong>With COT:</strong> Explicitly state the birth month, <em>then</em> answer yes/no.</p>
+<blockquote class="blockquote">
+<p>Was Anya Briar Forger born in an even month? Answer (with CoT): <strong>October</strong>; so it is <strong>Yes</strong></p>
+</blockquote></li>
+</ul></li>
+<li><p><strong>Fine-tuning:</strong> Fine-tune sufficiently to achieve perfect accuracy on the training set.</p></li>
+<li><p><strong>Out-of-Distribution Evaluation:</strong> Evaluate on the remaining half of the individuals.</p></li>
+</ul>
+</section>
+<section id="result-cot-is-crucial-for-knowledge-manipulation" class="level4">
+<h4 class="anchored" data-anchor-id="result-cot-is-crucial-for-knowledge-manipulation">Result: COT is Crucial for Knowledge Manipulation</h4>
+<ul>
+<li><strong>Observation (Without COT):</strong> Out-of-distribution accuracy is extremely low (near random guessing).</li>
+<li><strong>Observation (With COT in Training):</strong> Including COT in training <em>does not</em> improve accuracy during evaluation <em>without</em> COT.</li>
+<li><strong>Conclusion:</strong> Knowledge manipulation (even the simplest form) requires COT <em>both</em> during training and inference. The model must explicitly state the knowledge before manipulating it.</li>
+<li><strong>Contrast with Reasoning:</strong> This is different from reasoning tasks (e.g., adding small numbers), where LLMs can skip steps.</li>
+<li>This is a statement only discoverable via controlled experiments.</li>
+</ul>
+</section>
+<section id="result-knowledge-inverse-search-is-impossible" class="level4">
+<h4 class="anchored" data-anchor-id="result-knowledge-inverse-search-is-impossible">Result: Knowledge Inverse Search is Impossible</h4>
+<ul>
+<li><p><strong>Inverse Search Task:</strong> Fine-tune the model to answer questions like “Who was born on [date] in [city] and works for [employer]?”</p>
+<blockquote class="blockquote">
+<p><strong>Question</strong>: <strong>Who</strong> was born on October 2, 1996, in Princeton, NJ, studied Communications at MIT, and worked for Meta Platforms at Menlo Park, CA?</p>
+<p><strong>Answer</strong>: <strong>Anya Briar Forger</strong></p>
+</blockquote></li>
+<li><p><strong>Out-of-Distribution Evaluation:</strong> Evaluate on the remaining half of the individuals.</p></li>
+<li><p><strong>Observation:</strong></p>
+<ul>
+<li>Zero accuracy, regardless of model size, data size, training method (mixed training, fine-tuning, knowledge augmentation), or fine-tuning parameters.</li>
+<li>Hundreds of pre-training regimes were tested.</li>
+</ul></li>
+<li><p><strong>Exception:</strong> Inverse search is only possible if knowledge is <em>already reversed</em> in the pre-training data (e.g., person’s name at the end of the biography).</p></li>
+<li><p><strong>Paper on Knowledge Reversal:</strong></p>
+<ul>
+<li>A separate paper with Meta colleagues explores how to practically reverse knowledge.
+<ul>
+<li>Reversal must happen in the pre-training phase.
+<ul>
+<li>Changing to a bi-directional model (like BERT) does not solve this.</li>
+</ul></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2403.13799">Reverse Training to Nurse the Reversal Curse</a></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Conclusion:</strong> Knowledge inverse search is generally impossible without pre-training data modification.</p></li>
+</ul>
+</section>
+<section id="connections-to-practice" class="level4">
+<h4 class="anchored" data-anchor-id="connections-to-practice">Connections to Practice</h4>
+<ul>
+<li><strong>Parity Checks and Ranking:</strong> GPT-4 and LLaMA also fail at parity checks and ranking tasks (comparing celebrity birth dates) without COT. With COT, accuracy improves significantly.</li>
+<li><strong>Chinese Idiom Task:</strong> GPT-4 fails at filling in missing characters in Chinese idioms (a form of inverse search), demonstrating the practical limitations.</li>
+<li><strong>Turing Test:</strong> These failures can distinguish current AI models from humans, who can perform these tasks mentally without explicit statements.</li>
+</ul>
+</section>
+<section id="result-skipped-knowledge-partial-search" class="level4">
+<h4 class="anchored" data-anchor-id="result-skipped-knowledge-partial-search">Result (Skipped): Knowledge Partial Search</h4>
+<ul>
+<li>Language models might be able to fully extract knowledge (e.g., birthday) but not the individual component words (like the birth <em>year</em>).</li>
+<li>Related to “multi-token prediction” work from Meta colleagues: Predicting multiple future tokens can change knowledge storage and improve capabilities.
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2404.19737">Better &amp; Faster Large Language Models via Multi-token Prediction</a></li>
+</ul></li>
+</ul>
+</section>
+<section id="summary-of-3.2" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-3.2">Summary of 3.2</h4>
+<ul>
+<li>The model must state knowledge explicitly before manipulating it.</li>
+<li>Knowledge inverse search is impossible unless the knowledge is reversed in the pre-trained data.</li>
+<li>A concurrent work refers to this as the “reversal curse”: If a model learns “A is B”, it doesn’t learn “B is A.”
+<ul>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2403.13799">Reverse Training to Nurse the Reversal Curse</a></li>
+</ul></li>
+</ul>
+</section>
+</section>
+<section id="scaling-laws-for-knowledge-capacity" class="level3">
+<h3 class="anchored" data-anchor-id="scaling-laws-for-knowledge-capacity">3.3 Scaling Laws for Knowledge Capacity</h3>
+<section id="introduction-3" class="level4">
+<h4 class="anchored" data-anchor-id="introduction-3">Introduction</h4>
+<ul>
+<li><strong>Goal:</strong> Determine the relationship between model size and knowledge storage capacity.</li>
+<li><strong>“Bit” Definition:</strong> Information-theoretic bits in the dataset.</li>
+</ul>
+</section>
+<section id="measuring-information-bits-in-synthetic-data" class="level4">
+<h4 class="anchored" data-anchor-id="measuring-information-bits-in-synthetic-data">Measuring Information Bits in Synthetic Data</h4>
+<ul>
+<li><p><strong>Random Generation:</strong></p>
+<blockquote class="blockquote">
+<p>If birthdates are uniformly drawn from <span class="math inline">\(( 12\)</span> (months) <span class="math inline">\(\times 28\)</span> (days) <span class="math inline">\(\times 200 (years) )\)</span> possibilities, this is <span class="math inline">\(\log_2(12 \times 28 \times 200) = 60.21\)</span> bits.</p>
+<p>If cities are uniformly drawn from <span class="math inline">\(300\)</span> US cities, this is <span class="math inline">\(\log_2(300) = 8.23\)</span> bits.</p>
+</blockquote></li>
+<li><p><strong>General Formula:</strong> A formula can be created to calculate the information content of any synthetic knowledge dataset, regardless of writing style variations.</p>
+<blockquote class="blockquote">
+<p><strong>bioD</strong>: a synthetic data with hyperparameters:</p>
+<ul>
+<li>( N ) — distinct names from ( N_0 ) possible names</li>
+<li>( K ) — number of knowledge attributes</li>
+<li>( T ) — vocabulary size</li>
+<li>( C, L ) — values in ( C ) chunks, each of length ( L )</li>
+<li>( D ) — value has diversity ( D )</li>
+</ul>
+<p><span class="math inline">\(\log_2 \binom{N_0}{N} + NKC \log_2 D + K \log_2 \binom{T^L}{D}\)</span></p>
+</blockquote></li>
+</ul>
+</section>
+<section id="scaling-law-experiment" class="level4">
+<h4 class="anchored" data-anchor-id="scaling-law-experiment">Scaling Law Experiment</h4>
+<ul>
+<li><strong>Pre-training:</strong> Pre-train a language model on synthetically generated knowledge data.</li>
+<li><strong>Knowledge Measurement:</strong> Calculate the amount of knowledge learned by the model (accounting for partial correctness).</li>
+<li><strong>Major Discovery:</strong> LLMs consistently achieve <em>two bits per parameter</em> in knowledge storage, if sufficiently trained.</li>
+</ul>
+</section>
+<section id="universality-of-the-two-bits-per-parameter-scaling-law" class="level4">
+<h4 class="anchored" data-anchor-id="universality-of-the-two-bits-per-parameter-scaling-law">Universality of the Two Bits Per Parameter Scaling Law</h4>
+<ul>
+<li><strong>Model Size, Depth, Width:</strong> Holds for a wide range of model sizes, depths, and widths (as long as the transformer has at least two layers).</li>
+<li><strong>Data Types:</strong> Regardless of the specific parameters of the synthetic knowledge data.</li>
+<li><strong>Rewriting:</strong> Independent of how the data is rewritten.</li>
+<li><strong>Training Parameters:</strong> Holds for a wide range of training parameters.</li>
+</ul>
+</section>
+<section id="conjecture-7-billion-parameters-for-human-knowledge" class="level4">
+<h4 class="anchored" data-anchor-id="conjecture-7-billion-parameters-for-human-knowledge">Conjecture: 7 Billion Parameters for Human Knowledge</h4>
+<ul>
+<li>Based on an estimate of the information content of English Wikipedia and textbooks, a 7-billion parameter model should be sufficient to store all such knowledge.</li>
+</ul>
+</section>
+<section id="sufficient-training-1000-exposures" class="level4">
+<h4 class="anchored" data-anchor-id="sufficient-training-1000-exposures">Sufficient Training: 1000 Exposures</h4>
+<ul>
+<li><strong>Definition:</strong> Each piece of knowledge needs to be exposed approximately 1000 times during pre-training to reach the two bits per parameter capacity.</li>
+<li><strong>Exposure:</strong> Doesn’t mean 1000 training passes; it means the same knowledge, possibly in different writing styles, is seen 1000 times.</li>
+<li><strong>Controlled Experiment:</strong> If each piece of knowledge is exposed the same number of times (e.g., 1000), the two bits per parameter scaling law holds.</li>
+<li>Fixing data size, increasing model size doesn’t increase knowledge learned beyond the data’s inherent information content.
+<ul>
+<li>Before that point, the model’s knowledge capacity closely follows two bits per parameter.</li>
+</ul></li>
+</ul>
+</section>
+<section id="insufficient-training-rare-knowledge" class="level4">
+<h4 class="anchored" data-anchor-id="insufficient-training-rare-knowledge">Insufficient Training: Rare Knowledge</h4>
+<ul>
+<li><strong>100 Exposures:</strong> If knowledge is exposed only 100 times (rare knowledge), the capacity decreases to approximately one bit per parameter.</li>
+<li><strong>Architecture Differences:</strong> With rare knowledge, differences between model architectures emerge.
+<ul>
+<li>GPT-2: Performs better.</li>
+<li>LLaMA, Mistral: Perform worse (by a factor of 1.3).</li>
+</ul></li>
+<li><strong>MLP Layers:</strong> Reducing the size of GPT-2’s MLP layers doesn’t significantly affect capacity, but <em>removing</em> them does.</li>
+<li><strong>Disclaimers:</strong> This comparison is <em>only</em> for knowledge capacity and <em>only</em> for rare knowledge.</li>
+</ul>
+</section>
+<section id="gated-mlp-is-the-culprit" class="level4">
+<h4 class="anchored" data-anchor-id="gated-mlp-is-the-culprit">Gated MLP is the Culprit</h4>
+<ul>
+<li><strong>Controlled Experiment:</strong> By systematically comparing GPT-2 (rotary version) and LLaMA (which have several architectural differences), it’s found that the <a href="https://arxiv.org/abs/2105.08050"><em>gated MLP</em></a> in LLaMA is responsible for the reduced knowledge capacity.</li>
+<li><strong>Fix:</strong> Replacing LLaMA’s gated MLP with a standard MLP restores the one bit per parameter capacity (a <code>30%</code> improvement).</li>
+</ul>
+</section>
+<section id="result-mixed-quality-data" class="level4">
+<h4 class="anchored" data-anchor-id="result-mixed-quality-data">Result: Mixed Quality Data</h4>
+<ul>
+<li><strong>Controlled Experiment:</strong> Compare training on:
+<ul>
+<li>Scenario 1: Only “good” data (rich in knowledge, 100 exposures per piece).</li>
+<li>Scenario 2: “Good” data (100 exposures) <em>and</em> “bad” data (junk data).</li>
+</ul></li>
+<li><strong>Observation:</strong> A <em>20-fold</em> difference in the amount of “good” knowledge stored. The mere presence of junk data significantly harms the LLM’s ability to learn from the good data.</li>
+<li>Increasing training time on the “good” data in Scenario 2, does <em>not</em> fully compensate for the harm caused by the junk data.</li>
+</ul>
+</section>
+<section id="solution-domain-tokens" class="level4">
+<h4 class="anchored" data-anchor-id="solution-domain-tokens">Solution: Domain Tokens</h4>
+<ul>
+<li><strong>Technique:</strong> Prepend each piece of pre-training data with a domain token (e.g., the domain name or URL).</li>
+<li><strong>Impact:</strong> Significantly mitigates the negative impact of junk data.
+<ul>
+<li>20x worse becomes 10x worse.</li>
+<li>3x worse becomes fully restored.</li>
+</ul></li>
+<li><strong>Mechanism:</strong> LLMs automatically learn to prioritize high-quality domains without explicit instruction.</li>
+</ul>
+</section>
+<section id="summary-of-3.3" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-3.3">Summary of 3.3</h4>
+<ul>
+<li><strong>Sufficient Training:</strong> Two bits per parameter capacity, regardless of architecture.</li>
+<li><strong>Insufficient Training (Rare Knowledge):</strong> Architecture matters; GPT-2’s standard MLP outperforms LLaMA’s gated MLP.</li>
+<li><strong>Quantization and MOEs (Skipped):</strong> Int8 quantization maintains the two bits per parameter capacity (4:1 compression ratio).</li>
+<li><strong>Mixed Quality Data:</strong> Domain tokens are crucial for mitigating the negative impact of junk data.</li>
+</ul>
+</section>
+</section>
+<section id="reflection-on-the-physics-of-language-models-approach-end-of-part-3" class="level3">
+<h3 class="anchored" data-anchor-id="reflection-on-the-physics-of-language-models-approach-end-of-part-3">Reflection on the “Physics of Language Models” Approach (End of Part 3)</h3>
+<ul>
+<li><strong>Knowledge Focus:</strong> Part 3 focused <em>solely</em> on knowledge, using synthetic data.</li>
+<li><strong>Small Models:</strong>
+<ul>
+<li>Most results are replicable with 100-million parameter models, enabling extensive controlled experiments (data variations, training process tweaks, architecture modifications).</li>
+<li>An H100 can pretrain in a day.</li>
+<li>Eight V100s can pretrain in a day.</li>
+<li>Even scaling down the synthetic data by 5x maintains the validity of the results.</li>
+</ul></li>
+<li><strong>Probing:</strong> All statements are supported by probing, revealing the internal workings of the models.</li>
+</ul>
+</section>
+</section>
+<section id="part-2-reasoning" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-reasoning">Part 2: Reasoning</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=bpp6Dz8N2zY">Physics of Language Models: Part 2.1, Grade-School Math and the Hidden Reasoning Process</a></li>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=yBgxxvQ76_E&amp;list=PLIZhMKKbVX6JmdngPRKvAS4u4L97odbGp&amp;index=5">Physics of Language Models: Part 2.2, How to Learn From Mistakes on Grade-School Math Problems</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2407.20311">Physics of Language Models: Part 2.1, Grade-School Math and the Hidden Reasoning Process</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2408.16293">Physics of Language Models: Part 2.2, How to Learn From Mistakes on Grade-School Math Problems</a></li>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/facebookresearch/iGSM">iGSM</a></li>
+</ul>
+</div>
+</div>
+<section id="hidden-reasoning-process" class="level3">
+<h3 class="anchored" data-anchor-id="hidden-reasoning-process">2.1 Hidden Reasoning Process</h3>
+<section id="introduction-4" class="level4">
+<h4 class="anchored" data-anchor-id="introduction-4">Introduction</h4>
+<ul>
+<li><strong>Focus:</strong> Reasoning at the level of grade-school math.</li>
+<li><strong>Goal:</strong> Understand the hidden reasoning process of LLMs, their mental processes, and why they make mistakes.</li>
+<li><strong>Synthetic Math Dataset:</strong> Create a synthetic math dataset that simulates GSM8K.</li>
+<li><strong>Probing:</strong> All statements are supported by probing.</li>
+</ul>
+</section>
+<section id="limitations-of-existing-approaches" class="level4">
+<h4 class="anchored" data-anchor-id="limitations-of-existing-approaches">Limitations of Existing Approaches</h4>
+<ul>
+<li><strong>GSM8K:</strong> Too small for thorough analysis.</li>
+<li><strong>GPT-4 Augmentation:</strong> Using GPT-4 to generate similar problems from GSM8K leads to biased and limited data, lacking hard problems.</li>
+</ul>
+</section>
+<section id="assumptions-for-the-synthetic-math-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="assumptions-for-the-synthetic-math-dataset">Assumptions for the Synthetic Math Dataset</h4>
+<ul>
+<li><strong>GitHub Repository:</strong> <a href="https://github.com/facebookresearch/iGSM">iGSM</a></li>
+<li><strong>Direct Pre-training:</strong> Design the dataset for direct pre-training, removing common-sense elements from GSM8K (e.g., that a burning candle shrinks).</li>
+<li><strong>Key Elements to Keep:</strong>
+<ul>
+<li><strong>Direct Dependency:</strong> Relationships between parameters (e.g., one parameter is the sum of two others).</li>
+<li><strong>Instant Dependency:</strong> Relationships like “X classrooms with Y bags each have X*Y bags”.</li>
+<li><strong>Implicit Dependency:</strong> Relationships like “Bob has three times more fruits than Alice, then X are not fruits”.</li>
+</ul></li>
+</ul>
+</section>
+<section id="data" class="level4">
+<h4 class="anchored" data-anchor-id="data">Data</h4>
+<ul>
+<li><strong>Structure Graph:</strong> Defines the possible parameters (e.g., number of film studios in a school).</li>
+<li><strong>Dependency Description:</strong> Each sentence in the problem description specifies a dependency between parameters, represented as a directed acyclic graph (DAG).</li>
+<li><strong>Solution:</strong> A chain-of-thought solution, step-by-step computation from the leaves of the DAG to the final question.</li>
+<li><strong>Modular Arithmetic (Mod 23):</strong> All calculations are performed modulo 23 to focus on reasoning, not arithmetic skills.</li>
+<li><strong>Shuffled Sentences:</strong> Problem description sentences are randomly shuffled.</li>
+<li><strong>Number of Operations (OP):</strong> A key parameter representing the difficulty of the reasoning problem (number of steps in the solution).</li>
+</ul>
+</section>
+<section id="pre-training-and-testing" class="level4">
+<h4 class="anchored" data-anchor-id="pre-training-and-testing">Pre-training and Testing</h4>
+<ul>
+<li><strong>Data Families:</strong>
+<ul>
+<li><strong>Medium:</strong> Problems with OP ≤ 15.</li>
+<li><strong>Hard:</strong> Problems with OP ≤ 21.</li>
+</ul></li>
+<li><strong>Solution Templates:</strong>
+<ul>
+<li>Medium: At least 7 billion solution templates.</li>
+<li>Hard: At least 90 trillion solution templates.</li>
+</ul></li>
+<li><strong>Pre-training:</strong> Train a language model (e.g., GPT-2) on this data.</li>
+<li><strong>Testing:</strong>
+<ul>
+<li><strong>In-Distribution:</strong> Test on problems of the same difficulty.</li>
+<li><strong>Out-of-Distribution:</strong> Test on <em>harder</em> problems.</li>
+</ul></li>
+<li><strong>Observation:</strong> LLMs can generalize out-of-distribution.</li>
+</ul>
+</section>
+<section id="claim-llms-learn-reasoning-skills" class="level4">
+<h4 class="anchored" data-anchor-id="claim-llms-learn-reasoning-skills">Claim: LLMs Learn Reasoning Skills</h4>
+<ul>
+<li>LLMs are capable of learning reasoning skills, not just memorizing solution templates. This is demonstrated by out-of-distribution generalization.</li>
+</ul>
+</section>
+<section id="what-skills-did-they-learn" class="level4">
+<h4 class="anchored" data-anchor-id="what-skills-did-they-learn">What Skills Did They Learn?</h4>
+<ul>
+<li><strong>Level 0 Reasoning:</strong> Brute-force computation of all possible parameters.</li>
+<li><strong>Level 1 Reasoning:</strong> Topological sort, ignoring unnecessary parameters.</li>
+<li><strong>Discovery:</strong> LLMs learn <em>level 1 reasoning</em>, producing the shortest solutions almost always.</li>
+<li>It is a difficult task for the model to understand which parameters are neccessary <em>before</em> it even generates the first token of the solution. Chain of thought is not simply breaking down problems; it requires mental processing <em>before</em> the first step.</li>
+</ul>
+</section>
+<section id="probing-mental-pre-computation" class="level4">
+<h4 class="anchored" data-anchor-id="probing-mental-pre-computation">Probing: Mental Pre-computation</h4>
+<ul>
+<li><strong>Probing Tasks:</strong>
+<ul>
+<li>Before solution generation: Does the model know if a parameter is necessary?</li>
+<li>Between solution sentences: Does the model know which parameters can be computed next?</li>
+<li>Before the question is asked: Does the model know the dependencies between parameters?</li>
+</ul></li>
+<li><strong>Observation:</strong> The model has mentally computed all of these with <code>&gt;99%</code> accuracy.</li>
+<li><strong>Level 1 Reasoning Mechanism:</strong> The model knows necessary parameters and computable parameters; the logical AND of these determines the next step, leading to the shortest solution.</li>
+</ul>
+</section>
+<section id="level-2-reasoning-beyond-humans" class="level4">
+<h4 class="anchored" data-anchor-id="level-2-reasoning-beyond-humans">Level 2 Reasoning: Beyond Humans</h4>
+<ul>
+<li><strong>Surprising Finding:</strong> The GPT-2 model also pre-computes dependencies for <em>unnecessary</em> parameters. It learns the all-pairs dependency graph even before the question is asked.</li>
+<li><strong>AGI Signal:</strong> This is a preliminary signal of generalization (the “G” in AGI) – learning skills not explicitly taught in the training set. This ability is crucial for future fine-tuning on other tasks.</li>
+</ul>
+</section>
+<section id="how-llms-make-mistakes" class="level4">
+<h4 class="anchored" data-anchor-id="how-llms-make-mistakes">How LLMs Make Mistakes</h4>
+<ul>
+<li><strong>Two Types of Mistakes:</strong>
+<ol type="1">
+<li>Computing unnecessary parameters (rare, but occurs with extremely hard problems).</li>
+<li>Getting stuck because a defined parameter isn’t ready for computation.</li>
+</ol></li>
+<li><strong>Correlation with Probing:</strong>
+<ul>
+<li>Mistake Type 1: High correlation with the model <em>wrongly</em> believing a parameter is necessary <em>before</em> generation.
+<ul>
+<li>Some mistakes are <em>systematic</em>, not due to generation randomness.</li>
+</ul></li>
+<li>Mistake Type 2: Correlation with the model believing a parameter is ready to compute when it’s not.</li>
+</ul></li>
+<li><strong>Improving Reasoning:</strong> Improving the model’s mental computation of the “<code>can_next</code>” quantity (parameters ready for computation) is crucial.</li>
+</ul>
+</section>
+<section id="scaling-laws-depth-matters-for-reasoning" class="level4">
+<h4 class="anchored" data-anchor-id="scaling-laws-depth-matters-for-reasoning">Scaling Laws: Depth Matters for Reasoning</h4>
+<ul>
+<li><strong>Contrast with Previous Findings:</strong> Unlike knowledge capacity (where only size matters), <em>depth</em> matters significantly for reasoning.</li>
+<li><strong>Experiment:</strong> Compare a tall, skinny model (smaller) with a shallow, wide model (larger). The tall model performs much better on reasoning tasks.</li>
+<li><strong>Explanation (Probing):</strong>
+<ul>
+<li>The accuracy of probing the “necessary” parameter decreases with the distance of the parameter from the question.</li>
+<li>Deeper networks are needed for longer reasoning chains.
+<ul>
+<li>This cannot be compensated by the use of chain of thought.</li>
+</ul></li>
+</ul></li>
+<li>Even before using chain of thought, mental thinking is neccessary to decide what to compute <em>first</em>. This requires depth.</li>
+</ul>
+</section>
+<section id="summary-of-2.1" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-2.1">Summary of 2.1</h4>
+<ul>
+<li>Synthetic math dataset to simulate GSM8K.</li>
+<li>LLMs exhibit level 2 reasoning (beyond human capabilities).</li>
+<li>Probing reveals how models reason and make mistakes.</li>
+<li>Model depth is crucial for reasoning due to mental computation.</li>
+<li>GPT-4o, even today, likely cannot perform &gt; 10 step reasoning, which means that synthetic math data may be neccessary to improve reasoning.</li>
+</ul>
+</section>
+</section>
+<section id="learning-from-mistakes" class="level3">
+<h3 class="anchored" data-anchor-id="learning-from-mistakes">2.2 Learning from Mistakes</h3>
+<section id="introduction-5" class="level4">
+<h4 class="anchored" data-anchor-id="introduction-5">Introduction</h4>
+<ul>
+<li><strong>Discovery:</strong> LLMs often <em>know</em> they have made mistakes.</li>
+</ul>
+</section>
+<section id="regretful-behavior" class="level4">
+<h4 class="anchored" data-anchor-id="regretful-behavior">Regretful Behavior</h4>
+<ul>
+<li><strong>Mistake Type:</strong> The model starts to compute a parameter but then realizes it’s not ready.</li>
+<li><strong>Probing:</strong> Probing at the point of the mistake reveals the model’s internal state shows “regret” – it wants to go back.</li>
+</ul>
+</section>
+<section id="experiment-allowing-the-model-to-go-back" class="level4">
+<h4 class="anchored" data-anchor-id="experiment-allowing-the-model-to-go-back">Experiment: Allowing the Model to Go Back</h4>
+<ul>
+<li><strong>Error Detector:</strong> A model pre-trained on correct data can act as an error detector (through probing or fine-tuning).</li>
+<li><strong>Assisted Generation:</strong> Use the error detector to trigger backtracking during generation.</li>
+<li><strong>Result:</strong> Only a small improvement (<code>2%</code>).</li>
+<li><strong>Drawbacks:</strong>
+<ul>
+<li>Requires two models (generator and detector).</li>
+<li>Limited improvement because it relies on <em>randomness</em> for correction (regeneration), similar to beam search (which gives zero improvement).</li>
+</ul></li>
+</ul>
+</section>
+<section id="pre-training-with-mistakes-and-corrections" class="level4">
+<h4 class="anchored" data-anchor-id="pre-training-with-mistakes-and-corrections">Pre-training with Mistakes and Corrections</h4>
+<ul>
+<li><p><strong>Data Modification:</strong> Introduce mistakes (with probability <em>p</em>) and corrections (“<code>[BACK]</code>” token) into the synthetic math dataset.</p></li>
+<li><p><strong>Autoregressive Training:</strong> The model still uses autoregressive language modeling; it sees its previous mistakes.</p></li>
+<li><p><strong>Result:</strong> Significant accuracy gain.</p>
+<blockquote class="blockquote">
+<p>78% :arrow_right: <strong>95%</strong> (med, op=23)</p>
+<p>84% :arrow_right: <strong>96%</strong> (hard, op=32)</p>
+</blockquote></li>
+</ul>
+</section>
+<section id="properties-of-training-with-mistakes" class="level4">
+<h4 class="anchored" data-anchor-id="properties-of-training-with-mistakes">Properties of Training with Mistakes</h4>
+<ul>
+<li><p><strong>Higher <span class="math inline">\(p\)</span> is Better:</strong> More mistakes during training lead to better performance.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th><span class="math inline">\(p\)</span></th>
+<th>0.05</th>
+<th>0.1</th>
+<th>0.2</th>
+<th>0.5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Medium</td>
+<td>78%</td>
+<td>84%</td>
+<td>91%</td>
+<td>92%</td>
+</tr>
+<tr class="even">
+<td>Hard</td>
+<td>84%</td>
+<td>89%</td>
+<td>88%</td>
+<td>93%</td>
+</tr>
+</tbody>
+</table></li>
+<li><p><strong>No Inference-Time Mistakes:</strong> Even with high <em>p</em>, the model doesn’t make more mistakes during inference (due to temperature 0 or beam search).</p></li>
+<li><p><strong>No Label Masking Needed:</strong> Label masking (preventing the model from learning from mistakes) is unnecessary.</p></li>
+<li><p><strong>Shortest Solutions:</strong> The model still generates the shortest solutions (level 1 and 2 reasoning).</p></li>
+</ul>
+</section>
+<section id="pre-training-is-crucial" class="level4">
+<h4 class="anchored" data-anchor-id="pre-training-is-crucial">Pre-training is Crucial</h4>
+<ul>
+<li><strong>Fine-tuning Fails:</strong> Fine-tuning a model (pre-trained on correct data) with mistake/correction data does <em>not</em> improve performance. Error correction is a much harder skill than error detection and must be learned during pre-training.</li>
+</ul>
+</section>
+<section id="generating-fake-mistakes-in-practice" class="level4">
+<h4 class="anchored" data-anchor-id="generating-fake-mistakes-in-practice">Generating Fake Mistakes in Practice</h4>
+<ul>
+<li><p><strong>Dumber Idea (Works):</strong> Create fake mistakes by inserting a <em>future</em> sentence from the solution into an earlier position.</p>
+<blockquote class="blockquote">
+<p>78% :arrow_right: <strong>91%</strong> (med, op=23) 84% :arrow_right: <strong>92%</strong> (hard, op=32)</p>
+</blockquote></li>
+<li><p><strong>Smarter Idea (Doesn’t Work):</strong> Create fake mistakes by inserting a random unused problem parameters.</p>
+<blockquote class="blockquote">
+<p>78% :arrow_right: <strong>87%</strong> (med, op=23) 84% :arrow_right: <strong>87%</strong> (hard, op=32)</p>
+</blockquote></li>
+<li><p><strong>Conclusion:</strong> The dumber, cheaper method is more effective.</p></li>
+<li><p><strong>Slogan:</strong> “Pre-train with fake mistakes and no more regret.”</p></li>
+</ul>
+</section>
+<section id="summary-of-2.2" class="level4">
+<h4 class="anchored" data-anchor-id="summary-of-2.2">Summary of 2.2</h4>
+<ul>
+<li>LLMs exhibit regret when making mistakes.</li>
+<li>Pre-training with mistakes and corrections is crucial for learning error correction.</li>
+<li>Fine-tuning and beam search are insufficient.</li>
+<li>Fake mistakes can be easily generated and are effective.</li>
+</ul>
+</section>
+</section>
+<section id="reflection-on-the-physics-of-language-models-approach-end-of-part-2" class="level3">
+<h3 class="anchored" data-anchor-id="reflection-on-the-physics-of-language-models-approach-end-of-part-2">Reflection on the “Physics of Language Models” Approach (End of Part 2)</h3>
+<ul>
+<li><strong>Reasoning Focus:</strong> Part 2 focused solely on reasoning, using synthetic data.</li>
+<li><strong>Small Models:</strong> 100-million parameter models were sufficient.</li>
+<li><strong>Controlled Experiments:</strong> Manipulated data difficulty, mistake types, and training processes.</li>
+<li><strong>Probing:</strong> Used probing to understand reasoning, mistakes, and the relationship between model depth and reasoning length.</li>
+</ul>
+</section>
+</section>
+<section id="part-1-language-structures" class="level2">
+<h2 class="anchored" data-anchor-id="part-1-language-structures">Part 1: Language Structures</h2>
+<div class="callout callout-style-default callout-tip callout-titled" title="Resource Links">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Resource Links
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>YouTube Recording:</strong> <a href="https://www.youtube.com/watch?v=kf_eGgVtOcs">Physics of Language Models: Part 1, Context-Free Grammar</a></li>
+<li><strong>Paper:</strong> <a href="https://arxiv.org/abs/2309.14316">Physics of Language Models: Part 1, Learning Hierarchical Language Structures</a></li>
+</ul>
+</div>
+</div>
+<section id="introduction-6" class="level3">
+<h3 class="anchored" data-anchor-id="introduction-6">Introduction</h3>
+<ul>
+<li><strong>Two Goals:</strong>
+<ol type="1">
+<li><strong>Interpretation Beyond Tokens:</strong> Provide precise interpretations of how LLMs learn non-trivial, hierarchical algorithms, going beyond simple token-level interpretations (like induction heads).</li>
+<li><strong>Learning Language Structures:</strong> Understand how LLMs learn complex language structures, addressing the question of “format learning” (hallucination).
+<ul>
+<li>hallucination (learn “format” faster than “task”)</li>
+</ul></li>
+</ol></li>
+</ul>
+</section>
+<section id="context-free-grammars-cfgs" class="level3">
+<h3 class="anchored" data-anchor-id="context-free-grammars-cfgs">Context-Free Grammars (CFGs)</h3>
+<ul>
+<li><strong>Approach:</strong> Study how LLMs learn CFGs, using synthetic CFGs that are intentionally difficult.</li>
+<li><strong>CFG Generation:</strong> Generate sentences from a CFG tree by recursively applying rules, starting from the root.</li>
+<li><strong>Synthetic CFG Design:</strong>
+<ul>
+<li>Small vocabulary size (e.g., 1, 2, 3) to make local parsing difficult.</li>
+<li>Large number of possible sentences (e.g., 10^80) to prevent memorization.</li>
+</ul></li>
+<li><strong>CFGs vs.&nbsp;English Grammar:</strong> Synthetic CFGs are much harder than English grammar, requiring dynamic programming for parsing (not just greedy approaches).</li>
+</ul>
+</section>
+<section id="experiment-pre-training-on-cfg-data" class="level3">
+<h3 class="anchored" data-anchor-id="experiment-pre-training-on-cfg-data">Experiment: Pre-training on CFG Data</h3>
+<ul>
+<li><strong>Models:</strong>
+<ul>
+<li>GPT (vanilla, absolute positional embedding).</li>
+<li>GPT (<a href="https://arxiv.org/abs/2104.09864">rotary embedding</a>).</li>
+<li>GPT (relative attention).</li>
+<li>“GPT Stupid” (uniform attention with exponentially increasing spans).</li>
+</ul></li>
+<li><strong>Metrics:</strong>
+<ol type="1">
+<li>Accuracy (generating valid sentences from a valid prefix)</li>
+<li>Diversity</li>
+<li>Distribution difference (KL divergence)</li>
+</ol></li>
+<li><strong>Observation:</strong>
+<ul>
+<li>Relative attention and rotary embedding GPTs perform well.</li>
+<li>Vanilla GPT performs poorly.</li>
+<li>“GPT Stupid” performs surprisingly well.</li>
+</ul></li>
+</ul>
+</section>
+<section id="conclusion-importance-of-relative-attention" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion-importance-of-relative-attention">Conclusion: Importance of Relative Attention</h3>
+<ul>
+<li>Strong connection between rotary embedding/relative attention and the ability to learn language structures.</li>
+<li>Rotary embedding is preferred in practice (LLaMA, Mistral) for efficiency, but relative attention is slightly better.</li>
+<li>“GPT Stupid” demonstrates that even uniform attention with varying spans is beneficial, suggesting that future attention-free models should incorporate this concept.</li>
+</ul>
+</section>
+<section id="how-llms-learn-cfgs-probing" class="level3">
+<h3 class="anchored" data-anchor-id="how-llms-learn-cfgs-probing">How LLMs Learn CFGs: Probing</h3>
+<ul>
+<li><strong>Hidden CFG Trees:</strong> The model doesn’t see the underlying CFG tree, only the generated sentences.</li>
+<li><strong>Probing:</strong> Does the model secretly learn to parse the CFG trees? Are the parsing trees encoded in the hidden embeddings?</li>
+<li><strong>Answer:</strong> Yes, the model learns the CFG trees, and the information is stored <em>locally</em> in the hidden states. The information about each subtree is linearly encoded around its ending position.</li>
+<li><strong>BERT Doesn’t:</strong> BERT (encoder-based models) <em>do not</em> learn the CFGs in this way. Masked language modeling is an easier task than language modeling, not requiring full parsing.</li>
+</ul>
+</section>
+<section id="dynamic-programming-dp" class="level3">
+<h3 class="anchored" data-anchor-id="dynamic-programming-dp">Dynamic Programming (DP)</h3>
+<ul>
+<li><strong>Human Parsing:</strong> Humans use dynamic programming to parse CFGs.</li>
+<li><strong>DP States:</strong> <code>DP(i,j,a)</code> represents whether symbol <code>a</code> can generate the subsequence from <code>i</code> to <code>j</code>.</li>
+<li><strong>DP Transition Functions:</strong> Connect DP states to determine larger subtrees.</li>
+<li><strong>Observation (Probing):</strong>
+<ul>
+<li>DP states are locally stored in the hidden states.</li>
+<li>Attention patterns in the transformer precisely serve as DP transition functions.</li>
+</ul></li>
+</ul>
+</section>
+<section id="two-levels-of-dynamic-programming" class="level3">
+<h3 class="anchored" data-anchor-id="two-levels-of-dynamic-programming">Two Levels of Dynamic Programming</h3>
+<ul>
+<li><strong>Parsing DP:</strong> Determining if a symbol can generate a subsequence.</li>
+<li><strong>Generation DP:</strong> Determining the next token and its probability given a prefix. This requires another, less-known level of dynamic programming.</li>
+<li><strong>Observation (Probing):</strong> Both levels of DP (states and transition functions) are present in the trained transformer.</li>
+</ul>
+</section>
+<section id="summary-of-part-1" class="level3">
+<h3 class="anchored" data-anchor-id="summary-of-part-1">Summary of Part 1</h3>
+<ul>
+<li>GPTs can learn long, synthetic CFGs, requiring non-trivial planning and dynamic programming (harder than topological sort).</li>
+<li>Probing reveals DP states in hidden states and DP transition functions in attention mechanisms.</li>
+<li>BERT doesn’t learn CFGs in the same way; language modeling is a harder task.</li>
+<li>GPTs can learn implicit/corrupted CFGs (details in the <a href="https://arxiv.org/abs/2309.14316">paper</a>).</li>
+<li>The dynamic programming used is non-trivial, unknown to many software engineers and interview candidates. This surpasses the speaker’s abilities at age 17. GPT-4 is likely to perform well, but it has seen dynamic programming in training materials. However, GPT-2 has learned this <em>without</em> seeing any definitions of dynamic programming.</li>
+</ul>
+</section>
+<section id="final-thoughts-future-science" class="level3">
+<h3 class="anchored" data-anchor-id="final-thoughts-future-science">Final Thoughts: Future Science</h3>
+<ul>
+<li><strong>Synthetic Data:</strong> Synthetic data is becoming increasingly important as real-world data becomes exhausted.</li>
+<li><strong>GPT-5/GPT-6:</strong> To surpass current limitations (e.g., GPT-4’s reasoning limit), synthetic data will be necessary.</li>
+<li><strong>Research Questions:</strong> What are the optimal formats for synthetic data to maximize knowledge acquisition and reasoning abilities?</li>
+<li><strong>AGI:</strong> This research is crucial for building language models that approach AGI.</li>
+</ul>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="About Me:">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+About Me:
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’m Christian Mills, a deep learning consultant specializing in practical AI implementations. I help clients leverage cutting-edge AI technologies to solve real-world problems.</p>
+<p>Interested in working together? Fill out my <a href="https://docs.google.com/forms/d/e/1FAIpQLScKDKPJF9Be47LA3nrEDXTVpzH2UMLz8SzHMHM9hWT5qlvjkw/viewform?usp=sf_link">Quick AI Project Assessment</a> form or learn more <a href="../../../about.html">about me</a>.</p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<!-- Cloudflare Web Analytics --><script defer="" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;56b8d2f624604c4891327b3c0d9f6703&quot;}"></script><!-- End Cloudflare Web Analytics -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/christianjmills\.com");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<script src="https://utteranc.es/client.js" repo="cj-mills/christianjmills" issue-term="pathname" theme="github-light" crossorigin="anonymous" async="">
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+<p>Content licensed under CC BY-NC-SA 4.0</p>
+</a>
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../../../about.html">
+<p>© 2025 Christian J. Mills</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://opensource.org/licenses/MIT">
+<p>Code samples licensed under the MIT License</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
