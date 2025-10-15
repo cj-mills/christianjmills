@@ -6,11 +6,20 @@ categories:
 - game-dev
 - notes
 date: '2021-12-29'
-description: My notes from Jason Wiser's talk on how he teaches a class that covers
-  5 semesters worth of game design in a single semester.
+date-modified: last-modified
+description: "My notes from Jason Wiser's talk on how he teaches a class that covers
+  5 semesters worth of game design in a single semester."
 hide: false
 search_exclude: false
-title: Notes on How to Teach 5 Semesters of Game Design in 1 Class
+title: "Notes on *How to Teach 5 Semesters of Game Design in 1 Class*"
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
 
 ---
 
@@ -24,148 +33,261 @@ title: Notes on How to Teach 5 Semesters of Game Design in 1 Class
 
 
 
-* [Overview](#overview)
-* [How to Make This Course Work](#how-to-make-this-course-work)
-* [Email Two Weeks Before the Semester](#email-two-weeks-before-the-semester)
-* [Game Design Principles and Prompts](#game-design-principles-and-prompts)
-* [Giving Feedback](#giving-feedback)
-* [Accountability](#Accountability)
-* [Industry Engagement](#Industry Engagement)
+* [Introduction](#introduction)
+* [Wiser’s Background and Teaching Philosophy Evolution](#wisers-background-and-teaching-philosophy-evolution)  
+* [The Genesis of the “Crazy Pants” Course](#the-genesis-of-the-crazy-pants-course)
+* [Course Design Strategies for Success](#course-design-strategies-for-success)  
+* [A Student’s Journey Through the Course: The Case of Samantha](#a-students-journey-through-the-course-the-case-of-samantha)  
+* [Course Influences and Foundations](#course-influences-and-foundations)
+* [Game Success Rubric and Grading](#game-success-rubric-and-grading)
+* [Student Expectations and Course Management](#student-expectations-and-course-management)  
+* [Course Outcomes and Reflections](#course-outcomes-and-reflections)  
+* [Conclusion](#conclusion)
 
 
 
-## Overview
-
-Here are some notes I took while watching Jason Wiser's [talk](https://www.youtube.com/watch?v=uoc0U-WsPa0) how he successfully teaches class that covers 5 semesters of game design in a single semester.
-
-**Course website**
-
-[Game Design - Tufts](http://www.madwomb.com/tutorials/GameDesign_Tufts.html)
-
-## How to Make This Course Work
-
-- Teaching Assistants offering coding labs
-- Flexible Classroom
-- All lessons built on Team Production:
-    - Motivating, inspiring, and no one feels like the burden is all on them (as long as the team are well supported).
-- [Robust Course Website](http://www.madwomb.com/tutorials/GameDesign_Tufts.html)
-    - A website with all schedules, materials and lecture notes and tutorials covered in class, and further opportunities for further learning
-    - Allows students to see the full scope of the course
-- Stacking Theory
-    - The class does not cover content in a purely linear fashion
-    - Students are taught one critical concept a week and exposed to other concepts *before* they are needed.
-        - Allows them to get curious
-    - Class meets once a week for three hours
-        - Discuss and practice the one critical topic for that week’s homework
-        - Introduce two or three other ideas will be important later
-            - Example: A month before anyone will need to make anything in 3D for homework, they start learning basic modelling and texture
-- Summary
-    - Class meets 1/week, 3hours/class divided into 3-5 lesson-units
-    - **Weeks 1-6:** Students work in 2-week teams to make tabletop games, then switch. Lessons in Design, Teamwork, Engine, and Art tools.
-    - **Week 7:** Students Pitch Final Game Concepts, and form Final Teams
-    - **Weeks 8-14:** Students Develop Final Games. Lessons in Pipeline Dev, Project Management, Level Design, UI, Audio, Tutorials, Marketing
-    - **Week 15:** Final Presentations Party
-
-## Email Two Weeks Before the Semester
-
-1. Welcome to the course
-2. What games do you love?
-3. What games do you want to make?
-4. Download Unity and Maya
-5. Get familiar with [tabletop games](https://geekandsundry.com/shows/tabletop/)
-
-## Game Design Principles and Prompts
-
-1. Mechanics vs Story
-    1. focus on mechanics
-    2. form team and design a table top game inspired by weird boards and toys
-2. Playtesting and Radical Revision
-    1. find the fun parts of the game
-    2. discuss radical revision to refocus around that fun
-3. Disruption of Existing Games
-    1. form a second two-week team
-    2. disrupt an existing game into something new
-    3. Unity 3D 1 hour
-4. Alternate Reality Games to solve misery
-    1. [Read Reality is Broken](https://www.amazon.com/Reality-Broken-Games-Better-Change/dp/0143120611/)
-    2. Brainstorm and present an alternate reality game to solve a misery
-    3. Unity 2D 1 hour
-    4. Homework: Unity Roll-a-ball
-5. Workplace Routine Games
-    1. Form third team to make a final tabletop project based on the routines of a workplace
-    2. Intro Maya to Unity pipeline 1 hour
-6. 
-    1. Intro VR, Unity Builds
-    2. Make the workplace game digital (zero expectation of success)
-7. Final Games Pitch
-    1. Brainstorming and silent reflection
-    2. Everyone chooses a colored sticky-note for their production role, adds their name
-    3. 45 seconds to pitch idea
-    4. Everyone votes on the game they want to make
-    5. Teacher rebalances roles
-8. Last 8 Weeks: Final Digital Games
-    - 2 weeks of predevelopment
-        - paper prototypes, design docs, tools research, and pipeline development
-    - 3 weeks to get a full functioning prototype
-    - 3 weeks to get a revised prototype built-out to multiple levels and more polished art and audio
-    - Photoshop for 2D assets
-    - Animation and VFX in Unity
-    - Intro to Audio Design
-    - Intro to UI design
-    - 3 weeks on Level Design
-    - 2 weeks on Marketing
-    - Weekly in-and-out-of-class playtesting
-    
-
-## Giving Feedback
-
-- Clarity: Do players know what to do?
-    - A game that is intentionally obscure is taken and discussed on its intentions and merits
-- Innovation: What new gameplay to stimulate interest?
-- Immersion: Is the “story” compelling (implied in setting, art, music)?
-- Flow: Does the player feel constantly productive?
-    - A game that is designed to inhibit flow is taken and discussed on its intentions and merits
-- Fiero: Are there multiple big victory moments for players?
-- Grade is as much on collaboration, experimentation, risk taking, and design, as it is about the games being successful as games
-
-## Accountability
-
-- Weekly playtesting and responses to rubric.
-    - verbal and typed feedback
-- Posting weekly task divisions
-    - show an equal share of production per member
-- Posting weekly personal progress report
-    - one paragraph with screenshots
-    - What they agreed to take on that week
-    - What they actually completed
-    - Who helped them
-    - Who they helped
-    - Links to tutorials they used
-- Peer evaluation form 3 times in the semester
-    - Discuss teammate contributions to team productivity and moral
-    - Divide a pool of point unevenly between their teammates
-    - Only the last one, handed in on the last day of class, impacts their teammates’ grades (20%)
-    
-
-## Industry Engagement
-
-- Off-campus Networking Event attendance and write-up
-- Weekly videos by game industry designers
-    - Gets other voices into the room besides the teacher
-
-  
-
-**Other Notes:**
-
-* Try not to talk for more than 10 minutes before having the students do something
-
-* Talk in the beginning of the semester about what each student is in the class for
-
-   
-
-**References:**
-
-* [How to Teach 5 Semesters of Game Design in 1 Class](https://www.youtube.com/watch?v=uoc0U-WsPa0)
 
 
+::: {.callout-tip title="Source Material:"}
 
+**Video:** [How to Teach 5 Semesters of Game Design in 1 Class](https://www.youtube.com/watch?v=uoc0U-WsPa0)
+
+:::
+
+ 
+
+### Introduction
+
+- **Jason Wiser** describes his "crazy pants" game design course at Tufts University, which compresses 5 semesters of traditional game design education into a single semester.
+- The course covers a wide range of topics:
+  - Tabletop game design
+  - Alternate reality game design
+  - Game testing
+  - Unity game engine and C# programming
+  - 3D and 2D art and animation
+  - Audio for games
+  - Paper prototyping
+  - Level design
+  - VR tools
+  - Team building and communication
+  - Digital game prototyping
+  - Pipeline development
+  - Team management
+  - Marketing
+  - Industry networking
+- The course's success challenges the conventional wisdom in game education of focusing on one skill at a time.
+- **Ian Schreiber** (Education Summit board member) expressed skepticism about the course's feasibility. 
+- Wiser's presentation aims to demonstrate the effectiveness of this approach.
+
+
+### Wiser's Background and Teaching Philosophy Evolution
+
+#### Early Career: Maximalist Approach 
+
+- Wiser's early teaching career was characterized by a **maximalist approach** to curriculum design.
+  - Teach for America experience: Taught a diverse range of subjects (international dance, art, creative writing, literature) to students who wanted as much knowledge as possible.
+  - Art Institutes experience: Students were dedicated to games and animation, and Wiser aimed to maximize portfolio output in even introductory courses (e.g., 10-week intro to 3D modeling included full room interiors and two high-detailed characters).
+  - Pixar workshop (2005):  Intensive course where participants enthusiastically consumed all content.
+- This approach led to **high student workload and potential burnout**.
+
+#### Shift to Concept Mastery and Confidence Building
+
+- Wiser's priorities changed around 2011 when teaching at colleges where students had broader interests.
+- **Goals shifted from maximizing portfolio content to concept mastery and confidence building**.
+  - **Minimum viable product (MVP)** approach: Intro to 3D course focused on one hard surface and one organic object.
+  - Emphasis on empowering students to explore concepts further outside the course.
+
+### The Genesis of the "Crazy Pants" Course
+
+- Wiser pitched a game design curriculum to the Tufts Computer Science department.
+- Initially proposed a typical multi-course model:
+  - Tabletop game design
+  - Level design
+  - Game environment art
+  - Programming and prototyping
+  - Capstone team production
+- Department requested a single course with a focus on programming.
+- Wiser decided to combine all five core areas into one course.
+- The course was considered an **experiment** and needed to be successful to be repeated.
+- Wiser aimed for **student fulfillment and engagement without burnout**.
+
+### Course Design Strategies for Success
+
+#### Teamwork Emphasis
+
+- All assignments built around teamwork: 
+  - Supports student motivation and creativity.
+  - Provides a support network for students.
+  - Includes lessons on improving teamwork skills. 
+
+#### Robust Course Website
+
+- Provides clear expectations and resources:
+  - Detailed weekly schedule and homework reminders.
+  - Lecture notes.
+  - Assignment rubrics.
+  - Tutorial videos for tool review.
+  - Examples from past students.
+  - Sources for further learning.
+- **Website address:** [Game Design - Tufts](http://www.madwomb.com/tutorials/GameDesign_Tufts.html)
+
+#### Stacking Theory
+
+- **Stacking theory:** Students learn one thing well at a time, but exposure to other concepts without deadline pressure can spark curiosity and absorption.
+- **Implementation in the course:**
+  - Each 3-hour class focuses on one critical topic for that week's homework (indicated by stars in the course schedule).
+  - Introduces 2-3 other ideas or toolsets that will be important later.
+  - Example: Basic 3D modeling and texturing are introduced a month before they are required for homework.
+- Benefits: 
+  - Confidence building through repeated exposure.
+  - Reduced stress and frustration.
+  - By the time of final game production, students have experience with most necessary tools.
+
+### A Student's Journey Through the Course: The Case of Samantha
+
+#### Weeks 1-6: Tabletop Games and Foundational Skills
+
+- **Week 1:**
+  - Distinguishing between game mechanics and story.
+  - Samantha forms a team to design a tabletop game inspired by weird boards and toys.
+  - Reading: Jesse Schell's *Art of Game Design*.
+- **Week 2:**
+  - Playtesting and radical revision.
+  - Example: Tree of Life game board reinterpreted as asymmetrical combat between antivirus and AI.
+- **Week 3:**
+  - New team formation.
+  - Disrupting existing games (e.g., Sand Wizard of Catan).
+  - Unity 3D and 2D tutorials (scripting, physics, feedback).
+- **Week 4:**
+  - Reading: Jane McGonigal's [*Reality is Broken*](https://www.amazon.com/Reality-Broken-Games-Better-Change/dp/0143120611/).
+  - Brainstorming and presenting an alternate reality game to solve a "misery".
+  - Unity Rollerball tutorial (homework).
+  - TA-led code labs begin.
+- **Week 5:**
+  - New team formation.
+  - Tabletop game based on workplace routines (e.g., window washers, airline traffic controllers, baristas).
+  - Introduction to 3D Maya to Unity pipeline.
+- **Week 6:**
+  - Unity builds and VR tools.
+  - One-week challenge to turn workplace game digital (zero expectation of success, focus on experimentation and learning from mistakes).
+
+#### Week 7: Transition to Digital Game Production
+
+- Showcase of first original digital games.
+- Review of all design topics covered.
+- Encouragement to explore new movement, interaction, visuals, and premises.
+- **Brainstorming and Pitching:**
+  - 30-minute brainstorming session.
+  - Students write final ideas on note cards.
+  - Students choose colored sticky notes representing their desired production role (code, art, audio, project management).
+  - 45-second pitches to the class.
+  - Voting with sticky notes to choose final projects (MIT Game Lab method).
+  - Team formation based on votes (instructor rebalances roles if needed).
+
+#### Weeks 8-14: Final Game Development
+
+- **Week 8:** Design document and paper prototyping for user stories.
+- **Week 9:**  Get as much of the game working in Unity as possible.
+- **Weeks 10-11:** Complete a working prototype.
+- **Weeks 12-14:** Build out a fuller game (multiple levels, polished art and audio).
+- **Weekly playtesting** and adjustments to game plan.
+- **Lessons in:**
+  - Basic Photoshop and user interface design.
+  - Audio composition.
+  - Level design (encounter building, rational game design).
+
+#### Weeks 15-16: Marketing and Final Presentations
+
+- **Weeks 15-16:**
+  - Discussion of game marketing.
+  - Teams prepare trailers and websites.
+- **Final Week:**
+  - Showcase of games to guests.
+  - Presentation of trailers, websites, and team experiences.
+
+### Course Influences and Foundations
+
+- **MIT Game Lab & Firehose Games:** Game testing methodology, team selection system.
+- **Paul Schuytema:** Playful mechanics lesson with toys and boards.
+- **Jenna Hofstein:** Aspirational theory of game marketing.
+- **Forrest Dowling (The Molasses Flood):** Encounter building lesson.
+- **Alexis Jolie de Sautel:**  Rational Game Design (difficulty curves and tutorialization).
+- **Boston University Executive MBA Program:** Peer evaluation system.
+- **Jesse Schell's *Art of Game Design*:** Mechanics and prototyping.
+- **Jane McGonigal's [*Reality is Broken*](https://www.amazon.com/Reality-Broken-Games-Better-Change/dp/0143120611/):**
+  - Alternate reality games.
+  - Definition of games: "Voluntary engagement in unnecessary obstacles."
+  - Definition of fun: **Flow** (feeling of constant progress) and **Fiero** (frequent accomplishment and excitement).
+
+### Game Success Rubric and Grading
+
+- **Game Success Rubric:**
+  - **Clarity:** Do players know what to do?
+  - **Innovation:** What new gameplay mechanics stimulate interest?
+  - **Immersion:** Is the setting, art, and music compelling and story-implied?
+  - **Flow:** Does the player feel constantly productive?
+  - **Fiero:** Are there multiple victory moments?
+- **Grading:**
+  - Rubric evaluates game strength.
+  - Grades also consider collaboration, experimentation, and risk-taking in design.
+  - Tabletop games (before midterms) are pass/fail to reduce pressure and encourage fun.
+
+### Student Expectations and Course Management
+
+#### Student Expectations
+
+- Meet with teams outside of class weekly.
+- Deliver a play-testable game each week.
+- Learn a large amount of content in multiple disciplines.
+- Strive for their own definition of excellence.
+
+#### Accountability Measures
+
+- **Weekly playtesting:** Verbal and written feedback based on the rubric.
+- **Weekly task division posts:** Demonstrates intention for equal workload distribution.
+- **Weekly personal progress reports (after midterms):** Screenshots, tasks completed, help given and received, tutorial links.
+- **Peer evaluations (3 times per semester):** Assessment of teammates' contributions to productivity and morale, uneven point distribution.
+  - Only the final peer evaluation affects grades (20%).
+
+#### Industry Connections
+
+- Students attend an off-campus networking event and write about it.
+- List of Boston area game industry events maintained on madwomb.com.
+- Video lectures by prominent game designers (diverse perspectives).
+
+### Course Outcomes and Reflections
+
+- Taught nine times at Tufts and Harvard.
+- **Positive outcomes:**
+  - Increased student confidence and creative ability.
+  - Strong teamwork skills development.
+  - High engagement and minimal burnout.
+- **Games are consistently playable, often aesthetically pleasing, and frequently unique**.
+- **Displaced:** Example of a successful game that initially seemed unpromising (platformer about self-doubt and isolation).
+
+#### Example: Displaced
+
+- **Displaced:**
+  - Created in the first semester of the course.
+  - Initially seemed like a bad idea: Players get worse at the game as they play.
+  - Became a successful platformer exploring self-doubt, isolation, and empathy.
+  - Mechanic: Blob absorbs junk, growing in size and becoming slower and less agile.
+  - Strong connection between mechanic and theme.
+  - Excellent level design.
+  - Illustrates the importance of trusting the iterative design process.
+
+### Conclusion
+
+- Course consistently receives positive student feedback.
+- Students appreciate the teamwork and opportunities for growth.
+- Course provides high levels of flow and fiero.
+- Captures the excitement and challenges of game development.
+- Wiser expresses joy in teaching the course. 
+
+
+
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

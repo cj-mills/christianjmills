@@ -10,9 +10,9 @@ description: "In this talk, **Jo Kristian Bergum** from **Vespa.ai** explores pr
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -405,3 +405,8 @@ open-graph:
   * **Vocabulary Limitations:** ColBERT still relies on the same vocabulary as other BERT-based models, so it's not a complete solution to tokenizer problems.
   * **Future Direction:** Better pre-trained models with larger vocabularies would benefit ColBERT and other embedding models.
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "Learn how to export timm image classification models from PyTorch 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -586,3 +586,8 @@ The model predictions should be virtually identical to the PyTorch model.
 Congratulations on reaching the end of this tutorial! We previously fine-tuned a model from the timm library with fastai for hand gesture classification and now exported the underlying PyTorch model to TorchScript. With this conversion, you can deploy your model seamlessly across diverse platforms, ensuring optimized performance and enhanced portability for real-world applications.
 
 If you found this guide helpful, consider sharing it with others.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

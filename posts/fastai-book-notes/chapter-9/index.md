@@ -16,6 +16,14 @@ title: Notes on fastai Book Ch. 09
 aliases:
 - /Notes-on-Fastai-Book-09/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -2730,3 +2738,8 @@ r_mse(ens_preds,valid_y)
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

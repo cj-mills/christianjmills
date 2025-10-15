@@ -10,9 +10,9 @@ description: "Walk through the code for the Unity Barracuda Inference PoseNet pa
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -1120,3 +1120,8 @@ You can find the code for the demo project shown in the video at the beginning o
 
 - [Barracuda Inference PoseNet Demo](https://github.com/cj-mills/barracuda-inference-posenet-demo): A simple Unity project demonstrating how to perform 2D human pose estimation with the `barracuda-inference-posenet` package.
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

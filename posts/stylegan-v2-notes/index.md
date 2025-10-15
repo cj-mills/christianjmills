@@ -10,6 +10,14 @@ hide: false
 search_exclude: false
 title: Notes on StyleGANv2
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -209,3 +217,8 @@ $AdaIN(x,y) = \sigma(y) \ \left(\frac{x - \mu(x)}{\sigma(x)}\right) + \mu(y)$
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

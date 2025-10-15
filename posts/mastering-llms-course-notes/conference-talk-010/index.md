@@ -10,9 +10,9 @@ description: "In this talk, **Jason Liu** covers a a systematic approach to impr
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -318,3 +318,8 @@ open-graph:
 
 * **Leverage experience from recommendation systems:** Position RAG expertise by drawing parallels to recommendation systems, highlighting transferable skills in data analysis, model development, and system optimization.
 * **Target businesses with similar workflows:** Focus on businesses where users interact with information similarly to recommendation systems, such as those requiring information retrieval and synthesis based on user requests.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

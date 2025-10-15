@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 1: How to profile CUDA kernels in PyTorch"
+title: "GPU MODE Lecture 1: How to profile CUDA kernels in PyTorch"
 date: 2024-4-26
 image: /images/empty.gif
 hide: false
@@ -10,16 +10,20 @@ description: "Lecture #1 provides a practical introduction to integrating and pr
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
+
+
+
+
 
 
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**CUDA Mode Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **CUDA MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.         
+* [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.         
 :::
 
 
@@ -46,9 +50,9 @@ open-graph:
 * **Resources:**
   - **Lecture Slides:** [CUDA Mode: Lecture 1](https://docs.google.com/presentation/d/110dnMW94LX1ySWxu9La17AVUxjgSaQDLOotFC3BZZD4/edit#slide=id.p)
   - **Textbook:** [Programming Massively Parallel Processors](https://www.amazon.com/Programming-Massively-Parallel-Processors-Hands/dp/0323912311/)
-  - **GitHub Repository:** [CUDA MODE Lecture 1](https://github.com/cuda-mode/lectures/tree/main/lecture_001)
-  - **Discord Channel:** [CUDA MODE](https://discord.gg/cudamode)
-  - **YouTube Channel:** [CUDA MODE](https://www.youtube.com/@CUDAMODE)
+  - **GitHub Repository:** [GPU MODE Lecture 1](https://github.com/cuda-mode/lectures/tree/main/lecture_001)
+  - **Discord Channel:** [GPU MODE](https://discord.gg/cudamode)
+  - **YouTube Channel:** [GPU MODE](https://www.youtube.com/@CUDAMODE)
 
 
 
@@ -1130,3 +1134,8 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

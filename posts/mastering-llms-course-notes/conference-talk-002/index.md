@@ -10,9 +10,9 @@ description: "This talk by **Ankur Goyal** from BrainTrust covers how to build e
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -1715,3 +1715,8 @@ This query first calculates the number of wins and losses for each team for each
 * **Don't overcomplicate initial evaluations.** Start with hardcoded data and progressively enhance complexity. 
 * **Actively use logs and user feedback** to drive iterative improvements, especially when dealing with complex, unfamiliar databases. 
 * **Explore the Braintrust platform** and its features, including the cookbook and shared notebook, for practical implementation guidance. 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

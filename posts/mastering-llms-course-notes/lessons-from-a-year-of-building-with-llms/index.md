@@ -10,9 +10,9 @@ description: "This live discussion between six AI experts and practitioners cent
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -261,3 +261,8 @@ open-graph:
   - **Process over Tools**:  Focus on developing robust processes and methodologies rather than relying solely on tools. 
   - **User-Centricity**: Design applications with user needs in mind, prioritizing trust, feedback, and iterative improvement.
 * The future of LLMs is bright, with the potential to transform how we interact with information and build intelligent software.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

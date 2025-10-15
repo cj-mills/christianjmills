@@ -14,6 +14,14 @@ categories: [blender, python, tutorial]
 aliases:
 - /Create-a-Shape-Key-Motion-Graphic-With-the-Blender-Python-API/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Introduction](#introduction)
@@ -447,3 +455,8 @@ I feel like this exercise was worthwhile as it forced me to learn about multiple
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

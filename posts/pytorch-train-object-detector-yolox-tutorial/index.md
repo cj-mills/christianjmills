@@ -15,9 +15,9 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -87,6 +87,12 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 
 
+
+
+{{< include /_python-multiprocessing-warning.qmd >}}
+
+
+
 ::: {.callout-tip title='COCO Annotation Format'}
 
 I've added a notebook for training models on the [COCO dataset](https://cocodataset.org/#home) to this tutorial's GitHub repository. You can modify it to train models on other datasets that follow the COCO annotation format.
@@ -145,7 +151,7 @@ Next, we'll install PyTorch. Run the appropriate command for your hardware and o
 
 ``` {.bash}
 # Install PyTorch with CUDA
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
 ## Mac
@@ -2774,3 +2780,8 @@ Congratulations on completing this tutorial for training real-time object detect
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

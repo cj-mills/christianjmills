@@ -10,9 +10,9 @@ description: "Learn how to track objects across video frames with YOLOX and Byte
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -698,69 +698,70 @@ Once we match the updated track data with the current bounding box predictions, 
 tracker = BYTETracker(track_thresh=0.25, track_buffer=30, match_thresh=0.8, frame_rate=frame_fps)
 
 with tqdm(total=frames, desc="Processing frames") as pbar:
+    # Iterate through each frame in the video
     while video_capture.isOpened():
         ret, frame = video_capture.read()
         if ret:
             
-            # Prepare an input image for inference
-            rgb_img, input_dims, offsets, min_img_scale, input_img = prepare_image_for_inference(frame, test_sz, max_stride)
-                        
-            # Convert the existing input image to NumPy format
-            input_tensor_np = np.array(input_img, dtype=np.float32).transpose((2, 0, 1))[None]/255
-
-            # Start performance counter
             start_time = time.perf_counter()
-                        
-            # Run inference
+        
+            # Prepare the input image for inference
+            rgb_img, input_dims, offsets, min_img_scale, input_img = prepare_image_for_inference(frame, test_sz, max_stride)
+            
+            # Convert the input image to NumPy format for the model
+            input_tensor_np = np.array(input_img, dtype=np.float32).transpose((2, 0, 1))[None]/255
+                            
+            # Run inference using the ONNX session
             outputs = session.run(None, {"input": input_tensor_np})[0]
-
-            # Process the model output
+        
+            # Process the model output to get object proposals
             proposals = process_outputs(outputs, input_tensor_np.shape[input_dim_slice], bbox_conf_thresh)
             
-            # Apply non-max suppression to the proposals with the specified threshold
+            # Apply non-max suppression to filter overlapping proposals
             proposal_indices = nms_sorted_boxes(calc_iou(proposals[:, :-2]), iou_thresh)
             proposals = proposals[proposal_indices]
             
+            # Extract bounding boxes, labels, and probabilities from proposals
             bbox_list = (proposals[:,:4]+[*offsets, 0, 0])*min_img_scale
             label_list = [class_names[int(idx)] for idx in proposals[:,4]]
             probs_list = proposals[:,5]
-
-            # Update tracker with detections.
+    
+            # Initialize track IDs for detected objects
             track_ids = [-1]*len(bbox_list)
-
-            # Convert to tlbr format
+    
+            # Convert bounding boxes to top-left bottom-right (tlbr) format
             tlbr_boxes = bbox_list.copy()
             tlbr_boxes[:, 2:4] += tlbr_boxes[:, :2]
-
+    
             # Update tracker with detections
             tracks = tracker.update(
                 output_results=np.concatenate([tlbr_boxes, probs_list[:, np.newaxis]], axis=1),
                 img_info=rgb_img.size,
                 img_size=rgb_img.size)
-            track_ids = match_detections_with_tracks(tlbr_boxes=tlbr_boxes, track_ids=track_ids, tracks=tracks)
-
-            # End performance counter
-            end_time = time.perf_counter()
-            # Calculate the combined FPS for object detection and tracking
-            fps = 1 / (end_time - start_time)
-            # Display the frame rate in the progress bar
-            pbar.set_postfix(fps=fps)
-
-            # Filter object detections based on tracking results
-            bbox_list, label_list, probs_list, track_ids = zip(*[(bbox, label, prob, track_id) 
-                                                                 for bbox, label, prob, track_id 
-                                                                 in zip(bbox_list, label_list, probs_list, track_ids) if track_id != -1])
-
-            # Annotate the current frame with bounding boxes and tracking IDs
-            annotated_img = draw_bboxes_pil(
-                image=rgb_img, 
-                boxes=bbox_list, 
-                labels=[f"{track_id}-{label}" for track_id, label in zip(track_ids, label_list)],
-                probs=probs_list,
-                colors=[int_colors[class_names.index(i)] for i in label_list],  
-                font=font_file,
-            )
-            annotated_frame = cv2.cvtColor(np.array(annotated_img), cv2.COLOR_RGB2BGR)
+    
+            if len(tlbr_boxes) > 0 and len(tracks) > 0:
+                # Match detections with tracks
+                track_ids = match_detections_with_tracks(tlbr_boxes=tlbr_boxes, track_ids=track_ids, tracks=tracks)
+        
+                # Filter object detections based on tracking results
+                bbox_list, label_list, probs_list, track_ids = zip(*[(bbox, label, prob, track_id) 
+                                                                    for bbox, label, prob, track_id 
+                                                                    in zip(bbox_list, label_list, probs_list, track_ids) if track_id != -1])
+                
+                if len(bbox_list) > 0:
+                    # Annotate the current frame with bounding boxes and tracking IDs
+                    annotated_img = draw_bboxes_pil(
+                        image=rgb_img, 
+                        boxes=bbox_list, 
+                        labels=[f"{track_id}-{label}" for track_id, label in zip(track_ids, label_list)],
+                        probs=probs_list,
+                        colors=[int_colors[class_names.index(i)] for i in label_list],  
+                        font=font_file,
+                    )
+                    annotated_frame = cv2.cvtColor(np.array(annotated_img), cv2.COLOR_RGB2BGR)
+            else:
+                # If no detections, use the original frame
+                annotated_frame = frame
             
             video_writer.write(annotated_frame)
             pbar.update(1)
@@ -807,3 +808,8 @@ As a follow-up project, consider integrating our hand sign detector with ByteTra
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

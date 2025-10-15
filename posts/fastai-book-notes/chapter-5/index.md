@@ -16,6 +16,14 @@ categories: [ai, fastai, notes, pytorch]
 aliases:
 - /Notes-on-Fastai-Book-05/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1925,3 +1933,8 @@ learn.fine_tune(6, freeze_epochs=3)
 
 **Next:** [Notes on fastai Book Ch. 6](../chapter-6/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

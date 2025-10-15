@@ -10,9 +10,9 @@ description: "This post covers my findings from training style transfer models a
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -146,3 +146,8 @@ I've been excited about the recent developments for fine-tuning LLMs on local ma
 At the end of Part 2, I stated that I believe Arc GPUs are now credible options for deep learning. My experience testing the A770 on some more complicated use cases mostly reaffirms that. Running the style transfer and Diffusers notebooks with Intel's PyTorch extension only took a couple of changes.
 
 However, Nvidia GPUs have been dominant for a long time and will likely continue to get priority for cutting-edge developments like the quantization methods used in QLoRA. Anyone considering an Arc GPU for deep learning should keep that in mind and verify the dependencies needed for their target use case support Arc GPUs.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

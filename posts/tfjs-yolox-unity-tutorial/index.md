@@ -10,6 +10,15 @@ comments:
     repo: cj-mills/christianjmills
 description: Create a TensorFlow.js plugin for the Unity game engine to perform object detection with a YOLOX model.
 categories: [unity, tensorflow, webgl, yolox, object-detection, tutorial]
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -1736,3 +1745,8 @@ In this follow-up tutorial, we showed you how to use TensorFlow.js for in-browse
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

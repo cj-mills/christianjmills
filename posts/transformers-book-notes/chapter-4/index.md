@@ -15,6 +15,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-04/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -4130,3 +4138,8 @@ f1_scores_df
 
 **Next:** [Notes on Transformers Book Ch. 5](../chapter-5/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

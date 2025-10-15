@@ -10,9 +10,9 @@ description: "Workshop #2 builds on Workshop 1 to focus on practical fine-tuning
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -866,3 +866,8 @@ Accelerate consists of three primary frameworks:
 * Mac M-series GPUs: PyTorch is supported, but MLX is recommended for a better fine-tuning experience.
 * Agentic LLM Applications: Most, if not all, real-world LLM applications involve function calls, making them "agentic." Focus on thorough testing, including unit and integration tests, for function call workflows. 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

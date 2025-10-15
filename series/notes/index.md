@@ -16,5 +16,14 @@ listing:
     ]
 page-layout: full
 title-block-banner: false
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 

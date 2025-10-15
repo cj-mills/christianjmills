@@ -10,9 +10,9 @@ description: "In this talk, **Mark Saroufim** and **Jane Xu**, discuss technique
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -122,7 +122,7 @@ open-graph:
 
 ### Challenges and Solutions with QLoRA
 
-* QLoRA implementation can be complex, often requiring custom CUDA kernels (e.g., the original implementation by Tim Detmers consists of 4,000 lines of CUDA code).
+* QLoRA implementation can be complex, often requiring custom CUDA kernels (e.g., the [original implementation](https://github.com/bitsandbytes-foundation/bitsandbytes/blob/main/csrc/kernels.cu) by [Tim Dettmers](https://timdettmers.com/about/) consists of 4,000 lines of CUDA code).
 
   * Weights aren’t in int4 but NF4 which is closer to a normal distribution
   * Can’t matrix multiply NF4 tensors
@@ -315,3 +315,8 @@ open-graph:
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

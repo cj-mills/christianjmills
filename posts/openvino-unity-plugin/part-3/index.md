@@ -14,6 +14,15 @@ categories: [openvino, style-transfer, tutorial, unity]
 
 aliases:
 - /OpenVINO-Plugin-for-Unity-Tutorial-3/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Previous: [Part 2](../part-2/)
@@ -1496,3 +1505,8 @@ We now have a general workflow for leveraging the OpenVINO™ Toolkit inside the
 [GitHub Repository](https://github.com/cj-mills/Unity-OpenVINO-Plugin)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

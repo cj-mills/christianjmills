@@ -14,6 +14,16 @@ categories: [style-transfer, pytorch, unity, tutorial]
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-Addendum/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+  
+
 ---
 
 ### Previous: [Part 3](../part-3/)
@@ -91,3 +101,8 @@ You'll probably notice that this model doesn't preserve as much fine detail as t
 This model works great for videos where the scene doesn't change too drastically. Unfortunately, it does not seem well suited for a dynamic, real-time, environment. The default model is way too large to get playable frame rates and it quickly loses detail when its size is reduced. Still, the process of trying to make it work was educational at the very least.
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

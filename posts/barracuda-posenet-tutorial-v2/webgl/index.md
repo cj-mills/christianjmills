@@ -14,6 +14,14 @@ categories: [unity, barracuda, webgl, tutorial]
 aliases:
 - /Barracuda-PoseNet-WebGL-Tutorial/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Last Updated: 3/23/2022
@@ -820,3 +828,8 @@ We now have a way to use the Barracuda inference engine in WebGL builds.
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

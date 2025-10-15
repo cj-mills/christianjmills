@@ -10,9 +10,9 @@ description: "Learn how to setup up NVIDIA CUDA on Ubuntu with the Mamba/Conda p
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -211,9 +211,16 @@ We will use the [Mamba](https://mamba.readthedocs.io/en/latest/) package manager
 The following bash commands will download the latest release, install it, and relaunch the current bash shell to apply the relevant changes:
 
 ```bash
-wget "https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$(uname -m).sh"
-bash Mambaforge-$(uname)-$(uname -m).sh -b
-~/mambaforge/bin/mamba init
+# Download the latest Miniforge3 installer for the current OS and architecture
+wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+
+# Run the Miniforge3 installer silently (-b flag for batch mode)
+bash Miniforge3-$(uname)-$(uname -m).sh -b
+
+# Initialize mamba for shell usage
+~/miniforge3/bin/mamba init
+
+# Restart the shell to apply changes
 bash
 ```
 
@@ -1131,3 +1138,8 @@ The **Getting Started With CUDA** lecture by Jeremy Howard is [lecture 3](https:
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

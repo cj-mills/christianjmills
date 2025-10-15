@@ -13,6 +13,15 @@ categories: [python, notes]
 aliases:
 - /Notes-on-Backtracking-Problems-in-Python/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 ---
 
 * [Overview](#overview)
@@ -752,3 +761,8 @@ Valid State Found:
 * [[Algo] Backtracking Template & N-Queens Solution](https://gist.github.com/RuolinZheng08/cdd880ee748e27ed28e0be3916f56fa6)
 * [6 Introduction to Backtracking - Brute Force Approach - Abdul Bari](https://www.youtube.com/watch?v=DKCbsiDBN6c)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

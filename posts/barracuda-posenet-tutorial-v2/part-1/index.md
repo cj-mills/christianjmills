@@ -12,6 +12,15 @@ description: This tutorial series provides step-by-step instructions for how to 
   human pose estimation in Unity with the Barracuda inference library.
 categories: [unity, barracuda, tutorial]
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-1/
 - /posts/barracuda-posenet-tutorial/part-1/
@@ -207,3 +216,8 @@ That takes care of the preliminary setup for the project. The next post will cov
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

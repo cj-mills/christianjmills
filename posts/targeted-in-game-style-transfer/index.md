@@ -15,6 +15,15 @@ title: Targeted In-Game Style Transfer Tutorial
 
 aliases:
 - /Targeted-In-Game-Style-Transfer-Tutorial/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -553,3 +562,8 @@ If we run the game now, we can click on GameObjects with colliders to toggle the
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

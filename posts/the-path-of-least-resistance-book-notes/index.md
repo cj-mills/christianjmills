@@ -10,9 +10,9 @@ description: "My notes from the book ***The Path of Least Resistance: Learning t
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -937,3 +937,8 @@ The chapter uses the story of Scrooge from Charles Dickens' "A Christmas Carol" 
 - The shift towards a creative orientation requires recognizing and prioritizing senior forces over lesser forces.
 - The process of transcendence involves a realignment with one's life source, leading to a fundamental change in how one approaches life.
 - The ability for civilization to transcend its current limitations lies in the collective shift of its individuals towards a more creative and vision-driven orientation.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

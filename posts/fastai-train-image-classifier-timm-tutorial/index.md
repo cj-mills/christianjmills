@@ -10,9 +10,9 @@ description: "Learn how to fine-tune image classification models with fastai and
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -1924,3 +1924,8 @@ If you found this guide helpful, consider sharing it with others and exploring s
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

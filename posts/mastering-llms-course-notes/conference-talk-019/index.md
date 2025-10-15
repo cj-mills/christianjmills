@@ -10,9 +10,9 @@ description: "In this talk, **Pawell Garbacki** from **Fireworks.ai** covers the
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -382,3 +382,8 @@ open-graph:
 - **Data Quality:** As models become more intelligent and training data becomes smaller, the quality of the data becomes increasingly crucial.
 - **Hyperparameter Sensitivity:** Smaller datasets often lead to increased sensitivity to hyperparameters, requiring careful tuning.
 - **Base Model:** The choice of base model significantly impacts performance, especially for specialized tasks like Python code generation.
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

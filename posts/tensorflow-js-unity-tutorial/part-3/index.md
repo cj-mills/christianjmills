@@ -11,6 +11,13 @@ comments:
 description: Build a Unity project as a WebGL application and host it using GitHub Pages.
 categories: [fastai, unity, tensorflow, webgl, tutorial]
 
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -153,3 +160,8 @@ In this tutorial series, we demonstrated how to use fastai and TensorFlow.js to 
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -8,6 +8,14 @@ hide: false
 search_exclude: false
 title: Notes on Advanced Git Tools
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 aliases:
 - /Notes-on-Advanced-Git-Tools/
 ---
@@ -168,3 +176,8 @@ Here are some notes I took while watching Tobias Gunther's [video](https://www.y
 * [Advanced Git Tutorial - Interactive Rebase, Cherry-Picking, Reflog, Submodules and more](https://www.youtube.com/watch?v=qsTthZi23VE)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

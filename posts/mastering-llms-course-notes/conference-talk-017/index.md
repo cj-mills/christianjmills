@@ -10,9 +10,9 @@ description: "In this talk, **Simon Willison** showcases **LLM**, a command-line
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -289,3 +289,8 @@ open-graph:
 - **Solution**: Leverage existing tools like [Ansible](https://www.ansible.com/) to run LLM commands in parallel on different machines within a LAN.
 - **Unix Flexibility**: Highlights the ability to combine LLM with other Unix tools for customized workflows and automation.
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

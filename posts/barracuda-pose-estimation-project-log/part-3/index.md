@@ -11,6 +11,14 @@ title: Barracuda Pose Estimation Project Log Pt. 3
 aliases:
 - /Barracuda-Pose-Estimation-Project-Log-3/
 - /log/project/unity/2020/09/22/Barracuda-Pose-Estimation-Project-Log-3
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Update 7/31/2021: [Barracuda PoseNet Tutorial 2nd Edition](../../barracuda-posenet-tutorial-v2/part-1/)
@@ -41,3 +49,8 @@ Since my desktop can handle using a 720p input resolution, I'll stick with that 
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

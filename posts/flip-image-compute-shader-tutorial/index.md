@@ -14,6 +14,14 @@ categories: [unity, tutorial]
 aliases:
 - /How-to-Flip-an-Image-With-a-Compute-Shader/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Introduction](#introduction)
@@ -462,3 +470,8 @@ That is one approach to efficiently flip images on the GPU in Unity. As demonstr
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

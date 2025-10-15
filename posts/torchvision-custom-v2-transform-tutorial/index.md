@@ -1,6 +1,7 @@
 ---
 title: "How to Create Custom Torchvision V2 Transforms"
 date: 2024-01-23
+date-modified: 2025-03-20
 image: /images/empty.gif
 hide: false
 search_exclude: false
@@ -10,9 +11,9 @@ description: "Learn how to create custom Torchvision V2 Transforms that support 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -28,6 +29,14 @@ open-graph:
 * [Creating a Random Pixel Copy Transform](#creating-a-random-pixel-copy-transform)
 * [Creating a Random Patch Copy Transform](#creating-a-random-patch-copy-transform)
 * [Conclusion](#conclusion)
+
+
+
+::: {.callout-warning title="Updated 03/20/2025:"}
+
+Updated for torchvision `0.21`.
+
+:::
 
 
 
@@ -106,7 +115,7 @@ Next, we'll install [PyTorch](https://pytorch.org/). Run the appropriate command
 
 ``` {.bash}
 # Install PyTorch with CUDA
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
 
 ## Mac
@@ -692,53 +701,70 @@ We have loaded the dataset and visualized the annotations for a sample image. In
 
 ## Examining the Transforms V2 Class
 
-Our custom transforms will inherit from the [`transforms.v2.Transform`](https://github.com/pytorch/vision/blob/315f31527e720999eecbb986679b3177d4ed5e37/torchvision/transforms/v2/_transform.py#L17) class, so let's look at the source code for that class first.
+Our custom transforms will inherit from the [`transforms.v2.Transform`](https://github.com/pytorch/vision/blob/7af698794eded568735f9519593603c1ec889eba/torchvision/transforms/v2/_transform.py#L17) class, so let's look at the source code for that class first.
 
 
 ::: {.callout-note title="Transforms V2 Class Source Code" collapse="true"}
 
 ```python
 class Transform(nn.Module):
+    """Base class to implement your own v2 transforms.
 
+    See  :ref:`sphx_glr_auto_examples_transforms_plot_custom_transforms.py` for
+    more details.
+    """
 
     # Class attribute defining transformed types. Other types are passed-through without any transformation
     # We support both Types and callables that are able to do further checks on the type of the input.
     _transformed_types: Tuple[Union[Type, Callable[[Any], bool]], ...] = (torch.Tensor, PIL.Image.Image)
-    
+
     def __init__(self) -> None:
         super().__init__()
         _log_api_usage_once(self)
-    
-    def _check_inputs(self, flat_inputs: List[Any]) -> None:
+
+    def check_inputs(self, flat_inputs: List[Any]) -> None:
         pass
-    
-    def _get_params(self, flat_inputs: List[Any]) -> Dict[str, Any]:
+
+    # When v2 was introduced, this method was private and called
+    # `_get_params()`. Now it's publicly exposed as `make_params()`. It cannot
+    # be exposed as `get_params()` because there is already a `get_params()`
+    # methods for v2 transforms: it's the v1's `get_params()` that we have  to
+    # keep in order to guarantee 100% BC with v1. (It's defined in
+    # __init_subclass__ below).
+    def make_params(self, flat_inputs: List[Any]) -> Dict[str, Any]:
+        """Method to override for custom transforms.
+
+        See :ref:`sphx_glr_auto_examples_transforms_plot_custom_transforms.py`"""
         return dict()
-    
+
     def _call_kernel(self, functional: Callable, inpt: Any, *args: Any, **kwargs: Any) -> Any:
         kernel = _get_kernel(functional, type(inpt), allow_passthrough=True)
         return kernel(inpt, *args, **kwargs)
-    
-    def _transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
+
+    def transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
+        """Method to override for custom transforms.
+
+        See :ref:`sphx_glr_auto_examples_transforms_plot_custom_transforms.py`"""
         raise NotImplementedError
-    
+
     def forward(self, *inputs: Any) -> Any:
+        """Do not override this! Use ``transform()`` instead."""
         flat_inputs, spec = tree_flatten(inputs if len(inputs) > 1 else inputs[0])
-    
-        self._check_inputs(flat_inputs)
-    
+
+        self.check_inputs(flat_inputs)
+
         needs_transform_list = self._needs_transform_list(flat_inputs)
-        params = self._get_params(
+        params = self.make_params(
             [inpt for (inpt, needs_transform) in zip(flat_inputs, needs_transform_list) if needs_transform]
         )
-    
+
         flat_outputs = [
-            self._transform(inpt, params) if needs_transform else inpt
+            self.transform(inpt, params) if needs_transform else inpt
             for (inpt, needs_transform) in zip(flat_inputs, needs_transform_list)
         ]
-    
+
         return tree_unflatten(flat_outputs, spec)
-    
+
     def _needs_transform_list(self, flat_inputs: List[Any]) -> List[bool]:
         # Below is a heuristic on how to deal with pure tensor inputs:
         # 1. Pure tensors, i.e. tensors that are not a tv_tensor, are passed through if there is an explicit image
@@ -755,12 +781,12 @@ class Transform(nn.Module):
         # The heuristic should work well for most people in practice. The only case where it doesn't is if someone
         # tries to transform multiple pure tensors at the same time, expecting them all to be treated as images.
         # However, this case wasn't supported by transforms v1 either, so there is no BC concern.
-    
+
         needs_transform_list = []
         transform_pure_tensor = not has_any(flat_inputs, tv_tensors.Image, tv_tensors.Video, PIL.Image.Image)
         for inpt in flat_inputs:
             needs_transform = True
-    
+
             if not check_type(inpt, self._transformed_types):
                 needs_transform = False
             elif is_pure_tensor(inpt):
@@ -770,33 +796,33 @@ class Transform(nn.Module):
                     needs_transform = False
             needs_transform_list.append(needs_transform)
         return needs_transform_list
-    
+
     def extra_repr(self) -> str:
         extra = []
         for name, value in self.__dict__.items():
             if name.startswith("_") or name == "training":
                 continue
-    
+
             if not isinstance(value, (bool, int, float, str, tuple, list, enum.Enum)):
                 continue
-    
+
             extra.append(f"{name}={value}")
-    
+
         return ", ".join(extra)
-    
+
     # This attribute should be set on all transforms that have a v1 equivalent. Doing so enables two things:
     # 1. In case the v1 transform has a static `get_params` method, it will also be available under the same name on
     #    the v2 transform. See `__init_subclass__` for details.
     # 2. The v2 transform will be JIT scriptable. See `_extract_params_for_v1_transform` and `__prepare_scriptable__`
     #    for details.
     _v1_transform_cls: Optional[Type[nn.Module]] = None
-    
+
     def __init_subclass__(cls) -> None:
         # Since `get_params` is a `@staticmethod`, we have to bind it to the class itself rather than to an instance.
         # This method is called after subclassing has happened, i.e. `cls` is the subclass, e.g. `Resize`.
         if cls._v1_transform_cls is not None and hasattr(cls._v1_transform_cls, "get_params"):
             cls.get_params = staticmethod(cls._v1_transform_cls.get_params)  # type: ignore[attr-defined]
-    
+
     def _extract_params_for_v1_transform(self) -> Dict[str, Any]:
         # This method is called by `__prepare_scriptable__` to instantiate the equivalent v1 transform from the current
         # v2 transform instance. It extracts all available public attributes that are specific to that transform and
@@ -809,7 +835,7 @@ class Transform(nn.Module):
             for attr, value in self.__dict__.items()
             if not attr.startswith("_") and attr not in common_attrs
         }
-    
+
     def __prepare_scriptable__(self) -> nn.Module:
         # This method is called early on when `torch.jit.script`'ing an `nn.Module` instance. If it succeeds, the return
         # value is used for scripting over the original object that should have been scripted. Since the v1 transforms
@@ -823,7 +849,7 @@ class Transform(nn.Module):
                 "which are already in torchvision.transforms. "
                 "For torchscript support (on tensors only), you can use the functional API instead."
             )
-    
+
         return self._v1_transform_cls(**self._extract_params_for_v1_transform())
 ```
 
@@ -831,7 +857,7 @@ class Transform(nn.Module):
 
 
 
-The above source code indicates that our custom transforms must implement the `_transform` method, which handles images and annotations.
+The above source code indicates that our custom transforms must implement the `transform` method, which handles images and annotations.
 
 
 
@@ -845,7 +871,7 @@ Our first custom transform will randomly copy and paste pixels in random locatio
 
 ### Define the Custom Transform Class
 
-We can use Python's [`singledispatchmethod`](https://docs.python.org/3/library/functools.html#functools.singledispatchmethod) decorator to overload the `_transform` method based on the first (non-*self* or non-*cls)* argument's type. 
+We can use Python's [`singledispatchmethod`](https://docs.python.org/3/library/functools.html#functools.singledispatchmethod) decorator to overload the `transform` method based on the first (non-*self* or non-*cls)* argument's type. 
 
 We will implement different versions to handle PIL Images, PyTorch Tensors, and torchvision's [`tv_tensor.Image`](https://pytorch.org/vision/stable/generated/torchvision.tv_tensors.Image.html) class as image input types and to return annotations such as BoundingBoxes and Mask instances unaltered.
 
@@ -903,24 +929,24 @@ class RandomPixelCopy(transforms.Transform):
         return img_tensor.squeeze(0) if src_dim == 3 else img_tensor
 
     @singledispatchmethod
-    def _transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
+    def transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
         """Default Behavior: Don't modify the input"""
         return inpt
 
-    @_transform.register(torch.Tensor)
-    @_transform.register(tv_tensors.Image)
+    @transform.register(torch.Tensor)
+    @transform.register(tv_tensors.Image)
     def _(self, inpt: Union[torch.Tensor, tv_tensors.Image], params: Dict[str, Any]) -> Any:
         """Apply the `rand_pixel_copy` method to the input tensor"""
         return self.rand_pixel_copy(inpt, max(self.min_pct, random.random() * self.max_pct))
 
-    @_transform.register(Image.Image)
+    @transform.register(Image.Image)
     def _(self, inpt: Image.Image, params: Dict[str, Any]) -> Any:
         """Convert the PIL Image to a torch.Tensor to apply the transform"""
         inpt_torch = transforms.PILToTensor()(inpt)
-        return transforms.ToPILImage()(self._transform(inpt_torch, params))
+        return transforms.ToPILImage()(self.transform(inpt_torch, params))
 
-    @_transform.register(BoundingBoxes)
-    @_transform.register(Mask)
+    @transform.register(BoundingBoxes)
+    @transform.register(Mask)
     def _(self, inpt: Union[BoundingBoxes, Mask], params: Dict[str, Any]) -> Any:
         """Don't modify image annotations"""
         return inpt
@@ -1040,8 +1066,6 @@ As intended, the transform randomly copy-pasted pixel values while leaving the b
 
 
 
-
-
 ## Creating a Random Patch Copy Transform
 
 Our second transform will randomly copy rectangular patches from the image and paste them in random locations. This transform may potentially occlude annotated areas, so we need to manage the associated bounding box annotations accordingly.
@@ -1143,12 +1167,12 @@ class RandomPatchCopy(transforms.Transform):
 
 
     @singledispatchmethod
-    def _transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
+    def transform(self, inpt: Any, params: Dict[str, Any]) -> Any:
         """Default Behavior: Don't modify the input"""
         return inpt
 
-    @_transform.register(torch.Tensor)
-    @_transform.register(tv_tensors.Image)
+    @transform.register(torch.Tensor)
+    @transform.register(tv_tensors.Image)
     def _(self, inpt: Union[torch.Tensor, tv_tensors.Image], params: Dict[str, Any]) -> Any:
         self.patches = []
         """Apply the `rand_square_copy` function to the input tensor multiple times"""
@@ -1157,13 +1181,13 @@ class RandomPatchCopy(transforms.Transform):
             self.patches.append(patch)
         return inpt
 
-    @_transform.register(Image.Image)
+    @transform.register(Image.Image)
     def _(self, inpt: Image.Image, params: Dict[str, Any]) -> Any:
         """Convert the PIL Image to a torch.Tensor to apply the transform"""
         inpt_torch = transforms.PILToTensor()(inpt)    
-        return transforms.ToPILImage()(self._transform(inpt_torch, params))
+        return transforms.ToPILImage()(self.transform(inpt_torch, params))
     
-    @_transform.register(BoundingBoxes)
+    @transform.register(BoundingBoxes)
     def _(self, inpt: BoundingBoxes, params: Dict[str, Any]) -> Any:
         """Update the bounding box annotations based on the list of patches"""
         if len(self.patches) > 0:
@@ -1178,7 +1202,7 @@ class RandomPatchCopy(transforms.Transform):
             return tv_wrap(inpt_copy, like=inpt)
         return inpt
 
-    @_transform.register(Mask)
+    @transform.register(Mask)
     def _(self, inpt: Mask, params: Dict[str, Any]) -> Any:
         """Don't modify segmentation annotations"""
         return inpt
@@ -1294,3 +1318,8 @@ See how adjusting the intensity of the data augmentations impacts the model accu
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

@@ -10,9 +10,9 @@ description: "This talk by **Kyle Corbitt** from OpenPipe outlines ten key recom
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -276,3 +276,8 @@ open-graph:
 - **Models on the Efficient Frontier:**  Current techniques may have reached a saturation point for model efficiency in smaller model sizes.
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

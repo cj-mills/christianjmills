@@ -10,9 +10,9 @@ description: "This Q&A session covers a wide array of topics related to Modal, a
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -205,3 +205,8 @@ open-graph:
 * **Demo Preparation:**  "Hello World" and "TRT LLM" examples are good starting points.
   * **Example:** [Hello, world!](https://modal.com/docs/examples/hello_world)
   * **Example:** [Serverless TensorRT-LLM (LLaMA 3 8B)](https://modal.com/docs/examples/trtllm_llama)
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

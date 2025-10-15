@@ -1,5 +1,5 @@
 ---
-title: Notes on Procedural Map Generation Techniques
+title: "Notes on *Procedural Map Generation Techniques*"
 date: 2021-12-9
 title-block-categories: true
 hide: false
@@ -7,277 +7,291 @@ search_exclude: false
 comments:
   utterances:
     repo: cj-mills/christianjmills
-description: My notes on Herbert Wolverson's talk on procedural map generation techniques
-  from the 2020 virtual Roguelike Celebration.
+description: "In this talk, Herbert Wolverson explores various procedural map generation algorithms, demonstrating their implementation and applications in game development, particularly roguelikes."
 categories: [game-dev, procedural-generation, notes]
 
 aliases:
 - /Notes-on-Procedural-Map-Generation-Techniques/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
 
 ---
 
 
 
 
-* [Overview](#overview)
-* [Influential Games](#influential-games)
-* [Simple Room-Placement](#simple-room-placement)
-* [Binary Space Partition Rooms](#binary-space-partition-rooms)
-* [Cellular Automata](#cellular-automata)
-* [Drunkard's Walk](#drunkards-walk)
-* [Diffusion Limited Aggregation](#diffusion-limited-aggregation)
-* [DLA with a Central Attractor](#dla-with-a-central-attractor)
-* [Voronoi Diagrams](#voronoi-diagrams)
-* [Perlin and Simplex Noise](#perlin-and-simplex-noise)
-* [You can use more than one technique](#you-can-use-more-than-one-technique)
-* [Removing Unreachable Areas](#removing-unreachable-areas)
-* [The Hot Path](#the-hot-path)
-* [Telling a Story](#telling-a-story)
+
+
+* [Introduction](#introduction)
+* [Examples of Procedural Generation in Games](#examples-of-procedural-generation-in-games)
+* [Map Generation Algorithms](#map-generation-algorithms)  
+* [Combining Techniques](#combining-techniques)  
+* [Dijkstra Maps](#dijkstra-maps)
+* [Conclusion](#conclusion)
+* [Additional Resources](#additional-resources)
 
 
 
-## Overview
-
-My notes on Herbert Wolverson's [talk](https://www.youtube.com/watch?v=TlLIOgWYVpI) on procedural map generation techniques from the 2020 virtual Roguelike Celebration.
 
 
+::: {.callout-tip title="Presentation Resources"}
 
-## Influential Games
+* **Video:** [Herbert Wolverson - Procedural Map Generation Techniques](https://www.youtube.com/watch?v=TlLIOgWYVpI&list=WL&index=112)
+* **Source Code for Talk:** [GitHub Repository](https://github.com/thebracket/roguelike-celebration-2020)
+* **Online Book:** [Roguelike Tutorial - In Rust](https://bfnightly.bracketproductions.com/chapter23-prefix.html)
 
-### Rogue (1980)
+:::
 
-- One of the first uses of procedural generation
-- Generates up to 9 rooms and connects them randomly
-- Used procedural generation because they needed to keep the game small
-- Different map every time the game is started
-- Effectively infinite replay
 
-### Dwarf Fortress (2006 - Present)
 
-- Probably crammed the most procedural generation into one game
-- Procedurally Generates:
-    - Massive overworld with sweeping mountain ranges, forests, volcanoes, demon-infested fortresses
-    - Civilizations that either like or hate each other
-        - Can drill down to a single person and their procedurally generated backstory
-    - Mid-scale
-        - Can zoom into any particular block on the map to find it is beautifully rendered and still matches the overall shape of the overworld
-        - Trees gain and lose foliage depending on their type and biome
-            - Their type spawns the appropriate biome
 
-**Takeaway:** The randomness does not define the above games. The randomness is fed into an algorithm the generates something that approximates what you want to get, but ensures that it is different every time
 
-## Simple Room-Placement
+## Introduction
+
+- **Procedural Map Generation:** Using algorithms to create maps for games, and then using additional algorithms to refine and ensure usability. (Source: Speaker's definition)
+- Benefits of Procedural Generation: 
+  - **Infinite Replayability:** Creates unique maps each playthrough, preventing memorization and encouraging players to learn game systems. (citing Rogue as an example)
+  - **Dynamic Gameplay:** Prevents static level design, enhancing replayability.
+
+
+
+## Examples of Procedural Generation in Games
+
+- **Rogue (1980):**
+  - One of the first examples of procedural generation.
+  - Used simple room placement and random corridors to keep game size small.
+  - Resulted in a unique map for each new game.
+- **Dwarf Fortress:**
+  - Extensive use of procedural generation for various aspects of the game.
+  - Examples:
+    - Overworld generation: Mountains, forests, volcanoes, etc.
+    - Civilizations: History, relationships, deities, etc.
+    - Individual characters: Beliefs, personalities, histories, etc.
+- Key Takeaway: 
+  - Randomness in these games is not purely random.
+  - Algorithms guide the randomness to create desired outcomes while ensuring variation.
+
+
+
+## Map Generation Algorithms
+
+### Simple Room Placement
 
 ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/01-RoomCorridors.gif?raw=true){fig-align="center"}
 
+- Algorithm:
+  1. Start with a solid map (all walls).
+  2. Pick a random rectangle for a room.
+  3. If the rectangle doesn't overlap existing rooms, carve it out.
+  4. Repeat steps 2-3 until a desired number of rooms are placed.
+  5. Connect rooms with corridors. (referencing Python roguelike dev tutorial)
+- **Dogleg Corridors:** A simple corridor generation method that randomly switches between vertical and horizontal segments.
+- Limitations: Can result in clustered rooms and inefficient layouts.
 
-1. Start with a solid map (random rectangle)
-2. Fill the map with walls.
-3. Randomly pick a room location.
-    1. If the map location is not already occupied by another room, add the room
-4. Keep picking rooms.
-5. Join the rooms you kept with corridors.
-    1. Example: Using a simple dog leg algorithm that randomly switches between being either vertical first or horizontal first.
-    
-
-## Binary Space Partition Rooms
+### Binary Space Partition (BSP) Rooms
 
 ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/02-Bsp.gif?raw=true){fig-align="center"}
 
-- Similar results to random room placement, better spaced out.
-    - Used in Nethack
-1. Divide map into two. Randomly decide whether to divide vertically or horizontally. 
-2. Divide area into two. 
-3. Repeat. 
-4. Use divided space for room.
-- Add a gutter of one tile around to avoid rooms joining together (unless desired)
+- **Binary Space Partition (BSP):** Recursively dividing a space into two parts.
+- Algorithm:
+  1. Divide the map in half (either vertically or horizontally).
+  2. Recursively divide each half until the desired room size is reached.
+  3. Optionally add a gutter (1 tile border) around each room to prevent merging.
+- Benefits:
+  - Better room spacing compared to simple room placement.
+  - Used in games like NetHack.
+- Limitations: Can lead to predictable, rectangular layouts.
 
-## Cellular Automata
+### Cellular Automata
 
 ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/03-cellular.gif?raw=true){fig-align="center"}
 
-- Evolve order from chaos.
-- Popularized in Conway's Game of Life.
-1. Make a random map.
-2. Make a copy of it.
-3. Apply cell life rules to each tile. 
-    1. Iterate every tile that isn't on the edge and count the number of neighbors, including diagonals.
-        1. If there are no neighbors, then it becomes a wall
-        2. If there is one to four neighbors, it becomes empty
-        3. If there are five or more neighbors, it becomes a wall
-        4. Tweak rules to suit specific game
-4. Repeat.
-- Simple
-- Fast
-- Deterministic (same random seed generates the same results)
+- Based on the principle of **Conway's Game of Life**, where simple rules govern the evolution of a grid-based system.
+- Algorithm:
+  1. Initialize the map randomly with walls and floors (approximately 50/50).
+  2. Iterate through each tile (excluding edges):
+     - Count the number of neighboring walls (including diagonals).
+     - Apply rules based on neighbor count:
+       - 0 neighbors: Become a wall.
+       - 1-4 neighbors: Become a floor.
+       - 5+ neighbors: Become a wall. (suggesting rule customization)
+  3. Repeat step 2 for a set number of iterations.
+- Benefits:
+  - Creates organic, natural-looking maps from random initial states.
+  - Simple and fast algorithm.
+  - Deterministic: Same seed produces the same map.
+- Limitations: Can be difficult to control the specific shapes and features generated.
 
-## Drunkard's Walk
+### Drunkard's Walk
 
 ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/04-drunkard.gif?raw=true){fig-align="center"}
 
-- Find Umber Hulk. Insert beer.
-- Place Hulk randomly on solid map. See what he smashes
-- Hulks stop when they leave the map, or pass out after n steps.
-1. Start with a solid map
-2. Random walk through map
-3. Tiles get removed based on walking path
-4. Pick maximum number of walking steps
-5. Repeat.
-- Guarantees the map will be contiguous
-- Tends to generate maps that look like it was carved out by water.
-    - Ideal for creating limestone caverns and similar.
-    
+- Algorithm:
+  1. Start with a solid map.
+  2. Place a "drunkard" (e.g., a digging entity) at a random point.
+  3. The drunkard moves randomly, carving out a path as it goes.
+  4. Set a maximum distance for the drunkard to travel before it "passes out".
+  5. Repeat steps 2-4, spawning new drunkards within the open areas, until a desired percentage of the map is open. (using 1/3 as an example)
+- Benefits:
+  - Guarantees a contiguous map (no unreachable areas).
+  - Creates maps that resemble natural formations like caverns.
+- Limitations: Can lead to winding, inefficient paths.
 
-## Diffusion Limited Aggregation
+### Diffusion-Limited Aggregation (DLA)
 
 ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/05-dla-inward.gif?raw=true){fig-align="center"}
 
-- [Explanation](http://www.roguebasin.com/index.php/Diffusion-limited_aggregation) 
-- Start with a targeted seed.
-- Randomly - or not - fire particles at it.
-- Dig out the last edge the particle hit.
-1. Start by digging out a small target seed
-2. Pick a random point anywhere on the map
-3. Pick a random direction
-4. Shoot a particle
-    1. Keep shooting until you hit something
-    2. If you hit a target area, carve out the last solid area you passed through
-- Tends to give you a very winding open map
-- Guaranteed to be contiguous
-- Lots of ways to tweak the algorithm to make things more interesting
+- [Explanation](http://www.roguebasin.com/index.php/Diffusion-limited_aggregation)
 
-## DLA with a Central Attractor
+- Algorithm:
 
-![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/06-dla-attractor.gif?raw=true){fig-align="center"}
+  1. Start with a small "seed" of open tiles.
+  2. Pick a random point on the map and shoot a "particle" in a random direction.
+  3. If the particle hits an open tile, carve out the last solid tile it passed through.
+  4. If the particle doesn't hit an open tile, keep shooting until it does.
 
-- More likely to always hit the target
-- Randomly spawn your starting point and then shoot the particle directly at the middle of the map
-- Helps ensure your get an open space in the middle
-    - Ideal, for example, to put a dragon with his hoard
-- More interesting pattern around the edges of the map
-- Can also apply symmetry down the vertical
-    - Use sparingly
+- Benefits:
 
-## Voronoi Diagrams
+  - Creates winding, branching open areas.
+  - Guarantees a contiguous map.
+
+- Variations:
+
+  - **Central Attractor:** Particles are shot towards the center of the map, creating a central open area surrounded by a more complex perimeter. (suggesting dragon hoard placement in the center)
+
+    ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/06-dla-attractor.gif?raw=true){fig-align="center"}
+
+  - **Symmetry:** Applying symmetry to the algorithm can create more structured and deliberate patterns.
+
+### Voronoi Diagrams
 
 ![](./images/1024px-Euclidean_Voronoi_diagram.png){fig-align="center"}
 
-- Randomly (or deliberately) placed seeds.
+- Algorithm:
 
-- Each tile joins the closest seed.
+  1. Place "seed" points randomly or deliberately across the map.
+  2. For each tile on the map, determine the closest seed point using a distance algorithm (e.g., Euclidean, Manhattan, Chebyshev).
+  3. Assign the tile to the region belonging to its closest seed point.
 
-- Vary distance heuristic for different effects.
+- Benefits: 
 
-- Iterate every point on the map and it joins the area belonging to the closest seed.
-    - Example Algorithms:
-        - Delauney triangulations
-        - Brute force
-    
-- Can customize the result using a different distance algorithm to determine which group every tile joins
-    - Pythagorean distance
-    - Manhattan distance
-    
-- Find the edges, place walls there and wind up with an alien cell structure
+  - Creates regions that represent areas of influence around each seed point.
 
-- Can be used to determine spawning placement/behavior based on cell location
+  - Can be used for various purposes (e.g., city generation, monster placement). (referencing [Apocalypse Taxi](https://thebracket.itch.io/apocalypse-taxi))
 
-- Can be used for effective city generation
-    - Apocalypse Taxi
-        - ![](https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg){fig-align="center"}
-        - Uses the edges of the generated cells to determine where the roads went
-        - Randomly populated the content of each cell with something like "heavy industrial city", "light industrial city", etc.
-    
-    
-    [Apocalypse Taxi](https://thebracket.itch.io/apocalypse-taxi)
-    
-- Can be combine with other techniques
+    ![](https://img.itch.zone/aW1hZ2UvMzIxNDkxLzE1ODg3MjYuanBn/original/Mtk75O.jpg){fig-align="center"}
 
-## Perlin and Simplex Noise
+- Distance Algorithms:
+
+  - **Euclidean (Pythagoras):** Standard straight-line distance, resulting in smooth edges.
+  - **Manhattan:** Distance measured as the sum of horizontal and vertical steps, creating sharp, grid-like edges.
+  - **Chebyshev:** Distance measured as the maximum of the horizontal and vertical distances, producing a mix between Euclidean and Manhattan.
+
+- Uses:
+
+  - Alien cell structures (walls along edges).
+  - Monster placement based on relationships (e.g., keeping allies together, separating enemies).
+  - City generation (roads along edges, different regions for different city zones).
+
+### Perlin and Simplex Noise
 
 ![](https://github.com/thebracket/roguelike-celebration-2020/blob/master/gifs/11-noise-overworld.gif?raw=true){fig-align="center"}
 
-- Basically a bunch of gradients combined together with a few variables
-- Can generate it in either two or three dimensions
-- X/Y Value: gives a number in the range $[-1,1]$
-- Smoothly moving either up or down
-- Continuous
-- Octaves: number of gradients being mixed in.
-- Gain: how long the various gradients last
-- Lacunarity: adds in randomness
-- Frequency: how frequently each of the various octaves peaks
-- Commonly used to make an overworld/terrain map
-- Problem: The gradients are kind of dull
-    - Can be addressed by adding a second layer of noise that is more "bumpy"
-        - Interpolate between smooth and bumpy gradients as you zoom in and out
-- Easy to implement
-- Can also be used to generate realistic looking clouds, particles, wood grain
+- **Perlin Noise and Simplex Noise:** Algorithms that generate continuous, smoothly varying values across a space.
+- Properties:
+  - Output values typically range from -1 to 1.
+  - Adjacent values are smoothly related.
+  - Continuous: Zooming in on a section of the noise produces a similar pattern at a finer scale.
+- Variables:
+  - **Octaves:** Number of different noise functions blended together, affecting detail.
+  - **Gain:** How much each octave contributes to the final result, affecting amplitude.
+  - **Lacunarity:**  Adjusts the frequency of each octave, introducing randomness and detail.
+  - **Frequency:** How quickly the noise values change across space, affecting the scale of features.
+- Uses:
+  - Overworld generation: Creating terrain heightmaps.
+  - Cloud generation.
+  - Particle effects.
+  - Wood grain textures.
+- Recommendations: Experiment with different Perlin/Simplex noise tools and variable values to achieve desired results.
 
-## You can use more than one technique
 
-- Can help generate maps that tell a story
-- Example: Use BSP to generate a more structured part of the map leads into a more chaotic section generated using cellular automata
-- Example: Use DLA for erosion
-    - Take map and then use DLA to fire particles at it to blast parts of the map away
-    - Map becomes more organic-looking while keeping its basic structure
-- Example: Mix procedurally generated content with human-made prefabs
+
+## Combining Techniques
+
+- **Key Concept:** Rarely use just one algorithm for map generation.
+- Examples:
+  - Combining BSP (for a fortress) with Cellular Automata (for an underworld) to create a multi-themed map.
+  - Adding prefabs (e.g., fortifications) to enhance the combined map and tell a story.
+  - Using DLA to carve out sections of a BSP or Cellular Automata map, creating a more organic and weathered look.
+
+### Prefabs
+
+- **Prefabs:** Pre-designed map sections that can be inserted into a procedurally generated map.
+- Benefits:
+  - Introduce deliberate design elements into a random map.
+  - Add specific features, challenges, or story elements. (using a trap room as an example)
+- Placement:
+  - In room-based maps: Find a room large enough to accommodate the prefab.
+  - In non-room-based maps: Randomly sample locations and check for fit.
+- Considerations: Use prefabs sparingly to maintain variety and avoid predictability.
+
+
 
 ## Dijkstra Maps
 
 ![](./images/Dijk_basic.png){fig-align="center"}
 
-1. [Explanation](http://www.roguebasin.com/index.php/The_Incredible_Power_of_Dijkstra_Maps)
-1. Start with 1 or more starting points.
-2. Rest of the map " sentinel" value - unreachable
-3. Set points adjacent to start to 1.
-4. Points adjacent to those 2.
-    1. Keep going until whole map walked
-
-## Removing Unreachable Areas
-
-- Cellular automata can give you chunks of the map that you can't get to.
-1. Find Central Start
-2. Run Dijkstra
-3. Cull tiles without a valid distance.
-    1. Or hide it for underground levels
-
-**Finding a Starting Point**
-
-- Find a desired starting point
-- Find closest open tile for actual start.
-
-**Finding an Endpoint**
-
-- Use distance to target
-- Use Dijkstra to find farthest point
-
-## The Hot Path
-
-- Path-find from start to end
-- Dijkstra Map with the path as starting points.
-- $<n$ distance is "hot path"
-- Can use A* algorithm
-- Can be used to minimize branching in game map by culling irrelevant parts of the map outside the hot path.
-- Or "bonus" content to reward exploration of the hot path.
-
-## Telling a Story
-
-- Rooms are ordered.
-- Story progression is in order, but RNG is retained
-- Maybe room 5 has a locked door, meaning the key must be in rooms 1-4.
-
-Takeaway: Guide the randomness and use algorithms to check the randomness.
+- [Explanation](http://www.roguebasin.com/index.php/The_Incredible_Power_of_Dijkstra_Maps)
+- **Dijkstra Maps:**  Represent the distance from one or more starting points to all other reachable points on a map. (referencing Rogue Basin article "The Incredible Power of Dijkstra Maps")
+- Algorithm:
+  1. Initialize the map with a sentinel value (representing unreachable areas).
+  2. Set the starting point(s) to a value of 0.
+  3. Iterate through the map, assigning increasing distance values to reachable tiles based on their distance from the starting point(s).
+- Uses:
+  - Identifying and removing unreachable areas in maps generated with algorithms like Cellular Automata.
+  - Placing starting and ending points:
+    - Starting Point: Find an open tile near a desired location that is reachable from the main map area.
+    - Ending Point:
+      - For simple progression, place near the opposite edge of the map from the starting point.
+      - To hide secrets, place in the least accessible area.
+  - **Hot Path Analysis:**
+    1. Generate a path between the starting and ending points (e.g., using A*).
+    2. Create a Dijkstra map using the points on the path as starting points.
+    3. Tiles with low distance values on the Dijkstra map represent areas close to the optimal path. (using a threshold of 10 as an example)
+- Applications of Hot Path Analysis:
+  - Removing irrelevant map sections in linear progression games.
+  - Hiding bonus content or challenges in areas off the hot path.
+  - Ordering story elements or puzzle placement based on likely player progression. (using examples of grandfather's advice and a locked door puzzle)
 
 
 
-**References:**
+## Conclusion
 
-* [Herbert Wolverson - Procedural Map Generation Techniques](https://www.youtube.com/watch?v=TlLIOgWYVpI&list=WL&index=112)
-
-* Source Code for Talk: [GitHub Repository](https://github.com/thebracket/roguelike-celebration-2020)
-
-* Online Book: [Roguelike Tutorial - In Rust](https://bfnightly.bracketproductions.com/chapter23-prefix.html)
-
-  
+- Procedural map generation involves guiding randomness with algorithms to create diverse and engaging maps.
+- Combining multiple techniques and using tools like Dijkstra maps can lead to more complex and interesting results.
+- The choice of algorithms and their parameters should be driven by the desired gameplay experience and the story you want to tell through your map.
 
 
 
+## Additional Resources
+
+- Source code for the talk: [https://github.com/thebracket/roguelike-celebration-2020](https://github.com/thebracket/roguelike-celebration-2020)
+- Rust Roguelike Tutorial: [https://bfnightly.bracketproductions.com/rustbook/](https://bfnightly.bracketproductions.com/rustbook/)
+- "The Incredible Power of Dijkstra Maps" (Rogue Basin): [http://www.roguebasin.com/index.php?title=The_Incredible_Power_of_Dijkstra_Maps](http://www.roguebasin.com/index.php?title=The_Incredible_Power_of_Dijkstra_Maps)
+- "Hands on Rust, Effective Learning Through 2D Game Development and Play" (PragProg): [https://pragprog.com/](https://pragprog.com/)
+
+
+
+
+
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

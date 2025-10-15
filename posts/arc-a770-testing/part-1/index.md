@@ -10,6 +10,15 @@ comments:
     repo: cj-mills/christianjmills
 description: "I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML."
 categories: [directml, openvino, pytorch, unity, arc-gpu]
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -128,3 +137,8 @@ The tensorflow-directml package recently received its first update since May, so
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

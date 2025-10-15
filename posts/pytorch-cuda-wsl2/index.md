@@ -15,6 +15,14 @@ aliases:
 - /Using-PyTorch-with-CUDA-on-WSL2/
 - /posts/pytorch-cuda--wsl2/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Introduction](#introduction)
@@ -178,3 +186,8 @@ I'm excited about the future of WSL. Having such tight integration between Windo
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

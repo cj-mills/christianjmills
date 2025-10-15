@@ -14,6 +14,14 @@ categories: [unity, barracuda]
 aliases:
 - /Deep-Learning-in-Unity/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Introduction](#introduction)
@@ -310,3 +318,8 @@ This post introduced the Barracuda inference library for the Unity game engine. 
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

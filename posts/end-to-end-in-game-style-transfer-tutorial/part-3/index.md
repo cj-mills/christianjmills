@@ -17,6 +17,15 @@ title: End-to-End In-Game Style Transfer Tutorial Pt.3
 
 aliases:
 - /End-To-End-In-Game-Style-Transfer-Tutorial-3/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ### Previous: [Part 2](../part-2/)
@@ -333,3 +342,8 @@ I had planned to use a [style transfer model](https://github.com/OndrejTexler/Fe
 [GitHub Repository](https://github.com/cj-mills/End-to-End-In-Game-Style-Transfer-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

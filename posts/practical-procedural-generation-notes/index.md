@@ -11,6 +11,14 @@ hide: false
 search_exclude: false
 title: Notes on Practical Procedural Generation
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -270,3 +278,8 @@ Additive and Subtractive Methods
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

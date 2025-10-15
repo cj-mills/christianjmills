@@ -10,9 +10,9 @@ description: "In this talk, **Jonathan Whitaker** from answer.ai shows how to bu
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -466,3 +466,8 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

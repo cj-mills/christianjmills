@@ -11,6 +11,14 @@ hide: false
 search_exclude: false
 title: Notes on Version Control
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -183,3 +191,8 @@ Here are some notes I took while watching Tobias Gunther's [video](https://www.y
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

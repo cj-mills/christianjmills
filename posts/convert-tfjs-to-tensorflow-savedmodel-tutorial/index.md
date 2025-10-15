@@ -12,6 +12,14 @@ comments:
 
 aliases:
 - /How-to-Convert-a-TensorFlow-js-Graph-Model-to-a-Tensorflow-SavedModel/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
 ---
 
 ## Motivation
@@ -178,3 +186,8 @@ Once you've successfully converted your TFJS model to standard TensorFlow, you h
 * Convert the model to non-TensorFlow formats such as [ONNX](https://github.com/onnx/tensorflow-onnx).
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

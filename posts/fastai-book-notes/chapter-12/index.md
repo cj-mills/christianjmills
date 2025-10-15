@@ -16,6 +16,15 @@ title: Notes on fastai Book Ch. 12
 aliases:
 - /Notes-on-Fastai-Book-12/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
+
 ---
 
 ::: {.callout-tip}
@@ -1983,3 +1992,8 @@ learn.fit_one_cycle(15, 1e-2, wd=0.1)
 
 **Next:** [Notes on fastai Book Ch. 13](../chapter-13/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

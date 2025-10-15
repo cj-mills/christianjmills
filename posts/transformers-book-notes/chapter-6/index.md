@@ -15,6 +15,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-06/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1834,3 +1842,8 @@ print(pipe(custom_dialogue, **gen_kwargs)[0]["summary_text"])
 
 **Next:** [Notes on Transformers Book Ch. 7](../chapter-7/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

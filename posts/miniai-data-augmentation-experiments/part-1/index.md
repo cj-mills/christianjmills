@@ -10,9 +10,9 @@ description: Explore how data augmentation can improve a computer vision model's
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -2487,3 +2487,8 @@ Of course, experiments with a known dataset are no substitute for real-world tes
 The models run locally in your browser using the [Barracuda](https://docs.unity3d.com/Packages/com.unity.barracuda@3.0/manual/index.html) inference library for [Unity](https://unity.com/). I selected the best-performing runs for each image augmentation to give them their best shot. Let me know which one performs best for you in the comments below.
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

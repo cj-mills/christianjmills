@@ -10,9 +10,9 @@ description: "In this talk, **Abhishek Thakur**, who leads AutoTrain at 🤗, sh
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -202,3 +202,8 @@ conda install -c "nvidia/label/cuda-12.1.0" cuda-nvcc
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

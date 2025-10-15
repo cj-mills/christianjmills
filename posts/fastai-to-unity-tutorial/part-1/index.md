@@ -14,6 +14,14 @@ categories: [fastai, unity, barracuda, tutorial]
 aliases:
 - /Fastai-to-Unity-Tutorial-1/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 
@@ -1614,3 +1622,8 @@ In this post, we walked through how to finetune a ResNet model for image classif
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/fastai-to-unity-tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

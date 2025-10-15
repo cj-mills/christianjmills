@@ -15,6 +15,14 @@ categories: [ai, huggingface, nlp, notes]
 aliases:
 - /Notes-on-Transformers-Book-11/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1132,3 +1140,8 @@ pd.DataFrame(zip(texts, probs[0].numpy()), columns=['Text', "Probability"])
 
 **Previous:** [Notes on Transformers Book Ch. 10](../chapter-10/)
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

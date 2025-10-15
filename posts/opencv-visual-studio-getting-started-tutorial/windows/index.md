@@ -10,9 +10,9 @@ description: "Learn how to set up OpenCV within a Visual Studio C++ project by c
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -493,3 +493,8 @@ In this tutorial, we've walked through the process of integrating OpenCV with a 
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

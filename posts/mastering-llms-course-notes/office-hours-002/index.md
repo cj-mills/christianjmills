@@ -10,9 +10,9 @@ description: "This Q&A session covers various aspects of LLM fine-tuning, includ
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -213,3 +213,8 @@ open-graph:
 * **Limited real-world performance:** Despite its size, Phi-3 has not demonstrated competitive performance in practical applications.
 * **Data and training methodology:** Potential issues with the training data or methodology might contribute to its shortcomings.
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

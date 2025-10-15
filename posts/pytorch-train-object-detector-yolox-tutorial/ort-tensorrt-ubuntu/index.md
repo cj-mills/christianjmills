@@ -1,6 +1,6 @@
 ---
 title: "Quantizing YOLOX with ONNX Runtime and TensorRT in Ubuntu"
-date: 2024-3-30
+date: 2024-11-11
 image: /images/empty.gif
 hide: false
 search_exclude: false
@@ -10,9 +10,9 @@ description: "Learn how to quantize YOLOX models with ONNX Runtime and TensorRT 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -99,7 +99,49 @@ First, we must add a few new libraries to our [Python environment](../onnx-expor
 
 ### Install CUDA Package
 
-Both ONNX Runtime and TensorRT require CUDA for use with NVIDIA GPUs. The most recent CUDA version supported by ONNX Runtime is 12.2.
+Both ONNX Runtime and TensorRT require CUDA for use with NVIDIA GPUs and support CUDA `12.x`.
+
+We can view the available CUDA package versions using the following command:
+
+```bash
+conda search cuda -c nvidia/label/cuda-*
+```
+
+::: {.callout-note title="Available CUDA versions:" collapse="true"}
+
+```text
+Loading channels: done
+# Name                       Version           Build  Channel             
+cuda                          12.0.0      h7428d3b_0  conda-forge         
+cuda                          12.0.0      h7428d3b_1  conda-forge         
+cuda                          12.0.0      ha770c72_0  conda-forge         
+cuda                          12.0.0      ha804496_0  conda-forge         
+cuda                          12.0.0      ha804496_1  conda-forge         
+cuda                          12.1.1      h7428d3b_0  conda-forge         
+cuda                          12.1.1      ha804496_0  conda-forge         
+cuda                          12.2.2      h7428d3b_0  conda-forge         
+cuda                          12.2.2      ha804496_0  conda-forge         
+cuda                          12.3.2      h7428d3b_0  conda-forge         
+cuda                          12.3.2      ha804496_0  conda-forge         
+cuda                          12.4.0      h7428d3b_0  conda-forge         
+cuda                          12.4.0      ha804496_0  conda-forge         
+cuda                          12.4.1      h7428d3b_0  conda-forge         
+cuda                          12.4.1      ha804496_0  conda-forge         
+cuda                          12.5.0      h7428d3b_0  conda-forge         
+cuda                          12.5.0      ha804496_0  conda-forge         
+cuda                          12.5.1      h7428d3b_0  conda-forge         
+cuda                          12.5.1      ha804496_0  conda-forge         
+cuda                          12.6.0      h7428d3b_0  conda-forge         
+cuda                          12.6.0      ha804496_0  conda-forge         
+cuda                          12.6.1      h7428d3b_0  conda-forge         
+cuda                          12.6.1      ha804496_0  conda-forge         
+cuda                          12.6.2      h7428d3b_0  conda-forge         
+cuda                          12.6.2      ha804496_0  conda-forge
+```
+
+:::
+
+
 
 Run the following command to install CUDA in our Python environment with [Conda/Mamba](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#conda-installation).
 
@@ -108,20 +150,20 @@ Run the following command to install CUDA in our Python environment with [Conda/
 ## Conda
 
 ```bash
-conda install cuda -c nvidia/label/cuda-12.2.0 -y
+conda install cuda -c nvidia/label/cuda-12.4.0 -y
 ```
 
 ## Mamba
 
 ```bash
-mamba install cuda -c nvidia/label/cuda-12.2.0 -y
+mamba install cuda -c nvidia/label/cuda-12.4.0 -y
 ```
 
 :::
 
 ### Install ONNX Runtime and TensorRT
 
-The only additional libraries we need are ONNX Runtime with GPU support and TensorRT, assuming the packages used in the previous two tutorials are already in the Python environment.
+The only additional libraries we need are ONNX Runtime with GPU support and TensorRT, assuming the packages used in the previous two tutorials are already in the Python environment. At the time of writing, ONNX Runtime supports TensorRT `10.x`.
 
 
 ::: {.callout-note title="Package Descriptions" collapse="true"}
@@ -137,10 +179,10 @@ Run the following commands to install the libraries:
 
 ```bash
 # Install TensorRT packages
-pip install 'tensorrt==10.0.1' --extra-index-url https://pypi.nvidia.com
+pip install -U tensorrt
 
 # Install ONNX Runtime for CUDA 12
-pip install -U 'onnxruntime-gpu==1.18.0' --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install -U 'onnxruntime-gpu==1.20.0'
 ```
 
 
@@ -151,7 +193,36 @@ With our environment updated, we can dive into the code.
 
 ## Importing the Required Dependencies
 
-First, we will import the necessary Python dependencies into our Jupyter Notebook.
+First, we will import the necessary Python dependencies into our Jupyter Notebook. The ONNX Runtime package does not know where to look for the cuDNN libraries included with the `cuda` package, so we load those first using the following approach adapted from the [tensorrt package](https://github.com/NVIDIA/TensorRT/blob/release/10.6/python/packaging/libs_wheel/tensorrt_libs/__init__.py).
+
+```python
+# Load cuDNN libraries
+import ctypes
+import glob
+import os
+import sys
+from nvidia import cudnn
+
+def try_load(library):
+    try:
+        ctypes.CDLL(library, mode=ctypes.RTLD_GLOBAL)  # Use RTLD_GLOBAL to make symbols available
+    except OSError:
+        pass
+
+def try_load_libs_from_dir(path):
+    # Load all .so files (Linux)
+    for lib in glob.iglob(os.path.join(path, "*.so*")):
+        try_load(lib)
+    # Load all .dll files (Windows)
+    for lib in glob.iglob(os.path.join(path, "*.dll*")):
+        try_load(lib)
+
+# Get the cudnn library path
+CUDNN_LIB_DIR = os.path.join(cudnn.__path__[0], "lib")
+
+# Try loading all libraries in the cudnn lib directory
+try_load_libs_from_dir(CUDNN_LIB_DIR)
+```
 
 
 ```python
@@ -178,12 +249,13 @@ pd.set_option('max_colwidth', None, 'display.max_rows', None, 'display.max_colum
 # Import PIL for image manipulation
 from PIL import Image
 
-# Import ONNX dependencies
-import onnxruntime as ort # Import the ONNX Runtime
-from onnxruntime.quantization import CalibrationDataReader, CalibrationMethod, create_calibrator, write_calibration_table
-
 # Import tensorrt_libs
 import tensorrt_libs
+
+# Import ONNX dependencies
+import onnxruntime as ort # Import the ONNX Runtime
+from onnxruntime.tools.symbolic_shape_infer import SymbolicShapeInference
+from onnxruntime.quantization import CalibrationDataReader, CalibrationMethod, create_calibrator, write_calibration_table
 
 # Import tqdm for progress bar
 from tqdm.auto import tqdm
@@ -221,7 +293,7 @@ project_dir = Path(f"./{project_name}/")
 project_dir.mkdir(parents=True, exist_ok=True)
 
 # Define path to store datasets
-dataset_dir = Path("/mnt/980_1TB_2/Datasets/")
+dataset_dir = Path("/mnt/Storage/Datasets/")
 # Create the dataset directory if it does not exist
 dataset_dir.mkdir(parents=True, exist_ok=True)
 
@@ -242,29 +314,30 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_32fa5">
+<table id="T_84566">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_32fa5_level0_row0" class="row_heading level0 row0" >Project Directory:</th>
-      <td id="T_32fa5_row0_col0" class="data row0 col0" >pytorch-yolox-object-detector</td>
+      <th id="T_84566_level0_row0" class="row_heading level0 row0" >Project Directory:</th>
+      <td id="T_84566_row0_col0" class="data row0 col0" >pytorch-yolox-object-detector</td>
     </tr>
     <tr>
-      <th id="T_32fa5_level0_row1" class="row_heading level0 row1" >Dataset Directory:</th>
-      <td id="T_32fa5_row1_col0" class="data row1 col0" >/mnt/980_1TB_2/Datasets</td>
+      <th id="T_84566_level0_row1" class="row_heading level0 row1" >Dataset Directory:</th>
+      <td id="T_84566_row1_col0" class="data row1 col0" >/mnt/Storage/Datasets</td>
     </tr>
     <tr>
-      <th id="T_32fa5_level0_row2" class="row_heading level0 row2" >Archive Directory:</th>
-      <td id="T_32fa5_row2_col0" class="data row2 col0" >/mnt/980_1TB_2/Datasets/../Archive</td>
+      <th id="T_84566_level0_row2" class="row_heading level0 row2" >Archive Directory:</th>
+      <td id="T_84566_row2_col0" class="data row2 col0" >/mnt/Storage/Datasets/../Archive</td>
     </tr>
     <tr>
-      <th id="T_32fa5_level0_row3" class="row_heading level0 row3" >Checkpoint Directory:</th>
-      <td id="T_32fa5_row3_col0" class="data row3 col0" >pytorch-yolox-object-detector/2024-02-17_11-08-46</td>
+      <th id="T_84566_level0_row3" class="row_heading level0 row3" >Checkpoint Directory:</th>
+      <td id="T_84566_row3_col0" class="data row3 col0" >pytorch-yolox-object-detector/2024-02-17_11-08-46</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -358,25 +431,26 @@ pd.Series({
 ```
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_7fa45">
+<table id="T_ac294">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_7fa45_level0_row0" class="row_heading level0 row0" >HuggingFace Dataset:</th>
-      <td id="T_7fa45_row0_col0" class="data row0 col0" >cj-mills/hagrid-sample-30k-384p</td>
+      <th id="T_ac294_level0_row0" class="row_heading level0 row0" >HuggingFace Dataset:</th>
+      <td id="T_ac294_row0_col0" class="data row0 col0" >cj-mills/hagrid-sample-30k-384p</td>
     </tr>
     <tr>
-      <th id="T_7fa45_level0_row1" class="row_heading level0 row1" >Archive Path:</th>
-      <td id="T_7fa45_row1_col0" class="data row1 col0" >/mnt/980_1TB_2/Datasets/../Archive/hagrid-sample-30k-384p.zip</td>
+      <th id="T_ac294_level0_row1" class="row_heading level0 row1" >Archive Path:</th>
+      <td id="T_ac294_row1_col0" class="data row1 col0" >/mnt/Storage/Datasets/../Archive/hagrid-sample-30k-384p.zip</td>
     </tr>
     <tr>
-      <th id="T_7fa45_level0_row2" class="row_heading level0 row2" >Dataset Path:</th>
-      <td id="T_7fa45_row2_col0" class="data row2 col0" >/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p</td>
+      <th id="T_ac294_level0_row2" class="row_heading level0 row2" >Dataset Path:</th>
+      <td id="T_ac294_row2_col0" class="data row2 col0" >/mnt/Storage/Datasets/hagrid-sample-30k-384p</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 ### Downloading the Dataset
@@ -439,27 +513,28 @@ Number of Images: 31833
   <tbody>
     <tr>
       <th>0</th>
-      <td>/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00005c9c-3548-4a8f-9d0b-2dd4aff37fc9.jpg</td>
+      <td>/mnt/Storage/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00005c9c-3548-4a8f-9d0b-2dd4aff37fc9.jpg</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/0020a3db-82d8-47aa-8642-2715d4744db5.jpg</td>
+      <td>/mnt/Storage/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/0020a3db-82d8-47aa-8642-2715d4744db5.jpg</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/004ac93f-0f7c-49a4-aadc-737e0ad4273c.jpg</td>
+      <td>/mnt/Storage/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/004ac93f-0f7c-49a4-aadc-737e0ad4273c.jpg</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/006cac69-d3f0-47f9-aac9-38702d038ef1.jpg</td>
+      <td>/mnt/Storage/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/006cac69-d3f0-47f9-aac9-38702d038ef1.jpg</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>/mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00973fac-440e-4a56-b60c-2a06d5fb155d.jpg</td>
+      <td>/mnt/Storage/Datasets/hagrid-sample-30k-384p/hagrid_30k/train_val_call/00973fac-440e-4a56-b60c-2a06d5fb155d.jpg</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 
@@ -471,7 +546,6 @@ Using every image in the dataset for the calibration process would be unnecessar
 ```python
 random.seed(1234) # Set random seed for consistency 
 sample_percentage = 0.1
-random.shuffle(img_file_paths)
 sample_img_paths = random.sample(img_file_paths, int(len(img_file_paths)*sample_percentage))
 ```
 
@@ -624,18 +698,8 @@ try:
     # Collect calibration data using the specified data reader.
     calibrator.collect_data(data_reader=calibration_data_reader)
 
-    # Initialize an empty dictionary to hold the new compute range values.
-    new_compute_range = {}
-
-    # Compute data and update the compute range for each key in the calibrator's data.
-    for k, v in calibrator.compute_data().data.items():
-        # Extract the min and max values from the range_value.
-        v1, v2 = v.range_value
-        # Convert the min and max values to float and store them in the new_compute_range dictionary.
-        new_compute_range[k] = (float(v1.item()), float(v2.item()))
-        
     # Write the computed calibration table to the specified directory.
-    write_calibration_table(new_compute_range, dir=str(trt_cache_dir))
+    write_calibration_table(calibrator.compute_data().data, dir=str(trt_cache_dir))
     
 except Exception as e:
     # Catch any exceptions that occur during the calibration process.
@@ -648,8 +712,8 @@ finally:
 ```
 
 ```text
-CPU times: user 48 s, sys: 4.13 s, total: 52.1 s
-Wall time: 56.7 s
+CPU times: user 1min 25s, sys: 794 ms, total: 1min 26s
+Wall time: 1min 25s
 ```
 
 
@@ -731,19 +795,6 @@ session = ort.InferenceSession(onnx_file_path, sess_options=sess_opt, providers=
 ```
 
 
-
-::: {.callout-note title='TensorRT Warning Messages:'}
-
-You might see warning messages like the example below when creating the inference session with TensorRT. These are normal, and you can safely ignore them.
-
-```text
-2024-03-28 13:07:04.725964281 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:374: Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.
-2024-03-28 13:07:04.725986806 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped
-2024-03-28 13:07:04.738993049 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:374: Your ONNX model has been generated with INT64 weights, while TensorRT does not natively support INT64. Attempting to cast down to INT32.
-2024-03-28 13:07:04.739015348 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-03-28 20:07:04 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped
-```
-
-:::
 
 
 
@@ -1025,8 +1076,8 @@ session.run(None, {"input": input_tensor_np});
 ```
 
 
-    CPU times: user 1min 22s, sys: 5.69 s, total: 1min 27s
-    Wall time: 1min 39s
+    CPU times: user 38.6 s, sys: 4.63 s, total: 43.2 s
+    Wall time: 54.8 s
 
 
 
@@ -1047,7 +1098,6 @@ If we look in the cache folder again, we can see a new `.engine` file and a new 
 # Print the content of the module folder as a Pandas DataFrame
 pd.DataFrame([path.name for path in trt_cache_dir.iterdir()])
 ```
-
 
 <div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
@@ -1072,15 +1122,16 @@ pd.DataFrame([path.name for path in trt_cache_dir.iterdir()])
     </tr>
     <tr>
       <th>3</th>
-      <td>TensorrtExecutionProvider_TRTKernel_graph_main_graph_12802227604276161730_0_0_int8_sm89.engine</td>
+      <td>TensorrtExecutionProvider_TRTKernel_graph_main_graph_11895979595172249841_0_0_int8_sm89.engine</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>TensorrtExecutionProvider_TRTKernel_graph_main_graph_12802227604276161730_0_0_int8_sm89.profile</td>
+      <td>TensorrtExecutionProvider_TRTKernel_graph_main_graph_11895979595172249841_0_0_int8_sm89.profile</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 ### Benchmark Quantized Model
@@ -1094,7 +1145,7 @@ session.run(None, {"input": input_tensor_np})
 ```
 
 ```text
-866 µs ± 7.83 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+837 μs ± 3.68 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
 ```
 
 In my testing for this model, TensoRT int8 inference tends to be about 2.8-3x faster than the CUDA execution provider with the original float32 model.
@@ -1152,26 +1203,27 @@ pd.Series({
 
 
 
-![](./images/output_68_0.png){fig-align="center"}
+![](./images/output_66_0.png){fig-align="center"}
 
 
 
 <div style="overflow-x:auto; max-height:500px">
-<table id="T_b5125">
+<table id="T_a8de3">
   <thead>
   </thead>
   <tbody>
     <tr>
-      <th id="T_b5125_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
-      <td id="T_b5125_row0_col0" class="data row0 col0" >['rock:[344.66  245.036 109.577 108.912]', 'no_gesture:[196.431 519.459 101.863  80.836]']</td>
+      <th id="T_a8de3_level0_row0" class="row_heading level0 row0" >Predicted BBoxes:</th>
+      <td id="T_a8de3_row0_col0" class="data row0 col0" >['rock:[343.12  243.332 111.867 108.642]', 'no_gesture:[192.42  516.589 103.624  81.037]']</td>
     </tr>
     <tr>
-      <th id="T_b5125_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
-      <td id="T_b5125_row1_col0" class="data row1 col0" >['rock: 91.85%', 'no_gesture: 86.75%']</td>
+      <th id="T_a8de3_level0_row1" class="row_heading level0 row1" >Confidence Scores:</th>
+      <td id="T_a8de3_row1_col0" class="data row1 col0" >['rock: 89.29%', 'no_gesture: 88.88%']</td>
     </tr>
   </tbody>
 </table>
 </div>
+
 
 
 ---
@@ -1211,3 +1263,8 @@ Congratulations on reaching the end of this tutorial. We previously trained a YO
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

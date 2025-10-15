@@ -1,5 +1,5 @@
 ---
-title: "CUDA MODE Lecture 5: Going Further with CUDA for Python Programmers"
+title: "GPU MODE Lecture 5: Going Further with CUDA for Python Programmers"
 date: 2024-9-01
 image: /images/empty.gif
 hide: false
@@ -10,16 +10,16 @@ description: "Lecture #5 explores how to optimize matrix multiplication in CUDA 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
 
 ::: {.callout-tip}
 ## This post is part of the following series:
-* [**CUDA Mode Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **CUDA MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
+* [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
 
@@ -1414,3 +1414,8 @@ open-graph:
   * **Different Purposes:** Numba and Triton were recognized as valuable tools with distinct strengths, suitable for different use cases. Triton's limitations in expressing certain CUDA constructs (e.g., 4-bit discretization) were noted. 
   * **Complementary Tools:** Numba and Triton were seen as complementary, each offering unique advantages.
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

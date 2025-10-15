@@ -14,9 +14,9 @@ aliases:
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 ::: {.callout-tip}
@@ -95,6 +95,14 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 
 
+
+
+{{< include /_python-multiprocessing-warning.qmd >}}
+
+
+
+
+
 ## Setting Up Your Python Environment
 
 Before diving into the code, we'll cover the steps to create a local Python environment and install the necessary dependencies. The dedicated Colab Notebook includes the code to install the required dependencies in Google Colab.
@@ -141,7 +149,7 @@ Next, we'll install PyTorch. Run the appropriate command for your hardware and o
 
 ``` {.bash}
 # Install PyTorch with CUDA
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 ```
 
 ## Mac
@@ -2200,3 +2208,8 @@ Congratulations on completing this tutorial for training Mask R-CNN models in Py
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

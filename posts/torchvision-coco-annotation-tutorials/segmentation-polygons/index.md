@@ -10,9 +10,9 @@ description: "Learn how to work with COCO segmentation annotations in torchvisio
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 ---
 
 
@@ -1926,3 +1926,8 @@ As a next step, perhaps try annotating a custom COCO segmentation dataset with a
 
 
 {{< include /_tutorial-cta.qmd >}}
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

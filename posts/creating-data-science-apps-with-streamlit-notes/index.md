@@ -14,6 +14,15 @@ title: Notes on Creating Data Science Apps With Streamlit
 
 aliases:
 - /Notes-on-Creating-Data-Science-Apps-With-Streamlit/
+
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -854,3 +863,8 @@ scikit-learn==0.22.1
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

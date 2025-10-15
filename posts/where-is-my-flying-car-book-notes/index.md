@@ -10,9 +10,9 @@ description: "My notes from the book **Where Is My Flying Car?** by **J. Storrs 
 twitter-card:
   creator: "@cdotjdotmills"
   site: "@cdotjdotmills"
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
 open-graph:
-  image: ../social-media/cover.jpg
+  image: /images/default-preview-image-black.png
   
   
 aliases:
@@ -4165,3 +4165,8 @@ aliases:
 
 * **Focus on the Near Term:** Even without looking too far into the future, the potential for technological and societal progress is evident.
 * **Wilbur Wright's Quote (1908):** "It is not really necessary to look too far into the future. We see enough already to be certain it will be magnificent. Only let us hurry and open the roads."
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

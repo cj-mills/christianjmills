@@ -15,6 +15,14 @@ categories: [ai, fastai, notes, pytorch]
 aliases:
 - /Notes-on-Fastai-Book-01/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 ::: {.callout-tip}
@@ -1793,3 +1801,8 @@ Use Judgment in Defining Test Sets
 
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}

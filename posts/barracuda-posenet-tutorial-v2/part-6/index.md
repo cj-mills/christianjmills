@@ -14,6 +14,14 @@ categories: [unity, barracuda, tutorial]
 aliases:
 - /Barracuda-PoseNet-Tutorial-V2-6/
 
+
+twitter-card:
+  creator: "@cdotjdotmills"
+  site: "@cdotjdotmills"
+  image: /images/default-preview-image-black.png
+open-graph:
+  image: /images/default-preview-image-black.png
+
 ---
 
 * [Overview](#overview)
@@ -603,3 +611,8 @@ We now have everything need to perform pose estimation. However, we cannot curre
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Barracuda-PoseNet-Tutorial)
 
 
+
+
+
+
+{{< include /_about-author-cta.qmd >}}
