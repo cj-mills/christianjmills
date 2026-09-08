@@ -40,8 +40,8 @@ open-graph:
 
 ::: {.callout-note}
 ## Book LInks:
-* [Publisher Page](https://harriman.house/books/the-learning-game/)
-* [Author's Website](https://afabrega.com/)
+* [Book Page](https://www.amazon.com/Learning-Game-Teaching-Themselves-Challenge/dp/1804090093)
+* [Author's Newsletter](https://newsletter.afabrega.com/)
 :::
 
 
@@ -105,7 +105,7 @@ The book challenges common misconceptions about learning styles, the role of mem
 
 ::: {.callout-tip title="Resources"}
 
-* **Book:** "[Dumbing Us Down, The Hidden Curriculum of Compulsory Schooling](https://newsociety.com/books/d/dumbing-us-down-25th-anniversary-edition)" by John Taylor Gatto.
+* **Book:** "[Dumbing Us Down, The Hidden Curriculum of Compulsory Schooling](https://newsociety.com/book/dumbing-us-down-25th-anniversary-edition/)" by John Taylor Gatto.
 
 :::
 
@@ -134,7 +134,7 @@ This chapter, drawing upon John Taylor Gatto's book "Dumbing Us Down," outlines 
 
 ::: {.callout-tip title="Resources"}
 
-* **Blog Post:** [The Origin of the Modern School System](https://afabrega.com/my-blog/the-origin-of-the-modern-school-system)
+* **Blog Post:** [The Origin of the Modern School System](https://newsletter.afabrega.com/p/fab-fridays-98-is-school-really-broken)
 
 :::
 
@@ -252,7 +252,7 @@ The chapter advocates for guiding children towards the learning game, fostering 
     ::: {.callout-tip title="Resources"}
 
     * **Blog Post:** [How to Build a Memory Palace](https://artofmemory.com/blog/how-to-build-a-memory-palace/)
-    * **Book:** [Moonwalking with Einstein](https://joshuafoer.com/moonwalking-with-einstein/)
+    * **Book:** [Moonwalking with Einstein](https://www.penguinrandomhouse.com/books/301277/moonwalking-with-einstein-by-joshua-foer/)
 
     :::
 
