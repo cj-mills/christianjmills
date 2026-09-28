@@ -23,10 +23,10 @@ open-graph:
 
 
 
-* [Part 1: Should You Be a Freelancer?](http://localhost:5746/posts/making-money-as-freelance-developer-notes/#part-1-should-you-be-a-freelancer)
-* [Part 2: How to Make Yourself Stand Out](http://localhost:5746/posts/making-money-as-freelance-developer-notes/#part-2-how-to-make-yourself-stand-out)  
-* [Part 3: How to Sell Your Services](http://localhost:5746/posts/making-money-as-freelance-developer-notes/#part-3-how-to-sell-your-services)  
-* [Part 4: Where to Sell Your Services](http://localhost:5746/posts/making-money-as-freelance-developer-notes/#part-4-where-to-sell-your-services)
+* [Part 1: Should You Be a Freelancer?](/posts/making-money-as-freelance-developer-notes/#part-1-should-you-be-a-freelancer)
+* [Part 2: How to Make Yourself Stand Out](/posts/making-money-as-freelance-developer-notes/#part-2-how-to-make-yourself-stand-out)  
+* [Part 3: How to Sell Your Services](/posts/making-money-as-freelance-developer-notes/#part-3-how-to-sell-your-services)  
+* [Part 4: Where to Sell Your Services](/posts/making-money-as-freelance-developer-notes/#part-4-where-to-sell-your-services)
 
 
 

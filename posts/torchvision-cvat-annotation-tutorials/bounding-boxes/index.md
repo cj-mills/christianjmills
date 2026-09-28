@@ -1239,7 +1239,7 @@ As a next step, perhaps try annotating a custom object detection dataset with CV
 
 * [**Working with CVAT Keypoint Annotations in Torchvision**](/posts/torchvision-cvat-annotation-tutorials/keypoints/)**:** Learn how to work with CVAT keypoint annotations in torchvision for keypoint estimation tasks.
 * [**Working with CVAT Segmentation Annotations in Torchvision**](/posts/torchvision-cvat-annotation-tutorials/segmentation-polygons/)**:** Learn how to work with CVAT segmentation annotations in torchvision for instance segmentation tasks.
-* [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](http://localhost:3847/posts/pytorch-train-object-detector-yolox-tutorial)**:** Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model.
+* [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/posts/pytorch-train-object-detector-yolox-tutorial)**:** Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model.
 
 
 

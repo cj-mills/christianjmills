@@ -1291,7 +1291,7 @@ As a next step, perhaps try annotating a custom object detection dataset with La
 
 - [**Working with LabelMe Keypoint Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/keypoints/)**:** Learn how to work with LabelMe keypoint annotations in torchvision for keypoint estimation tasks.
 - [**Working with LabelMe Segmentation Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)**:** Learn how to work with LabelMe segmentation annotations in torchvision for instance segmentation tasks.
-- [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](http://localhost:3847/posts/pytorch-train-object-detector-yolox-tutorial)**:** Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model.
+- [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/posts/pytorch-train-object-detector-yolox-tutorial)**:** Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model.
 
 
 

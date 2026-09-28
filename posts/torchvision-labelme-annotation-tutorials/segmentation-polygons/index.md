@@ -1569,8 +1569,8 @@ As a next step, perhaps try annotating a custom instance segmentation dataset wi
 ## Recommended Tutorials
 
 - [**Working with LabelMe Bounding Box Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/bounding-boxes/)**:** Learn how to work with LabelMe bounding box annotations in torchvision for object detection tasks.
-- [**Working with LabelMe Keypoint Annotations in Torchvision**](http://localhost:3847/posts/torchvision-labelme-annotation-tutorials/keypoints/)**:** Learn how to work with LabelMe keypoint annotations in torchvision for keypoint estimation tasks.
-- [**Training Mask R-CNN Models with PyTorch**](http://localhost:3847/posts/pytorch-train-mask-rcnn-tutorial/)**:** Learn how to train Mask R-CNN models on custom datasets with PyTorch.
+- [**Working with LabelMe Keypoint Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/keypoints/)**:** Learn how to work with LabelMe keypoint annotations in torchvision for keypoint estimation tasks.
+- [**Training Mask R-CNN Models with PyTorch**](/posts/pytorch-train-mask-rcnn-tutorial/)**:** Learn how to train Mask R-CNN models on custom datasets with PyTorch.
 
 
 

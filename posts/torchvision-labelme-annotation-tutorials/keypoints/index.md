@@ -1279,7 +1279,7 @@ As a next step, perhaps try annotating a custom keypoint estimation dataset with
 ## Recommended Tutorials
 
 - [**Working with LabelMe Bounding Box Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/bounding-boxes/)**:** Learn how to work with LabelMe bounding box annotations in torchvision for object detection tasks.
-- [**Working with LabelMe Segmentation Annotations in Torchvision**](http://localhost:3847/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)**:** Learn how to work with LabelMe segmentation annotations in torchvision for instance segmentation tasks.
+- [**Working with LabelMe Segmentation Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)**:** Learn how to work with LabelMe segmentation annotations in torchvision for instance segmentation tasks.
 
 
 

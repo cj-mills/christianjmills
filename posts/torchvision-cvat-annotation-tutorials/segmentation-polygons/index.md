@@ -1291,7 +1291,7 @@ As a next step, perhaps try annotating a custom instance segmentation dataset wi
 
 * [**Working with CVAT Bounding Box Annotations in Torchvision**](/posts/torchvision-cvat-annotation-tutorials/bounding-boxes/)**:** Learn how to work with CVAT bounding box annotations in torchvision for object detection tasks.
 * [**Working with CVAT Keypoint Annotations in Torchvision**](/posts/torchvision-cvat-annotation-tutorials/keypoints/)**:** Learn how to work with CVAT keypoint annotations in torchvision for keypoint estimation tasks.
-* [**Training Mask R-CNN Models with PyTorch**](http://localhost:3847/posts/pytorch-train-mask-rcnn-tutorial/)**:** Learn how to train Mask R-CNN models on custom datasets with PyTorch.
+* [**Training Mask R-CNN Models with PyTorch**](/posts/pytorch-train-mask-rcnn-tutorial/)**:** Learn how to train Mask R-CNN models on custom datasets with PyTorch.
 
 
 
