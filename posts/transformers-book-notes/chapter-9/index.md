@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 9 covers how to deal with few to no labels by training a model
   that automatically tags GitHub issues for the Hugging Face Transformers library.
 categories: [ai, huggingface, nlp, notes]

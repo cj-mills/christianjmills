@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 3 covers the Transformer architecture and different types of
   transformer models available on the Hugging Face Hub.
 categories: [ai, huggingface, nlp, notes]

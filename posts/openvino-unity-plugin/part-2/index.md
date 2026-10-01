@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: This post walks through the steps needed to create a Dynamic link library
   (DLL) in Visual Studio to perform inference with the pretrained deep learning model.
 categories: [openvino, style-transfer, tutorial, unity]

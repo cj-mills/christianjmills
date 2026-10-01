@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 11 explores scaling up transformers, methods to make self-attention
   more efficient, and multimodel transformers.
 categories: [ai, huggingface, nlp, notes]

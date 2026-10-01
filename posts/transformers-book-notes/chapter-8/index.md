@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 8 covers different methods to make transformer models more efficient
   in production.
 categories: [ai, huggingface, nlp, notes]

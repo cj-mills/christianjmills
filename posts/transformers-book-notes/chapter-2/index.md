@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 2 covers training a model to classify emotions expressed in Twitter
   messages.
 categories: [ai, huggingface, nlp, notes]

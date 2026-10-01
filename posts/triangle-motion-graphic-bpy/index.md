@@ -4,9 +4,6 @@ date: 3-27-2021
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: This post covers how to create a simple triangle motion graphic in Blender
   using the Python API.
 categories: [blender, python, tutorial]

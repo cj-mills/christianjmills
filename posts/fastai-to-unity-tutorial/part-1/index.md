@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Train an image classifier using the fastai library and export it to [ONNX](https://onnx.ai/).
 categories: [fastai, unity, barracuda, tutorial]
 

@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 4 covers broadcasting, stochastic gradient descent, the MNIST
   loss function, and the sigmoid activation functions.
 categories: [ai, fastai, notes, pytorch]

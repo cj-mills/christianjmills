@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: This post covers my experience getting PyTorch to run with CUDA on WSL2.
 categories: [log, tutorial, pytorch, wsl2]
 

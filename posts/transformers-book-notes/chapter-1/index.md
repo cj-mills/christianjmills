@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 1 covers essential advancements for transformers, recurrent architectures, the encoder-decoder framework, attention mechanisms, transfer learning in NLP, and the HuggingFace ecosystem.
 categories: [ai, huggingface, nlp, notes]
 

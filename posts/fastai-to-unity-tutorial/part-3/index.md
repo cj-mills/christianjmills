@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Build a Unity project as a WebGL application and host it using GitHub Pages.
 categories: [fastai, unity, barracuda, tutorial]
 

@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: This post demonstrates how to access the DLL as a plugin inside a Unity
   project.
 categories: [openvino, style-transfer, tutorial, unity]

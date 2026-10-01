@@ -8,9 +8,6 @@ description: This post covers how to select which game objects get stylized in t
   Unity scene.
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 title: Targeted In-Game Style Transfer Tutorial
 
 aliases:

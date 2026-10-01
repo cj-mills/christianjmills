@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 19 covers creating a fast.ai Learner from scratch.
 categories: [ai, fastai, notes, pytorch]
 

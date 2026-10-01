@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 13 provides a deep dive into convolutional neural networks.
 categories: [ai, fastai, notes, pytorch]
 

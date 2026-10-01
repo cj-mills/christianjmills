@@ -4,9 +4,6 @@ date: 2021-3-24
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: This post covers how to create a simple shape-key motion graphic in Blender
   using the Python API.
 categories: [blender, python, tutorial]

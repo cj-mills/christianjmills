@@ -8,9 +8,6 @@ date: 2022-3-29
 description: Chapter 17 covers building a neural network from the foundations.
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 title: Notes on fastai Book Ch. 17
 
 aliases:

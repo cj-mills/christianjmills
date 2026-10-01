@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Load, modify, and execute the PoseNet models.
 categories: [unity, barracuda, tutorial]
 

@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 7 covers building a question-answering model that finds answers
   to questions in customer reviews.
 categories: [ai, huggingface, nlp, notes]

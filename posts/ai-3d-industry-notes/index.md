@@ -8,9 +8,6 @@ date: 2021-12-9
 description: "In this talk at Blender Conference 2018, Andrew Price explores the potential impact of AI and automation on the 3D industry."
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 title: "Notes on *The Next Leap: How A.I. will change the 3D industry*"
 
 

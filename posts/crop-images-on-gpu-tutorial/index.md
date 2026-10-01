@@ -5,9 +5,6 @@ image: ./images/crop_image_on_gpu_unity_1.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: "This post explains how to efficiently crop images in Unity without writing shaders."
 categories: [unity, tutorial]
 

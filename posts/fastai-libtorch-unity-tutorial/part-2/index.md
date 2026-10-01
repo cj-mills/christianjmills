@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Create a dynamic link library (DLL) file in Visual Studio to perform image classification using [LibTorch](https://pytorch.org/cppdocs/installing.html).
 categories: [fastai, libtorch, unity, tutorial]
 

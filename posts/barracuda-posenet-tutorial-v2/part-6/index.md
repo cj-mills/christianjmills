@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Implement the post-processing steps for multi-pose estimation with PoseNet.
 categories: [unity, barracuda, tutorial]
 

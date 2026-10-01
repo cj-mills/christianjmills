@@ -9,9 +9,6 @@ description: Chapter 15 provides a deep dive into different application architec
   in the fast.ai library.
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 title: Notes on fastai Book Ch. 15
 
 aliases:

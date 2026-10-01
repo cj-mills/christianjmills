@@ -5,9 +5,6 @@ date: '2020-10-21'
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: This post covers how to use tf2onnx to convert a TensorFlow SavedModel
   to ONNX.
 categories: [tensorflow, onnx, tutorial]

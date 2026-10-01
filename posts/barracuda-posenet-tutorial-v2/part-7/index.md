@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Create pose skeletons and manipulate them using output from a PoseNet model.
 categories: [unity, barracuda, tutorial]
 

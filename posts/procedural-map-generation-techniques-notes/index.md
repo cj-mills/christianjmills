@@ -4,9 +4,6 @@ date: 2021-12-9
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: "In this talk, Herbert Wolverson explores various procedural map generation algorithms, demonstrating their implementation and applications in game development, particularly roguelikes."
 categories: [game-dev, procedural-generation, notes]
 

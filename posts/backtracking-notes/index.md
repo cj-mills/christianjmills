@@ -4,9 +4,6 @@ date: '2021-12-31'
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: My notes from Lynn Zheng's video on solving LeetCode backtracking problems.
 categories: [python, notes]
 

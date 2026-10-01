@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 6 covers building an encoder-decoder model to condense dialogues
   between several people into a crisp summary.
 categories: [ai, huggingface, nlp, notes]

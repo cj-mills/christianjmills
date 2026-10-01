@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Create a [TensorFlow.js](https://www.tensorflow.org/js) plugin for the [Unity](https://unity.com/) game engine.
 categories: [fastai, unity, tensorflow, webgl, tutorial]
 

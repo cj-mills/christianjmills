@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Modify the training code from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to export the model to a [TorchScript](https://pytorch.org/docs/stable/jit.html) module.
 categories: [fastai, libtorch, unity, tutorial]
 

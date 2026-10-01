@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 5 covers different methods for generating text with GPT-2.
 categories: [ai, huggingface, nlp, notes]
 

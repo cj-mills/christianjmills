@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Modify the Barracuda PoseNet project to run in a browser using WebGL.
 categories: [unity, barracuda, webgl, tutorial]
 

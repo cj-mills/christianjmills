@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: Chapter 10 covers how to train a GPT-like model to generate Python source
   code from scratch.
 categories: [ai, huggingface, nlp, notes]

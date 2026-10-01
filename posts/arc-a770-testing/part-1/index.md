@@ -5,9 +5,6 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-comments:
-  utterances:
-    repo: cj-mills/christianjmills
 description: "I tested inference performance with OpenVINO and DirectML on the A770 and attempted to train models using PyTorch-DirectML."
 categories: [directml, openvino, pytorch, unity, arc-gpu]
 
