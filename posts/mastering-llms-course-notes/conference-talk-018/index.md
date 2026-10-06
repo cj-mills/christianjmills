@@ -58,7 +58,7 @@ open-graph:
     - OpenAI's cookbook ([cookbook.openai.com](https://cookbook.openai.com/)) offers a Q&A model example.
       - The model is trained to respond with "I don't know" when it lacks relevant knowledge.
       - This example demonstrates how fine-tuning can improve a model's ability to recognize its limitations.
-      - **GitHub Repository:** [examples/fine-tuned_qa](examples/fine-tuned_qa)
+      - **GitHub Repository:** [examples/fine-tuned_qa](https://github.com/openai/openai-cookbook/tree/main/examples/fine-tuned_qa)
       - **Notebook 1:** [Fine-Tuned Q&A - collect data](https://cookbook.openai.com/examples/fine-tuned_qa/olympics-1-collect-data)
       - **Notebook 2:** [Fine-Tuned Q&A - create Q&A](https://cookbook.openai.com/examples/fine-tuned_qa/olympics-2-create-qa)
       - **Notebook 3:** [Fine-Tuned Q&A - train](https://cookbook.openai.com/examples/fine-tuned_qa/olympics-3-train-qa)

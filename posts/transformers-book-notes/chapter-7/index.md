@@ -1275,7 +1275,7 @@ es_retriever = ElasticsearchRetriever(document_store=document_store)
 
 * For review-based QA systems, it is crucial to restrict the queries to a single item.
     * Otherwise, the retriever would source reviews about products unrelated to the user's query.
-* We can decipher ASIN values with online tools like amazon ASIN or by appending the value of item_id to the [www.amazon.com/dp/](www.amazon.com/dp/) URL.
+* We can decipher ASIN values with online tools like amazon ASIN or by appending the value of item_id to the [www.amazon.com/dp/](https://www.amazon.com/dp/) URL.
 
 ------
 

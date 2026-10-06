@@ -79,7 +79,7 @@ open-graph:
 * Requires a "text" column in your dataset (can be mapped from a different column name).
 * Supports chat template formatting (chatML, Sapphire, tokenizer's template).
 * **Example datasets:**
-  * [Salesforce/wikitext](Salesforce/wikitext): plain text format
+  * [Salesforce/wikitext](https://huggingface.co/datasets/Salesforce/wikitext): plain text format
   * Chat format with "content" and "role" fields (requires chat template).
 
 ### Reward Modeling

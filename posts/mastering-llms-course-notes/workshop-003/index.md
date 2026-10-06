@@ -413,7 +413,7 @@ open-graph:
 * **Solution:** Develop an evaluator model that predicts the probability of a summary being factually inconsistent with the source document.
 * **Approach:** Frame the problem as a Natural Language Inference (NLI) task, treating "contradiction" as factual inconsistency.
 
-* **GitHub Repository:** [eugeneyan/visualizing-finetunes](eugeneyan/visualizing-finetunes)
+* **GitHub Repository:** [eugeneyan/visualizing-finetunes](https://github.com/eugeneyan/visualizing-finetunes)
 * **Blog Post:** [Out-of-Domain Finetuning to Bootstrap Hallucination Detection](https://eugeneyan.com/writing/finetuning/)
 
 ### Methodology
@@ -507,7 +507,7 @@ open-graph:
     * **[julia/podcaster-tweet-thread](https://smith.langchain.com/hub/julia/podcaster-tweet-thread):** Take a podcast episode transcript and turn into a tweet thread.
     * **[homanp/github-code-reviews](https://smith.langchain.com/hub/homanp/github-code-reviews):** This prompt reviews pull request on GitHub.
     * **[matu/customer_satisfaction](https://smith.langchain.com/hub/matu/customer_satisfaction):** This prompt is being use to extract services and sentiments from a customer answer to a survey.
-    * **[muhsinbashir/youtube-transcript-to-article:](muhsinbashir/youtube-transcript-to-article:)** Convert any Youtube Video Transcript into an Article.
+    * **[muhsinbashir/youtube-transcript-to-article:](https://smith.langchain.com/hub/muhsinbashir/youtube-transcript-to-article)** Convert any Youtube Video Transcript into an Article.
 
 
 ### LLMs Make Unpredictable Mistakes

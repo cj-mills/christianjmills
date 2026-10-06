@@ -95,7 +95,7 @@ The total training time for the image classification notebook was approximately 
 
 
 
-That is a worthwhile improvement over the `34%` [performance gap](..part-2/#training-performance-on-wsl) between WSL and native Ubuntu.
+That is a worthwhile improvement over the `34%` [performance gap](../part-2/#training-performance-on-wsl) between WSL and native Ubuntu.
 
 The performance gap between Windows and Ubuntu is about the same as what I've come to expect with Nvidia GPUs. PyTorch on native Windows tends to be slower than Ubuntu, and Python multiprocessing takes longer to start on Windows.
 

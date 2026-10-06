@@ -189,7 +189,7 @@ open-graph:
   * **[CodeGemma](https://huggingface.co/blog/codegemma):**  For code-related tasks.
   * **RecurrentGemma:**  For sequential data.
     * **Paper:** [RecurrentGemma: Moving Past Transformers for Efficient Open Language Models](https://arxiv.org/abs/2404.07839)
-    * **HuggingFace Hub:** [google/recurrentgemma-2b-it](google/recurrentgemma-2b-it)
+    * **HuggingFace Hub:** [google/recurrentgemma-2b-it](https://huggingface.co/google/recurrentgemma-2b-it)
   * **PaliGemma:** Open-vision language model.
     * **Paper:** [PaliGemma: A versatile 3B VLM for transfer](https://arxiv.org/abs/2407.07726)
     * **Blog Post:** [PaliGemma – Google's Cutting-Edge Open Vision Language Model](https://huggingface.co/blog/paligemma) 

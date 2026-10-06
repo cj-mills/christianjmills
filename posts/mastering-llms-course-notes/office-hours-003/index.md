@@ -41,7 +41,7 @@ open-graph:
 ## 1. Gradio Demo on HuggingFace Spaces
 
 * Freddy showcases a HuggingFace Space demonstrating various chatbot implementations using Gradio.
-  * **Demo:** [gradio/chat-examples](gradio/chat-examples)
+  * **Demo:** [gradio/chat-examples](https://huggingface.co/spaces/gradio/chat-examples)
 
 * The demo highlights Gradio's simplicity, requiring only ~50 lines of Python code to create a fully functional chatbot UI.
 * Key features include:
@@ -99,7 +99,7 @@ open-graph:
 * Gradio offers components for building multimodal applications, including chatbots that handle both text and file inputs.
 * The `gr.MultiModalTextbox` component allows users to send text and attachments.
 * Freddy demonstrates a multimodal chatbot example, showcasing how to process and respond to different input types.
-  * **Demo:** [gradio/chatbot_multimodal](gradio/chatbot_multimodal)
+  * **Demo:** [gradio/chatbot_multimodal](https://huggingface.co/spaces/gradio/chatbot_multimodal)
 
 
 

@@ -5,7 +5,7 @@ image: /images/empty.gif
 title-block-categories: true
 hide: false
 search_exclude: false
-description: Modify the Unity project from the [fastai-to-unity tutorial](../../fastai-to-unity-tutorial/part-1/) to classify images with [OpenVINO](https://docs.openvino.ai/latest/index.html).
+description: Modify the Unity project from the [fastai-to-unity tutorial](/posts/fastai-to-unity-tutorial/part-1/) to classify images with [OpenVINO](https://docs.openvino.ai/latest/index.html).
 categories: [fastai, openvino, unity, tutorial]
 
 aliases:

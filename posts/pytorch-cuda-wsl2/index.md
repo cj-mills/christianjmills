@@ -157,7 +157,7 @@ options = "metadata,umask=22,fmask=11"
 I had to restart my computer after creating the file for it to take effect. You can learn more about `wsl.conf` files and the settings in the above example at the links below.
 
 * [Automatically Configuring WSL](https://devblogs.microsoft.com/commandline/automatically-configuring-wsl/)
-* [Chmod/Chown WSL Improvements](Chmod/Chown WSL Improvements)
+* [Chmod/Chown WSL Improvements](https://devblogs.microsoft.com/commandline/chmod-chown-wsl-improvements/)
 * [File Permissions for WSL](https://docs.microsoft.com/en-us/windows/wsl/file-permissions)
 
 ### Disk Space
