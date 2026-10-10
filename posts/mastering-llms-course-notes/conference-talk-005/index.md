@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Introduction](#introduction)
 * [Good News & Bad News](#good-news-bad-news)
@@ -37,17 +31,11 @@ open-graph:
 * [Q&A Session](#qa-session)
 * [Recap](#recap)
 
-
-
 ::: {.callout-tip title="Presentation Resources"}
 
 * **Slides:** [Napkin Math For Finetuning](https://docs.google.com/presentation/d/1Ye_6zeatCWkq-fx8A--yK34uwU8oC2YQtMSTV1DgkSI/)
 
 :::
-
-
-
-
 
 ## Introduction
 
@@ -61,8 +49,6 @@ open-graph:
 - **Approach:** Utilizing a "napkin math" approach to provide a general understanding of the concepts without delving into intricate mathematical details.
 - **Disclaimer:** Emphasizes that the information presented is simplified for clarity and may not be entirely accurate due to the constantly evolving nature of AI implementations.
 
-
-
 ## Good News & Bad News
 
 - **Good news:** The mathematical operations underlying model training are well-understood, enabling analysis and experimentation.
@@ -73,22 +59,20 @@ open-graph:
   * Multi-GPU setups introduce additional complexity
 - **Key takeaway:** While a simplified approach can be helpful, acknowledging the inherent complexities is essential for accurate analysis and problem-solving.
 
-
-
 ## Training Neural Networks
 
-#### Training Loop
+### Training Loop
 
 * **The core cycle:** Load data, feed it through the model, generate an answer, evaluate its quality, and update the model accordingly.
 * **Language model context:** The correct answer typically refers to the next word in a sequence, and predictions are represented as probabilities for potential next words.
 * **Fine-tuning data:** Datasets used for fine-tuning contain instruction-response pairs, allowing the model to learn from desired output patterns.
 
-#### On Computers
+### On Computers
 
 * **Hardware components:** Understanding the roles of CPU, GPU, RAM, and their interconnectivity is crucial for performance analysis.
 * **Memory hierarchy:** Different memory types (e.g., CPU cache, RAM, hard drive) have varying access speeds, influencing data transfer times.
 
-#### Training Neural Networks
+### Training Neural Networks
 
 * **Factors affecting performance:**
   * **Data loading:** Reading data from storage.
@@ -98,12 +82,10 @@ open-graph:
   * **Optimizer operations:** Additional storage and computations for parameter optimization.
 * **Key takeaway:** Each step in the training loop incurs computational costs and memory demands, understanding these factors is crucial for optimization.
 
-#### What takes up time?
+### What takes up time?
 
 * **Computation:** The number of mathematical operations performed.
 * **Memory management:** Data transfer and storage within the memory hierarchy.
-
-
 
 ## Why are we copying data around?
 
@@ -115,15 +97,13 @@ open-graph:
   * **Inter-GPU communication:** Sharing data between GPUs can introduce latency.
   * **Network communication:** In multi-node setups, communication over the network becomes a bottleneck.
 
-
-
 ## Goal: Keep the GPU Fed
 
 - **Goal:** Continuously provide the GPU with data and instructions to avoid downtime.
 - **Ideal:** Fit the entire model and data within the GPU RAM for fastest processing.
 - **Bottleneck:** Large models and limited GPU memory can cause frequent data loading from slower memory, slowing down the training process.
 
-### Tricks to improve memory efficiency 
+### Tricks to improve memory efficiency
 
 - **Techniques for keeping data closer to the GPU:**
   - **Flash Attention and Fused Kernels:** These reduce memory footprints and data transfers by changing how computations are performed. 
@@ -137,11 +117,9 @@ open-graph:
     - Reduces memory footprint, allowing for larger models or larger batch sizes.
     - Needs a little computation to dequantize
 
-
-
 ## Napkin Math: Understanding Memory Usage
 
-### Full Fine-Tuning 
+### Full Fine-Tuning
 
 - **Problem:** Full fine-tuning requires storing model parameters, gradients, and optimizer states, leading to high memory consumption.
 - **Explanation:** 
@@ -150,7 +128,6 @@ open-graph:
   * Optimizers like Adam store additional states (e.g., momentum), further increasing memory usage.
 - **Example:** A model with 100 million parameters using 32 bits per parameter consumes 400MB.
   - Considering gradients and optimizer states, the total memory usage can be 1.2GB or higher.
-
 
 ### LoRA (Low-Rank Adaptation)
 
@@ -182,8 +159,6 @@ open-graph:
 - **Explanation:**
   * Each layer's output activations need to be stored for gradient calculations, and these activations accumulate with longer input sequences. 
 - **Impact:** Training LLMs with long context lengths requires careful memory management and might necessitate techniques like gradient checkpointing to reduce activation memory footprint.
-
-
 
 ## Napkin Math Code Demo
 
@@ -294,9 +269,6 @@ Max memory allocated: 6.42GB
 Max memory reserved: 7.09GB
 ```
 
-
-   
-
 ### Memory History
 
 - **Challenge:** Identifying specific memory bottlenecks within the training process.
@@ -359,19 +331,13 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
 
 ![](./images/image.png){fig-align="center"}
 
-
-
 ## Optimizing LLM Training for Different Hardware
-
-
 
 ::: {.callout-note title="Benchmarking QLoRA+FSDP"}
 
 * **Case Study:** [A Dual 3090 ‘Basement Rig’](https://github.com/AnswerDotAI/fsdp_qlora/blob/main/benchmarks_03_2024.md)
 
 :::
-
-
 
 ### GPU Limitations & Data Transfer Bottleneck
 
@@ -408,11 +374,9 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
   * **Memory-Bound:** Prioritize techniques like quantization, QLoRa, and increasing batch size to minimize data transfer.
   * **Compute-Bound:** Focus on maximizing computational efficiency, as data transfer is less of a concern. 
 
-
-
 ## Q&A Session
 
-### CPU Offloading 
+### CPU Offloading
 
 * **Question:** Is CPU offloading useful for training or just inference?
 
@@ -420,7 +384,7 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
 
 * **Recommendation:** Start with default settings and gradually introduce optimizations like quantization, batch size increases, data parallelism, and sharding, evaluating performance gains at each step.
 
-### Quantization Sweet Spot 
+### Quantization Sweet Spot
 
 * **Question:** How to find the optimal balance between compression and accuracy with quantization? 
 
@@ -428,7 +392,7 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
 
 * **Recommendation:**  Use 4-bit quantization with LoRA as a starting point. Keep the LoRA in higher precision.
 
-### Gradient Accumulation 
+### Gradient Accumulation
 
 * **Question:**  Clarification on gradient accumulation and micro batch size.
 
@@ -438,13 +402,11 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
 
 * **Recommendation:**  Use gradient accumulation to reach a reasonable effective batch size (16, 32, 64), particularly when training with small batch sizes (1 or 2).
 
-### Multiple LoRAs 
+### Multiple LoRAs
 
 * **Question:**  Do multiple LoRAs update the same or different model parameters?
 
 * **Answer:** Typically, multiple LoRAs update the same weights. Each LoRA targets specific layers defined in its configuration. 
-
-
 
 ## Recap
 
@@ -461,13 +423,5 @@ Results viewed in [https://pytorch.org/memory_viz](https://pytorch.org/memory_vi
    * Quantize weights.
    * Offload to CPU.
 -  **Practical Estimation:** Instead of complex formulas, estimate memory requirements based on measurements from a single layer and extrapolate for the entire model. 
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

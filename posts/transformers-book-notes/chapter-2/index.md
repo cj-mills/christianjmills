@@ -27,7 +27,6 @@ open-graph:
 * [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
 :::
 
-
 * [Project: Analyze Product Sentiment on Twitter](#project-analyze-product-sentiment-on-twitter)
 * [The Dataset](#the-dataset)
 * [From Text to Tokens](#from-text-to-tokens)
@@ -91,8 +90,6 @@ def print_source(obj, exclude_doc=True):
     print(astor.to_source(parsed))
 ```
 
-
-
 ## Project: Analyze Product Sentiment on Twitter
 
 - Sentiment analysis involves classifying the feelings or opinions expressed in a given text.
@@ -111,8 +108,6 @@ def print_source(obj, exclude_doc=True):
 3. Load, train, and run models using the [Transformers](https://huggingface.co/docs/transformers/index) library.
 4. Load metrics and evaluate models using the [Datasets](https://huggingface.co/docs/datasets/index) library.
 
-
-
 ## The Dataset
 
 - [CARER: Contextualized Affect Representations for Emotion Recognition](https://aclanthology.org/D18-1404/)
@@ -125,6 +120,7 @@ def print_source(obj, exclude_doc=True):
 - [Hugging Face Dataset Card](https://huggingface.co/datasets/emotion)
 
 ### A First Look at Hugging Face Datasets
+
 * [GitHub Repository](https://github.com/huggingface/datasets)
 * [Documentation](https://huggingface.co/docs/datasets/index)
 * Hugging Face Datasets is based on [Apache Arrow](https://arrow.apache.org/).
@@ -173,7 +169,8 @@ print(f"The first 10 are: {all_datasets[:10]}")
 from datasets import load_dataset
 ```
 
-#### `load_dataset` 
+#### `load_dataset`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/loading_methods#datasets.load_dataset)
 * This method downloads and imports the loading script for the specified dataset.
 * The script defines the citation, info, and format of the dataset, the URL to the original data files, and the code to load examples from the original files.
@@ -247,10 +244,7 @@ print_source(load_dataset)
         return ds
 ```
 
-
-
 #### Automated Process
-
 
 ```python
 # Download dataset from Hub
@@ -291,10 +285,7 @@ pd.DataFrame(list(emotions.cache_files.items()))
 </table>
 </div>
 
-
-
 #### Manual Process - Local
-
 
 ```python
 # Get the download URLs
@@ -467,10 +458,7 @@ pd.DataFrame(list(emotions_local.cache_files.items()))
 </table>
 </div>
 
-
-
 #### Manual Process - Remote
-
 
 ```python
 data_files = {name:url for name,url in zip(dataset_names,urls)}
@@ -544,9 +532,8 @@ pd.DataFrame(list(emotions_remote.cache_files.items()))
 </table>
 </div>
 
-
-
 #### `DatasetDict`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict)
 * A dictionary (dict of str: datasets.Dataset) with dataset transforms methods (map, filter, etc.)
 
@@ -577,6 +564,7 @@ emotions
 **Note:** The data is already split into training, validation, and test sets.
 
 #### `Dataset`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset)
 * The base class datasets.Dataset implements a Dataset backed by an Apache Arrow table.
 * Behaves like an ordinary Python array or list.
@@ -725,12 +713,13 @@ print_source(datasets.Value, False)
                 return value
 ```
 
-
 ### From Datasets to DataFrames
+
 * Hugging Face Datasets provides a `set_format` method to convert Datasets objects to Pandas DataFrames.
 * The underlying data format is still an Arrow table.
 
 #### `DatasetDict.set_format`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict.set_format)
 * Set the format for every Dataset object in the dictionary.
 
@@ -749,8 +738,8 @@ print_source(datasets.DatasetDict.set_format, exclude_doc=True)
                 output_all_columns, **format_kwargs)
 ```
 
-
 #### `Dataset.set_format`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.set_format)
 * Set the [`__getitem__`](https://docs.python.org/3/reference/datamodel.html#object.__getitem__) return format.
     * `None` (Python object), `numpy`, `torch`, `tensorflow`, `pandas`, `arrow`
@@ -835,9 +824,8 @@ df.head()
 </table>
 </div>
 
-
-
 #### `ClassLabel.int2str`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.ClassLabel.int2str)
 * Convert an integer label to the corresponding class name string.
 
@@ -920,9 +908,8 @@ df.head()
 </table>
 </div>
 
-
-
 ### Looking at the Class Distribution
+
 * [A Recipe for Training Neural Networks](https://karpathy.github.io/2019/04/25/recipe/)
     * The first step to training a neural network involves thoroughly inspecting the data.
     * Understand the distribution of the training examples and look for patterns.
@@ -952,15 +939,18 @@ plt.rcParams["figure.figsize"] = plt.rcParamsDefault["figure.figsize"]
 **Note:** Messages expressing joy and sadness are about 5-10 times more common than messages expressing love and surprise.
 
 #### Methods to Deal with Imbalanced Data
+
 * Randomly oversample the minority class.
 * Randomly undersample the majority class.
 * Gather more labeled data from the underrepresented classes.
 
 #### imbalanced-learn
+
 * [Documentation](https://imbalanced-learn.org/stable/)
 * This library extends scikit-learn and provides tools for dealing with imbalanced classes.
 
 ### How Long Are Our Tweets?
+
 * Transformer models have a maximum input sequence length called the maximum context size.
 * The maximum context size for DistilBERT is 512 tokens, which is roughly equivalent to a few paragraphs of text.
 * We need to [truncate](https://huggingface.co/docs/transformers/preprocessing#truncation) pieces of text that do not fit in a model's context size, which might remove crucial information.
@@ -988,6 +978,7 @@ plt.rcParams["figure.figsize"] = plt.rcParamsDefault["figure.figsize"]
 **Note:** Most tweets are between 15 and 20 words long, with a max length of around 50 words.
 
 #### `DatasetDict.reset_format()`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict.reset_format)
 * return format to python objects for all datasets in the dictionary
 * calls `set_format` with the default arguments
@@ -1030,8 +1021,6 @@ print_source(datasets.Dataset.reset_format)
 emotions.reset_format()
 ```
 
-
-
 ## From Text to Tokens
 
 * Transformer models cannot receive raw strings as input.
@@ -1041,6 +1030,7 @@ emotions.reset_format()
 **IMPORTANT:** Use the same tokenizer when training, fine-tuning, and performing inference with a given model.
 
 ### Character Tokenization
+
 * Character-based tokenizers split the text into single characters.
 * Character tokenization results in a smaller vocabulary and much fewer out-of-vocabulary tokens.
 * It also results in a much higher number of tokens for a given input sequence.
@@ -1061,6 +1051,7 @@ print(tokenized_text)
 ```
 
 ### Numericalization
+
 * Models can only process numbers, so we need to encode tokens as numerical data.
 * A simple encoding method is to convert each unique token to a unique integer.
 
@@ -1089,6 +1080,7 @@ print(input_ids)
 ```
 
 ### One-hot Encoding
+
 * It is common to encode categorical variables as one-hot vectors, where a single entry has the value 1, and every other entry has the value 0.
 * One-hot encoding can help prevent the model from learning undesired relationships like fictitious ordering between names.
 
@@ -1183,6 +1175,7 @@ import torch.nn.functional as F
 ```
 
 #### PyTorch `one_hot`:
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.functional.one_hot.html)
 * Generate one-hot encodings for a tensor with a specified number of classes
 
@@ -1225,6 +1218,7 @@ print(f"One-hot: {one_hot_encodings[0]}")
 ```
 
 ### Word Tokenization
+
 * Word-based tokenizers split the text into words and map each word to an integer.
 * Word tokenization creates less work for the model as it does not need to learn such linguistic structures from the data.
 * There is a loss of meaning across very similar words.
@@ -1252,6 +1246,7 @@ print(tokenized_text)
 ```
 
 ### Subword Tokenization
+
 * Subword tokenization algorithms decompose rare words into meaningful subwords while keeping the most frequently used words as unique entities.
 * Subword tokenization algorithms can identify start-of-word tokens.
 * Most state-of-the-art English models use subword-tokenization.
@@ -1269,6 +1264,7 @@ from transformers import AutoTokenizer
 ```
 
 #### `AutoTokenizer`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoTokenizer)
 * Quickly load the tokenizer associated with a pretrained model.
 * AutoTokenizer belongs to a set of [auto classes](https://huggingface.co/docs/transformers/model_doc/auto) that automatically retrieve the model's configuration, pretrained weights, or vocabulary from the name of a checkpoint.
@@ -1301,9 +1297,8 @@ type(tokenizer)
 transformers.models.distilbert.tokenization_distilbert_fast.DistilBertTokenizerFast
 ```
 
-
-
 #### `DistilBertTokenizerFast`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/distilbert#transformers.DistilBertTokenizerFast)
 * Construct a "fast" DistilBERT tokenizer that runs end-to-end tokenization, including punctuation and WordPiece.
 
@@ -1358,6 +1353,7 @@ print(encoded_text)
 ```
 
 #### `convert_ids_to_tokens`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/tokenizer#transformers.PreTrainedTokenizerFast.convert_ids_to_tokens)
 * Convert a single index or a sequence of indices in a token or a sequence of tokens, using the vocabulary and added tokens.
 
@@ -1447,8 +1443,8 @@ tokenizer.model_input_names
     ['input_ids', 'attention_mask']
 ```
 
-
 ### Tokenizing the Whole Dataset
+
 * We need to define a processing function to tokenize training examples.
 
 ------
@@ -1518,9 +1514,8 @@ df.T
 </table>
 </div>
 
-
-
 #### `DatasetDict.map`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.DatasetDict.map)
 * Apply a function to all the elements in the tables for all datasets in the dictionary.
 
@@ -1552,8 +1547,8 @@ print_source(datasets.DatasetDict.map)
             num_proc, desc=desc) for k, dataset in self.items()})
 ```
 
-
 #### `Dataset.map`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.map)
 * Apply a function to all the examples in the table and update the table.
 
@@ -1577,14 +1572,13 @@ print(emotions_encoded["train"].column_names)
     ['attention_mask', 'input_ids', 'label', 'text']
 ```
 
-
-
 ## Training a Text Classifier
 
 * Models like DistilBERT are pretrained to predict masked words in a sequence, and we need to modify them for text classification.
 * We can combine the body of the pretrained model with a custom classification head.
 
 ### Architecture of an Encoder-Based Classifier
+
 1. Tokenize the text and represent it as one-hot vectors called token encodings.
     * The size of the tokenized vocabulary determines the dimensions of the token encodings and usually consists of 20 thousand to 200 thousand unique tokens.
 2. Convert the token encodings to token embeddings, which are vectors living in the lowe-dimensional space.
@@ -1594,13 +1588,17 @@ print(emotions_encoded["train"].column_names)
 **Note:** PyTorch skips the step of creating one-hot vectors because multiplying a matrix with a one-hot vector is the same as selecting a column with the token ID from the matrix.
 
 ### Methods to Train a Text Classifier
+
 #### Feature Extraction
+
 * Use the hidden states as features and train the classifier on them without modifying the pretrained model.
 
 #### Fine-tuning
+
 * Train the whole model end-to-end, which also updates the parameters of the pretrained model.
 
 ### Transformers as Feature Extractors
+
 * This method is well-suited for quickly training a small or shallow model.
 * The model could be a neural classification layer or a method that does not rely on gradients like random forests.
 * Using the transformer as a feature extractor is especially useful when GPUs are unavailable since the hidden states only need to be precomputed once.
@@ -1615,6 +1613,7 @@ from transformers import AutoModel
 ```
 
 #### `AutoModel.from_pretrained`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModel.from_pretrained)
 * Instantiate one of the base model classes of the library from a pretrained model.
 
@@ -1887,8 +1886,8 @@ emotions_hidden["train"].column_names
     ['attention_mask', 'hidden_state', 'input_ids', 'label', 'text']
 ```
 
-
 #### Creating a feature matrix
+
 * We can use the hidden states as input features and the labels as targets.
 
 ------
@@ -1931,12 +1930,14 @@ from sklearn.preprocessing import MinMaxScaler
 ```
 
 #### [UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction](https://arxiv.org/abs/1802.03426)
+
 * [Documentation](https://umap-learn.readthedocs.io/en/latest/)
 * UMAP is a dimension reduction technique that can be useful for visualization as a drop-in replacement for [t-SNE](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html).
 * We can use the UMAP algorithm to scale the 768-dimensional vectors down to a 2-dimensional representation.
 * UMAP works best with feature values scaled to `[0,1]`.
 
 #### Scit-Kit Learn MinMaxScaler
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
 * Transform features by scaling each to a  given range.
 
@@ -2003,6 +2004,7 @@ df_emb.head()
 **Note:** The UMAP algorithm has compressed the hidden state vectors from 768 dimensions to 2 dimensions.
 
 #### `matplotlib.pyplot.hexbin`
+
 * [Documentation](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.pyplot.hexbin.html)
 * Make a 2D hexagonal binning plot of points x, y.
 
@@ -2037,6 +2039,7 @@ plt.show()
 * Just because some categories overlap when projected onto a lower-dimensional space does not mean they are not separable in the original space.
 
 #### Training a simple classifier
+
 * We can use the hidden states to train a simple logistic regression model.
 * This type of model is trains quickly and does not require a GPU.
 
@@ -2048,6 +2051,7 @@ from sklearn.linear_model import LogisticRegression
 ```
 
 #### `sklearn.linear_model.LogisticRegression`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
 * Logistic Regression classifier
 
@@ -2081,6 +2085,7 @@ from sklearn.dummy import DummyClassifier
 ```
 
 #### `sklearn.dummy.DummyClassifier`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html)
 * A DummyClassifier makes predictions using a predefined strategy and ignores the input features.
 * The classifier serves as a simple baseline to compare against other more complex classifiers.
@@ -2108,10 +2113,12 @@ from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 ```
 
 #### `sklearn.metrics.ConfusionMatrixDisplay`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.ConfusionMatrixDisplay.html)
 * Create a [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix) visualization
 
 #### `sklearn.metrics.confusion_matrix`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html)
 * Compute confusion matrix to evaluate the accuracy of a classification.
 
@@ -2138,6 +2145,7 @@ plot_confusion_matrix(y_preds, y_valid, labels)
 * Love and surprise are frequently mistaken for joy.
 
 ### Fine-Tuning Transformers
+
 * Fine-tuning results in superior performance than feature extraction but requires more computational resources such as GPUs.
 * Fine-tuning involves training the hidden states, so the classification head needs to be differentiable.
 * Training the hidden states that serve as input to the classifier helps avoid the problem of working with data that may not be well suited for the classification task.
@@ -2152,6 +2160,7 @@ from transformers import AutoModelForSequenceClassification
 ```
 
 #### `AutoModelForSequenceClassification.from_pretrained`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModelForSequenceClassification.from_pretrained)
 * Instantiate one of the model classes of the library (with a sequence classification head) from a pretrained model.
 
@@ -2178,8 +2187,8 @@ type(model)
 transformers.models.distilbert.modeling_distilbert.DistilBertForSequenceClassification
 ```
 
-
 #### ` DistilBertForSequenceClassification`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/distilbert#transformers.DistilBertForSequenceClassification)
 * DistilBert Model transformer with a sequence classification head on top
 
@@ -2208,8 +2217,8 @@ list(model.named_children())[-3:]
      ('dropout', Dropout(p=0.2, inplace=False))]
 ```
 
-
 #### Defining the performance metrics
+
 * We need to define a function to compute metrics for the trainer so we can monitor performance during training.
 * The function receives an EvalPrediction object containing predictions and label_ids attributes and returns a dictionary that maps each metric's name to its value.
 
@@ -2221,10 +2230,12 @@ from sklearn.metrics import accuracy_score, f1_score
 ```
 
 #### `sklearn.metrics.f1_score`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html)
 * Compute the [$F_{1}$-score](https://www.educative.io/edpresso/what-is-the-f1-score)
 
 #### `sklearn.metrics.accuracy_score`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html)
 * Compute the classification accuracy score.
 
@@ -2241,6 +2252,7 @@ def compute_metrics(pred):
 ```
 
 #### Training the model
+
 * We can use the [Hugging Face Hub API](https://huggingface.co/docs/huggingface_hub/index) to push our fine-tuned model to our account on the Hub and share it with the community.
 
 ------
@@ -2329,6 +2341,7 @@ from transformers import TrainingArguments
 ```
 
 #### `TrainingArguments`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.TrainingArguments)
 * The TrainingArguments class provides fine-grained control over the arguments related to the training loop.
 
@@ -2546,6 +2559,7 @@ from transformers import Trainer
 ```
 
 #### `Trainer`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.Trainer)
 * The Trainer class provides a simple, feature-complete training and eval loop for PyTorch, optimized for Hugging Face Transformers.
 
@@ -2664,6 +2678,7 @@ plot_confusion_matrix(y_preds, y_valid, labels)
 * Surprise is frequently confused for joy or fear.
 
 #### Error analysis
+
 * A simple error-analysis technique involves sorting the validation samples by the model loss.
     * This approach allows us to find and correct mislabeled data.
 * Inspecting the model's weakest predictions can help identify quirks of the dataset.
@@ -2910,12 +2925,12 @@ df_test.sort_values("loss", ascending=True).head(10)
 </table>
 </div>
 
-
-
 #### Saving and sharing the model
+
 * Everyone can share and download pretrained and fine-tuned models via the Hugging Face Hub.
 
 #### `Trainer.push_to_hub`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/trainer#transformers.Trainer.push_to_hub)
 * Upload the trainer model and tokenizer to the Hugging Face Model Hub.
 
@@ -2929,8 +2944,8 @@ trainer.push_to_hub(commit_message="Training completed!")
     'https://huggingface.co/cj-mills/distilbert-base-uncased-finetuned-emotion/commit/5ca5827ba0121e07c8056a8592398e73beca3f17'
 ```
 
-
 #### Inference
+
 * We can now perform inference using the fine-tuned model from our Hub repository.
 
 ------
@@ -2998,29 +3013,30 @@ plt.show()
 ```
 ![](./images/output_228_0.png){fig-align="center"}
 
-
-
 ## Conclusion
 
 ### NLP Challenges
 
 #### Moving a model to production
+
 * Hugging Face creates an inference endpoint automatically when you push a model to the Hub.
 * [Hugging Face Accelerated Inference API](https://api-inference.huggingface.co/docs/python/html/index.html)
 
 #### Increasing Inference Speed
+
 * The process used to create the more efficient DistilBERT model is called knowledge distillation.
 
 #### Applying a Model to other tasks
+
 * Transformers are exceedingly versatile.
 
 #### Using Non-English Text
+
 * Multilingual transformers are available.
 
 #### Working with little labeled data
+
 * Fine-tuning might not be an option when little labeled training data is available.
-
-
 
 ## References
 
@@ -3032,9 +3048,5 @@ plt.show()
 **Previous:** [Notes on Transformers Book Ch. 1](../chapter-1/)
 
 **Next:** [Notes on Transformers Book Ch. 3](../chapter-3/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

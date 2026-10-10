@@ -15,18 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
 * [Introduction](#introduction)
 * [The Symptoms of an Unstructured AI Project](#the-symptoms-of-an-unstructured-ai-project)
 * [How a Roadmap Creates Predictability and Focus](#how-a-roadmap-creates-predictability-and-focus)
 * [From Hopeful Experiment to Engineering Investment](#from-hopeful-experiment-to-engineering-investment)
-
-
-
-
 
 ## Introduction
 
@@ -35,8 +27,6 @@ In the early stages of an AI project, the inherent uncertainty can make 'playing
 I learned this lesson on an engagement where this 'play it by ear' approach led to a cycle of promising starts but no finished milestones. We'd make a breakthrough on one front, only to have priorities shift to a new, exciting idea. This cost us focus and burned valuable time. Progress became increasingly difficult to measure, and communicating a clear project status to stakeholders became nearly impossible.
 
 This experience taught me that a well-defined roadmap isn't about bureaucracy or stifling creativity. It's what separates a speculative experiment from a predictable, manageable engineering effort.
-
-
 
 ## The Symptoms of an Unstructured AI Project
 
@@ -60,8 +50,6 @@ A roadmap provides a framework for saying "not yet." Without one, a project's sc
 
 Because we hadn't defined and agreed upon a fixed set of milestones, it was impossible to effectively prioritize these new tasks or explain the trade-offs of diverting resources. My attempts to correct this by creating a roadmap partway through the project were unsuccessful, as the unstructured habits were already too entrenched.
 
-
-
 ## How a Roadmap Creates Predictability and Focus
 
 It may be tempting to view roadmaps as rigid plans set in stone. On the contrary, they're a strategic alignment tool for keeping teams focused on a shared definition of success, even as the technical details evolve. Here's how it solves the problems of an unstructured project.
@@ -82,16 +70,10 @@ A roadmap is the single best tool for managing stakeholder expectations. Instead
 
 That level of clarity builds trust and makes it far easier to justify the project's continued investment. It transforms the project's status from a mystery into a transparent, shared reality. This transparency in turn helps leadership know exactly what they can show to potential customers and when.
 
-
-
 ## From Hopeful Experiment to Engineering Investment
 
 My experience has made roadmaps a non-negotiable part of my consulting practice. Insisting on one after an initial discovery phase isn't about being rigid. It's about respecting the client's investment. It is the professional discipline required to navigate the inherent uncertainty of AI development and turn an ambitious idea into a real-world solution.
 
 Ultimately, the choice is a simple one. An AI project without a roadmap is a hopeful experiment. An AI project with a roadmap is an engineering investment.
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

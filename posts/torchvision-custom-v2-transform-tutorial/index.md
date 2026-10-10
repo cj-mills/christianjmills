@@ -16,10 +16,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
 * [Setting Up Your Python Environment](#setting-up-your-python-environment)
@@ -30,15 +26,11 @@ open-graph:
 * [Creating a Random Patch Copy Transform](#creating-a-random-patch-copy-transform)
 * [Conclusion](#conclusion)
 
-
-
 ::: {.callout-warning title="Updated 03/20/2025:"}
 
 Updated for torchvision `0.21`.
 
 :::
-
-
 
 ## Introduction
 
@@ -49,8 +41,6 @@ The tutorial walks through setting up a Python environment, loading the raw anno
 Data augmentation is a technique that creates variations of existing training samples to prevent a model from seeing the same sample twice. The goal is to help the model learn general features versus memorizing specific examples.
 
 This guide is suitable for beginners and experienced practitioners, providing the code, explanations, and resources needed to understand and implement each step. Upon completion, you will have a solid foundation for creating custom V2 image transforms in torchvision for object detection tasks.
-
-
 
 ## Getting Started with the Code
 
@@ -70,12 +60,9 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 :::
 
-
 ## Setting Up Your Python Environment
 
 Before diving into the code, we'll cover the steps to create a local Python environment and install the necessary dependencies.
-
-
 
 ### Creating a Python Environment
 
@@ -103,8 +90,6 @@ mamba activate pytorch-env
 ```
 
 :::
-
-
 
 ### Installing PyTorch
 
@@ -141,8 +126,6 @@ pip install torch torchvision torchaudio
 
 :::
 
-
-
 ### Installing Additional Libraries
 
 We also need to install some additional libraries for our project.
@@ -170,10 +153,6 @@ Run the following commands to install these additional libraries:
 pip install distinctipy jupyter matplotlib pandas pillow tqdm
 ```
 
-
-
-
-
 ### Installing Utility Packages
 
 We will also install some utility packages I made, which provide shortcuts for routine tasks.
@@ -195,8 +174,6 @@ pip install cjm_pil_utils cjm_psl_utils cjm_pytorch_utils
 ```
 
 With our environment set up, we can open our Jupyter Notebook and dive into the code. 
-
-
 
 ## Importing the Required Dependencies
 
@@ -253,8 +230,6 @@ from tqdm.auto import tqdm
 
 After importing the dependencies, we can load our dataset.
 
-
-
 ## Loading and Exploring the Dataset
 
 We will use the following toy dataset containing images from the free stock photo site [Pexels](https://www.pexels.com/) and its bounding box annotations:
@@ -270,8 +245,6 @@ The bounding boxes for this dataset use the [LabelMe](https://github.com/labelme
 * [Working with LabelMe Bounding Box Annotations in Torchvision](/posts/torchvision-labelme-annotation-tutorials/bounding-boxes/)
 
 :::
-
-
 
 ### Setting the Directory Paths
 
@@ -312,7 +285,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
 
 ### Setting the Dataset Path
 
@@ -361,7 +333,6 @@ pd.Series({
 </table>
 </div>
 
-
 ### Downloading the Dataset
 
 We can now download the archive file and extract the dataset using the [`download_file`](https://cj-mills.github.io/cjm-psl-utils/core.html#download_file) and [`file_extract`](https://cj-mills.github.io/cjm-psl-utils/core.html#file_extract) functions from the `cjm_psl_utils` package. We can delete the archive afterward to save space.
@@ -388,8 +359,6 @@ else:
     # Delete the archive if specified
     if delete_archive: archive_path.unlink()
 ```
-
-
 
 ### Get Image File Paths
 
@@ -446,8 +415,6 @@ Number of Images: 28
   </tbody>
 </table>
 </div>
-
-
 
 ### Get Image Annotations
 
@@ -554,8 +521,6 @@ annotation_df.head()
 </table>
 </div>
 
-
-
 ### Visualizing Image Annotations
 
 In this section, we will annotate a single image with its bounding boxes using torchvision's [`BoundingBoxes`](https://pytorch.org/vision/stable/generated/torchvision.tv_tensors.BoundingBoxes.html) class and [`draw_bounding_boxes`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html) function.
@@ -613,8 +578,6 @@ distinctipy.color_swatch(colors)
 
 ![](./images/output_20_0.png){fig-align="center"}
 
-
-
 #### Download a font file
 
 The [`draw_bounding_boxes`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html) function included with torchvision uses a pretty small font size. We  can increase the font size if we use a custom font. Font files are  available on sites like [Google Fonts](https://fonts.google.com/), or we can use one included with the operating system.
@@ -636,8 +599,6 @@ We can make a partial function using `draw_bounding_boxes` since we’ll use the
 ```python
 draw_bboxes = partial(draw_bounding_boxes, fill=False, width=2, font=font_file, font_size=25)
 ```
-
-
 
 #### Define function that ensures bounding boxes are in a consistent format
 
@@ -661,8 +622,6 @@ def correct_bounding_boxes(bboxes):
     
     return corrected_bboxes
 ```
-
-
 
 #### Annotate sample image
 
@@ -696,8 +655,6 @@ tensor_to_pil(annotated_tensor)
 
 
 We have loaded the dataset and visualized the annotations for a sample image. In the next section, we will explore the V2 Transforms class.
-
-
 
 ## Examining the Transforms V2 Class
 
@@ -859,15 +816,9 @@ class Transform(nn.Module):
 
 The above source code indicates that our custom transforms must implement the `transform` method, which handles images and annotations.
 
-
-
-
-
 ## Creating a Random Pixel Copy Transform
 
 Our first custom transform will randomly copy and paste pixels in random locations. This one will not require updating the associated image annotations.
-
-
 
 ### Define the Custom Transform Class
 
@@ -954,17 +905,12 @@ class RandomPixelCopy(transforms.Transform):
 
 With our custom transform defined, we can create an instance of it and try it out.
 
-
-
 ### Initialize the Transform
-
 
 ```python
 # Create a RandomPixelCopy object
 rand_pixel_copy_tfm = RandomPixelCopy(max_pct=0.05)
 ```
-
-
 
 ### Prepare the Annotation Targets
 
@@ -980,8 +926,6 @@ targets = {
     'labels': torch.Tensor([class_names.index(label) for label in labels])
 }
 ```
-
-
 
 ### Apply the Augmentation
 
@@ -1064,13 +1008,9 @@ transforms.ToPILImage()(annotated_tensor)
 
 As intended, the transform randomly copy-pasted pixel values while leaving the bounding box annotations unchanged. In the next section, we will create a transform that requires us to update the bounding box annotations with the image.
 
-
-
 ## Creating a Random Patch Copy Transform
 
 Our second transform will randomly copy rectangular patches from the image and paste them in random locations. This transform may potentially occlude annotated areas, so we need to manage the associated bounding box annotations accordingly.
-
-
 
 ### Define the Custom Transform Class
 
@@ -1210,17 +1150,12 @@ class RandomPatchCopy(transforms.Transform):
 
 Now, let's see how our sample image and its bounding box annotations look with this transform.
 
-
-
 ### Initialize the Transform
-
 
 ```python
 # Create a RandomPatchCopy object
 rand_patch_copy_tfm = RandomPatchCopy(pct=0.3, min_num=1, max_num=4)
 ```
-
-
 
 ### Apply the Augmentation
 
@@ -1301,8 +1236,6 @@ tensor_to_pil(annotated_tensor)
 
 Here, we can see some of the patches overlapped with one of the annotated areas too much, and the `SanitizeBoundingBoxes` transform removed the relevant bounding box.
 
-
-
 ## Conclusion
 
 In this tutorial, we created custom V2 image transforms in torchvision that support bounding box annotations. The knowledge acquired here provides a solid foundation for making other custom transforms.
@@ -1315,11 +1248,6 @@ As a next step, perhaps try experimenting with the transforms created here to se
 
 See how adjusting the intensity of the data augmentations impacts the model accuracy on new data.
 
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

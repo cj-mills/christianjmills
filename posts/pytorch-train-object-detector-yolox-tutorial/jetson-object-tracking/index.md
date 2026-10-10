@@ -20,7 +20,6 @@ open-graph:
 * [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
 
-
 * [Introduction](#introduction)
 * [Prerequisites](#prerequisites)
 * [Setting Up a Python Environment](#setting-up-a-python-environment)
@@ -32,10 +31,6 @@ open-graph:
 * [Create an Inference Session](#create-an-inference-session)
 * [Tracking Objects in a Camera Feed](#tracking-objects-in-a-camera-feed)  
 * [Conclusion](#conclusion)
-
-
-
-
 
 ## Introduction
 
@@ -52,10 +47,6 @@ Released in 2023, the Jetson Orin Nano is NVIDIA's entry-level single-board comp
 
 Whether you're working with the pre-trained hand-sign detection model used in this series or a custom model, real-time object tracking on the Jetson Orin Nano opens up many possibilities for edge applications.
 
-
-
-
-
 ## Prerequisites
 
 This tutorial is for Jetson devices loaded with [Jetpack 6](https://developer.nvidia.com/embedded/jetpack-sdk-60). You can follow the official guide from NVIDIA to ensure your Jetson is ready.
@@ -68,14 +59,12 @@ The Jetson Orin Nano devkit has 22-pin MIPI CSI camera connectors. If your CSI c
 
 - [Arducam for Raspberry Pi Zero Camera Cable Set, 1.5" 2.87" 5.9" Ribbon Flex Extension Cables for Pi Zero&W, Pack of 3](https://www.amazon.com/Arducam-Raspberry-Camera-Ribbon-Extension/dp/B085RW9K13)
 
-
-
-
-
 ## Setting Up a Python Environment
+
 With our Jetson device prepared, we can set up a Python environment to run the demo code.
 
 ### Install Mamba Package Manager
+
 As with previous tutorials in this series, we will use the Mamba package manager to create and manage our Python environment.
 
 Run the following bash commands on the Jetson to download the latest release, install  it, and relaunch the current bash shell to apply the relevant changes:
@@ -94,9 +83,8 @@ bash Miniforge3-$(uname)-$(uname -m).sh -b
 bash
 ```
 
-
-
 ### Create a Python Environment
+
 Next, we will create and activate a Python 3.10 environment.
 
 ```bash
@@ -104,9 +92,8 @@ mamba create --name object-tracking-env python=3.10 -y
 mamba activate object-tracking-env
 ```
 
-
-
 ### Install OpenCV Dependencies
+
 As with the [earlier object-tracking tutorial](../byte-track/), we will use the [`opencv-python`](https://pypi.org/project/opencv-python/) package to obtain input for our model. Since we are on a Jetson, we must build the package with support for USB and CSI Camera input enabled.
 
 To do that, we must install some dependencies:
@@ -168,10 +155,6 @@ sudo apt-get install -y \
     libcanberra-gtk-module libcanberra-gtk3-module
 ```
 
-
-
-
-
 ### Build `opencv-python` Pip Wheel
 
 With the dependencies installed, we can clone the `opencv-python` GitHub repository and build and install the Python wheel.
@@ -226,10 +209,6 @@ The final print statement verifies that we successfully built OpenCV with GStrea
 
 :::
 
-
-
-
-
 ### Install ONNX Runtime
 
 Next, we will install ONNX Runtime to use its TensorRT Execution Provider. The [previous tutorial](../ort-tensorrt-ubuntu/) that utilized this execution provider used the dedicated [tensorrt pip package](https://pypi.org/project/tensorrt/). This time, we will use the version of TensorRT that comes with Jetpack 6. 
@@ -249,8 +228,6 @@ wget https://nvidia.box.com/shared/static/i7n40ki3pl2x57vyn4u7e9asyiqlnl7n.whl -
 pip install onnxruntime_gpu-1.17.0-cp310-cp310-linux_aarch64.whl
 ```
 
-
-
 ### Install Additional Dependencies
 
 To wrap up our environment setup, we will install a few additional dependencies for our demo project and downgrade NumPy to a version supported by ONNX Runtime.
@@ -264,10 +241,6 @@ pip install jupyter cjm_psl_utils cjm_pil_utils cjm_byte_track
 
 With our environment set up, we can dive into the code. 
 
-
-
-
-
 ## Getting Started with the Code
 
 This tutorial walks through the demo as a Jupyter Notebook, but the code is also available as a Python script.
@@ -275,10 +248,6 @@ This tutorial walks through the demo as a Jupyter Notebook, but the code is also
 | Jupyter Notebook                                             | Python Script                                                |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [yolox-ort-trt-bytetrack-jetson.ipynb](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/yolox-ort-trt-bytetrack-jetson.ipynb) | [scripts/yolox-ort-tensorrt-byte-track.py](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/scripts/yolox-ort-tensorrt-byte-track.py) |
-
-
-
-
 
 ## Importing the Required Dependencies
 
@@ -314,8 +283,6 @@ from PIL import Image, ImageDraw, ImageFont
 # ONNX (Open Neural Network Exchange) for machine learning interoperability
 import onnxruntime as ort  # ONNX Runtime for model inference
 ```
-
-
 
 ## Defining Utility Functions
 
@@ -604,8 +571,6 @@ def draw_bboxes_pil(image, boxes, labels, colors, font, width=2, font_size=18, p
     return image
 ```
 
-
-
 ### Define a Function to Generate a GStreamer Pipeline
 
 Next, we will define a function to generate a GStreamer pipeline string for OpenCV. We need this to get input from a CSI camera. 
@@ -761,14 +726,11 @@ class FrameDropper:
 
 That takes care of the utility code.
 
-
-
 ## Setting Up the Project
 
 Next, we will set the folder locations for our project and the directory with the ONNX model, JSON  colormap file, and the [calibration data](../ort-tensorrt-ubuntu/#inspect-tensorrt-cache-folder) used by TensorRT to [quantize the model](../ort-tensorrt-ubuntu/#quantization-process). 
 
 ### Set the Directory Paths
-
 
 ```python
 # The name for the project
@@ -795,8 +757,6 @@ checkpoint_dir = Path(project_dir/checkpoint_folder)
 
 :::
 
-
-
 ### Download a Font File
 
 We should also ensure we have a font file for annotating images.
@@ -810,14 +770,11 @@ font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
 ## Loading the Checkpoint Data
 
 Next, we will load the colormap and set the max stride value for processing model output.
 
 ### Load the Colormap
-
 
 ```python
 # The colormap path
@@ -839,13 +796,10 @@ int_colors = [tuple(int(c*255) for c in color) for color in colormap_dict.values
 
 ### Set the Preprocessing and Post-Processing Parameters
 
-
 ```python
 max_stride = 32
 input_dim_slice = slice(2, 4, None)
 ```
-
-
 
 ## Create an Inference Session
 
@@ -904,22 +858,11 @@ session = ort.InferenceSession(onnx_file_path, sess_options=sess_opt, providers=
 [0;93m2024-09-05 16:34:58.472888966 [W:onnxruntime:Default, tensorrt_execution_provider.h:83 log] [2024-09-05 23:34:58 WARNING] onnx2trt_utils.cpp:400: One or more weights outside the range of INT32 was clamped[m
 ```
 
-
-
-
-
-
-
 ## Tracking Objects in a Camera Feed
 
 Next, we will define the camera feed settings and the inference parameters. 
 
-### Define Camera Feed Settings 
-
-
-
-
-
+### Define Camera Feed Settings
 
 ::: {.panel-tabset}
 
@@ -953,20 +896,13 @@ If you have multiple camera devices attached to the Jetson (e.g., a USB camera a
 
 :::
 
-
-
 ### Define Inference Parameters
-
 
 ```python
 test_sz = 384
 bbox_conf_thresh = 0.35
 iou_thresh = 0.45
 ```
-
-
-
-
 
 ### Build TensorRT Engine
 
@@ -989,12 +925,6 @@ session.run(None, {"input": input_tensor_np});
 CPU times: user 7min 25s, sys: 20.8 s, total: 7min 46s
 Wall time: 8min 10s
 ```
-
-
-
-
-
-
 
 ### Detect, Track, and Annotate Objects
 
@@ -1195,8 +1125,6 @@ Gtk-Message: 14:40:32.594: Failed to load module "canberra-gtk-module"
 
 A new window should pop up displaying the camera feed. 
 
-
-
 ### Comparing Performance
 
 As mentioned earlier, a CSI Camera is preferable due to the improved framerate and latency. We can see in the following screenshots just how significant the performance gap can be. 
@@ -1225,8 +1153,6 @@ As mentioned earlier, a CSI Camera is preferable due to the improved framerate a
 
 The USB camera also introduces a slight but noticeable delay in the camera input.
 
-
-
 ## Conclusion
 
 Congratulations on reaching the end of this tutorial. You've successfully learned to deploy a YOLOX object detection model on an NVIDIA Jetson Orin Nano for real-time object tracking from a camera feed. This tutorial covered several aspects:
@@ -1246,14 +1172,6 @@ Some potential next steps to consider:
 2. Implement additional features like object counting or trajectory analysis
 3. Explore ways to stream the processed video over a network for remote monitoring
 
-
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

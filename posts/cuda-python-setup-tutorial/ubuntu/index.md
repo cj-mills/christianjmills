@@ -15,8 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
 * [Installing NVIDIA Drivers](#installing-nvidia-drivers)
@@ -26,9 +24,6 @@ open-graph:
 * [Converting RGB Images to Grayscale in Python](#converting-rgb-images-to-grayscale-in-python)
 * [Converting RGB Images to Grayscale in CUDA](#converting-rgb-images-to-grayscale-in-cuda)
 * [Conclusion](#conclusion)
-
-
-
 
 ## Introduction
 
@@ -58,10 +53,6 @@ The Ubuntu website provides [a step-by-step guide](https://ubuntu.com/tutorials/
 
 :::
 
-
-
-
-
 ## Getting Started with the Code
 
 The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), which you can run locally or in a cloud-based environment like [Google Colab](https://colab.research.google.com/), which [provides free access](/posts/google-colab-getting-started-tutorial/#using-hardware-acceleration) to a CUDA-enabled GPU. I have dedicated tutorials for those new to these platforms or who need guidance setting up:
@@ -86,15 +77,11 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 :::
 
-
-
-
-
 ## Installing NVIDIA Drivers
 
 We need to ensure we have NVIDIA GPU drivers installed before installing CUDA, so let's first check if we already have them.
 
-#### Check for Existing Drivers
+### Check for Existing Drivers
 
 Open a terminal window (`Ctrl`+`Alt`+`T`) and run the following command to see if you already have NVIDIA drivers installed:
 
@@ -165,8 +152,6 @@ nvidia-driver-525-server, (kernel modules provided by linux-modules-nvidia-525-s
 
 ---
 
-
-
 ### Install the Drivers
 
 Next, we run the `install` command where we can stick with the default driver version or manually specify one. 
@@ -200,8 +185,6 @@ sudo reboot
 
 Once back in Ubuntu, we can create a Python environment and install CUDA.
 
-
-
 ## Setting Up a Python Environment
 
 We will use the [Mamba](https://mamba.readthedocs.io/en/latest/) package manager to create the Python environment. You can learn more about it in my [getting started](/posts/mamba-getting-started-tutorial-windows/#introduction) tutorial. Feel free to use [Conda](https://docs.anaconda.com/free/miniconda/) instead of Mamba if you already have that installed.
@@ -223,8 +206,6 @@ bash Miniforge3-$(uname)-$(uname -m).sh -b
 # Restart the shell to apply changes
 bash
 ```
-
-
 
 ### Create a Python Environment
 
@@ -249,8 +230,6 @@ conda activate cuda-env
 ```
 
 :::
-
-
 
 ### Install CUDA Package
 
@@ -312,8 +291,8 @@ conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvi
 
 :::
 
-
 ### Install additional dependencies
+
 We also need to install some additional libraries for our test code.
 
 
@@ -345,10 +324,6 @@ pip install jupyter ninja pandas pillow wurlitzer
 
 
 With our environment set up, we can open our Jupyter Notebook and dive into the code.
-
-
-
-
 
 ## Importing the Required Dependencies
 
@@ -394,16 +369,11 @@ We can tell from the above print statement that PyTorch correctly detected the p
 
 :::
 
-
-
-
-
 ## Setting Up the Project
 
 In this section, we set up some basics for our project, such as enabling the capture of C/C++ output in the notebook and making CUDA operations synchronous for easier debugging.
 
 ### Capture C++ Output
-
 
 ```python
 # Enable capture of C/C++ output in the notebook cells.
@@ -412,13 +382,10 @@ In this section, we set up some basics for our project, such as enabling the cap
 
 ### Make CUDA Operations Synchronous
 
-
 ```python
 # Set environment variable to make CUDA operations synchronous for easier debugging
 os.environ['CUDA_LAUNCH_BLOCKING']='1'
 ```
-
-
 
 ## Converting RGB Images to Grayscale in Python
 
@@ -470,14 +437,11 @@ torch.Size([3, 512, 646])
 
 ![](./images/output_16_0.png){fig-align="center"}
 
-
-
-### Baseline Python Implementation 
+### Baseline Python Implementation
 
 Next, we will define a function that uses a standard for-loop to iterate through the RGB pixel values to create a new grayscale tensor.
 
 #### Define a function to convert an RGB Tensor to Grayscale
-
 
 ```python
 def rgb2gray_py(rgb_tensor, gray_coeffs=[0.2989, 0.5870, 0.1140]):
@@ -520,7 +484,6 @@ On my system's i7-11700K CPU, it takes nearly seven seconds to iterate through a
 
 #### Verify the Result
 
-
 ```python
 # Visualize the result as a PIL grayscale image
 Image.fromarray(img_gray_tensor.numpy(), mode='L')
@@ -531,8 +494,6 @@ Image.fromarray(img_gray_tensor.numpy(), mode='L')
 
 
 With our baseline established, let's make an equivalent CUDA implementation to leverage the parallel processing capabilities of a GPU.
-
-
 
 ## Converting RGB Images to Grayscale in CUDA
 
@@ -562,8 +523,6 @@ We can use PyTorch's [`load_inline`](https://pytorch.org/docs/stable/cpp_extensi
 - The actual concurrency depends on the number of  CUDA cores per SM and the resources required by the threads.
 
 :::
-
-
 
 ### Define the CUDA Code
 
@@ -648,8 +607,6 @@ inline unsigned int cdiv(unsigned int a, unsigned int b) {
 '''
 ```
 
-
-
 #### Define the CUDA kernel for RGB to Grayscale conversion
 
 Next, we define the CUDA kernel for converting RGB tensors to grayscale. The kernel takes pointers to the memory locations for the input RGB and output grayscale tensors, along with the total number of pixels.
@@ -710,8 +667,6 @@ __global__ void rgb_to_grayscale_kernel(unsigned char* x, unsigned char* out, in
 The `__global__` qualifier keyword indicates the kernel will be callable from the CPU or GPU and run on the GPU.
 
 :::
-
-
 
 #### Define the PyTorch function to convert RGB to Grayscale
 
@@ -799,8 +754,6 @@ torch::Tensor rgb_to_grayscale(torch::Tensor input) {
 '''
 ```
 
-
-
 ### Build the PyTorch Extension
 
 With the code for our CUDA file defined, we can pass it to the `load_inline` function to compile it. 
@@ -847,7 +800,6 @@ With our PyTorch extension loaded as a Python module, we can get the path to the
 
 #### Get the module path
 
-
 ```python
 # Print the path to the extension module
 print(f"Module Path: {module.__file__}")
@@ -857,9 +809,7 @@ print(f"Module Path: {module.__file__}")
 Module Path: /home/innom-dt/.cache/torch_extensions/py311_cu121/inline_ext/inline_ext.so
 ```
 
-
 #### Get the module content
-
 
 ```python
 # Print the content of the module folder as a Pandas DataFrame
@@ -1006,11 +956,7 @@ torch::Tensor rgb_to_grayscale(torch::Tensor input) {
 
 :::
 
-
-
-
 #### Get the module attributes
-
 
 ```python
 # Print the attribute names of the module as a Pandas DataFrame
@@ -1060,8 +1006,6 @@ pd.DataFrame(dir(module))
 </div>
 We can see from the list of module attributes that the `rgb_to_grayscale` PyTorch function we defined is available.
 
-
-
 ### Test the PyTorch Extension
 
 Now, all that's left is to test the custom CUDA kernel to see how it compares to the baseline Python implementation.
@@ -1101,22 +1045,13 @@ h*w: 512*646
 
 As a reminder, the baseline Python implementation took `6.53` seconds (`6,530,000` microseconds (`µs`) for the same input on the CPU.
 
-
-
 #### Verify the Result
-
 
 ```python
 Image.fromarray(res.numpy(), mode='L')
 ```
 
 ![](./images/output_48_0.png){fig-align="center"}
-
-
-
-
-
-
 
 ## Conclusion
 
@@ -1133,13 +1068,6 @@ The **Getting Started With CUDA** lecture by Jeremy Howard is [lecture 3](https:
 
 :::
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

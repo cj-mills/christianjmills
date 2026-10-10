@@ -16,12 +16,6 @@ open-graph:
  
 ---
 
-
-
-
-
-
-
 - [Preface](#preface)
 - [Introduction: Acquiring Wisdom](#introduction-acquiring-wisdom)  
 - [Mental Model #1: The Map is Not the Territory](#mental-model-1-the-map-is-not-the-territory)  
@@ -34,10 +28,6 @@ open-graph:
 - [Mental Model #8: Occam’s Razor](#mental-model-8-occams-razor)  
 - [Mental Model #9: Hanlon’s Razor](#mental-model-9-hanlons-razor)
 
-
-
-
-
 ::: {.callout-note title="Book LInks:"}
 * [Series Homepage](https://fs.blog/tgmm/)
 :::
@@ -47,8 +37,6 @@ open-graph:
 
 
 > "You only think you know as a matter of fact, and most of your actions are based on incomplete knowledge, and you really don't know what it is all about, or what the purpose of the world is, or know a great deal of other things. It is possible to live and not know." - Richard Feynman
-
-
 
 ## Preface
 
@@ -85,12 +73,6 @@ open-graph:
 - **Definition of Mental Models**: Mental models are simplified representations of knowledge from various disciplines that can be applied to understand the world better.
 - **The Power of Mental Models**: Munger suggests that mental models help identify relevant information in a given situation and establish reasonable parameters for decision-making.
 - **Practical Effectiveness**: Parrish emphasizes that Munger's track record demonstrates the effectiveness of this approach in practice.
-
-
-
-
-
-
 
 ## Introduction: Acquiring Wisdom
 
@@ -352,7 +334,6 @@ open-graph:
   - Simply memorizing facts is not enough for effective learning and application.
   - **Real-world success requires integrating knowledge and experience within a framework of models.**
 
-
 ### Expanding Your Latticework of Mental Models
 
 - **Interconnected Knowledge**:
@@ -383,7 +364,6 @@ open-graph:
 - **Further Resources**:
 
   - The website ([fs.blog](https://fs.blog/)) and newsletter offer more practical examples and insights.
-
 
 ### You Won't Always Get it Right
 
@@ -431,7 +411,6 @@ open-graph:
   - Greater success in achieving goals.
   - More time, less stress, and a more meaningful life.
 
-
 ### Sidebar: What Can the Three Buckets of Knowledge Teach Us About History?
 
 - **Three Buckets of Knowledge (Peter Kaufman)**:
@@ -449,12 +428,6 @@ open-graph:
   - The evolution of multiple hominid species.
 - **Conclusion**: 
   - Studying the past through the lens of these "buckets" helps us develop a more accurate and comprehensive understanding of the world and its underlying principles. 
-
-
-
-
-
-
 
 ## Mental Model #1: The Map is Not the Territory
 
@@ -604,16 +577,6 @@ To use maps and models accurately, consider:
 - **Lewis Carroll's Satire**: Carroll's story "Sylvie and Bruno" satirizes the idea of a perfectly accurate map with a 1:1 scale.
 - **Need for Reduction**:  Maps need to condense the territory to be useful for navigation and understanding. 
 
-
-
-
-
-
-
-
-
-
-
 ## Mental Model #2: Circle of Confidence
 
 > "I'm no genius, I'm smart in spots, but I stay around those spots." - Thomas Watson
@@ -679,7 +642,6 @@ To use maps and models accurately, consider:
   > "A little learning is a dangerous thing. Drink deep or taste not the Pierian spring. There, shallow draughts intoxicate the brain, and drinking largely sobers us again."
 
 - **Key Takeaway**: Deep understanding and expertise are essential for true competence.
-
 
 ### How Do You Build and Maintain a Circle of Competence?
 
@@ -778,7 +740,6 @@ To use maps and models accurately, consider:
 
 - **Key Takeaway**: Focusing on your strengths and staying within your circle of competence can lead to significant success.
 
-
 ### Supporting Idea: Falsifiability
 
 - **Karl Popper's Concept**: 
@@ -818,10 +779,6 @@ To use maps and models accurately, consider:
 
 - **Value of Falsifiability**: It helps determine the robustness and scientific validity of theories.
 
-
-
-
-
 ## Mental Model #3: First Principles Thinking
 
 > "I don't know what's the matter with people. They don't learn by understanding, they learn by some other way, by road or something. Their knowledge is so fragile." - Richard Feynman
@@ -831,7 +788,6 @@ To use maps and models accurately, consider:
 - **First Principles Thinking** is introduced as a powerful method for:
   - Reverse-engineering complex situations.
   - Unleashing creative potential.
-
 
 ### What is First Principles Thinking?
 
@@ -845,7 +801,6 @@ To use maps and models accurately, consider:
   - Build knowledge and understanding around these foundational elements.
   - This process allows for the creation of something new or innovative.
 
-
 ### Philosophical Roots
 
 - **Historical Context:** 
@@ -854,7 +809,6 @@ To use maps and models accurately, consider:
 - **Goal of Early Philosophers:**
   - To discover foundational knowledge that remained constant and unchanging.
   - They aimed to build ethical systems and social structures upon these fundamental truths.
-
 
 ### First Principles in Practice
 
@@ -878,7 +832,6 @@ To use maps and models accurately, consider:
   - First principles serve as boundaries within which we operate in a given situation.
   - Different individuals or disciplines may have different first principles depending on their context and goals. (e.g., an appliance maker vs. a physicist).
 
-
 ### Techniques for Establishing First Principles
 
 #### The Importance of Deconstruction and Critical Analysis
@@ -899,7 +852,6 @@ To use maps and models accurately, consider:
   - Two primary techniques can help us cut through dogma and shared beliefs to identify the fundamental principles within a situation:
     - **Socratic Questioning**
     - **The Five Whys**
-
 
 #### Socratic Questioning
 
@@ -938,7 +890,6 @@ To use maps and models accurately, consider:
   - Socratic questioning helps us avoid relying on intuition or emotional responses.
   - It promotes the development of knowledge that is robust and well-founded.
 
-
 #### The Five Whys
 
 - **Origin:**
@@ -955,7 +906,6 @@ To use maps and models accurately, consider:
   - If your chain of "whys" leads to a statement of a falsifiable fact, you've likely reached a first principle.
   - If you end up with answers like "because I said so" or "it just is," you've likely hit an assumption based on opinion, cultural myths, or dogma, not a first principle.
 
-
 #### Challenges and Rewards of These Techniques
 
 - **Short-Term Costs:**
@@ -965,7 +915,6 @@ To use maps and models accurately, consider:
 - **Importance of Persistence:**
   - It's crucial to avoid giving up or resorting to defensiveness when faced with our own knowledge gaps.
   - If we do, we won't be able to identify the first principles necessary for effective problem-solving and decision-making, leading to long-term setbacks.
-
 
 ### First Principles Thinking as a Way to Overcome Inaccurate Assumptions
 
@@ -999,7 +948,6 @@ To use maps and models accurately, consider:
 - **Historical Evidence:**
   - Ashton notes that evidence of H. pylori existed in medical literature as far back as 1875, but it was Warren and Marshall who demonstrated that "because I said so" was not sufficient justification for considering the sterile stomach a first principle.
 
-
 ### Incremental Innovation and Paradigm Shifts
 
 #### Understanding the Rationale Behind Success
@@ -1011,7 +959,6 @@ To use maps and models accurately, consider:
   - First principles thinking helps us avoid relying on others' tactics without understanding their purpose.
 - **Incremental Improvement and First Principles:**
   - Even small improvements are more challenging to achieve if we cannot identify the relevant first principles.
-
 
 #### The Case of Curved Cattle Chutes
 
@@ -1035,7 +982,6 @@ To use maps and models accurately, consider:
   - As long as a livestock environment minimizes stress, a straight chute can be effective.
   - Understanding the underlying principles allows for flexibility in choosing tactics.
 
-
 #### Questioning Existing Constructs
 
 - **Beyond Incremental Improvement:**
@@ -1045,7 +991,6 @@ To use maps and models accurately, consider:
   - When we question whether things have to be the way they are, we adopt a mindset conducive to identifying first principles that can lead to radical change.
 - **Strategic Choices:**
   - First principles thinking enables us to move away from random changes and make informed choices with a higher likelihood of success.
-
 
 #### The Case of Artificial Meat
 
@@ -1081,7 +1026,6 @@ To use maps and models accurately, consider:
 - **Addressing Ethical and Environmental Concerns:**
   - Artificial meat offers a potential solution to address ethical concerns about animal welfare and the environmental impact of the meat industry.
 
-
 ### Conclusion
 
 - **Quote:** 
@@ -1102,16 +1046,6 @@ To use maps and models accurately, consider:
 
   - First principles thinking helps us shed these limitations and see the world with fresh eyes.
   - It opens up a wider range of possibilities and empowers us to think for ourselves.
-
-
-
-
-
-
-
-
-
-
 
 ## Mental Model #4: Thought Experiment
 
@@ -1180,7 +1114,6 @@ To use maps and models accurately, consider:
 - **Example**: In a hypothetical 100,000 basketball games between LeBron James and Woody Allen, Woody Allen might only win in extremely rare circumstances, such as LeBron James experiencing a sudden medical emergency.
 - **Understanding Influence and Expectations**: Exploring the spectrum of possibilities enhances our understanding of factors we can influence and realistic expectations for outcomes.
 
-
 ### Applications of Thought Experiments
 
 #### 1. Imagining Physical Impossibilities
@@ -1234,7 +1167,6 @@ To use maps and models accurately, consider:
 - **Rigor and Work**: Effective thought experiments require careful planning, research, and analysis.
 - **Not a Substitute for Reality**: While valuable, thought experiments cannot fully replace real-world experimentation and observation.
 
-
 ### Sidebar: The Trolley Experiment
 
 - **Exploring Ethical Dilemmas**: Thought experiments are often used to examine ethical and moral issues, particularly in situations where real-world experimentation would be unethical.
@@ -1243,7 +1175,6 @@ To use maps and models accurately, consider:
   - **Ethical Considerations**: This thought experiment explores the complexities of utilitarianism (maximizing overall well-being) versus deontological ethics (adhering to moral rules).
 - **Relevance to Technological Advances**: The trolley problem has gained renewed relevance in the context of self-driving cars and other technologies that may require ethical decision-making in life-or-death situations.
 - **Variations and Extensions**: The trolley problem has been adapted and expanded upon to explore various ethical nuances, such as the permissibility of sacrificing one person to save many in different contexts (e.g., organ donation).
-
 
 ### Sidebar: Reduce the Role of Chance
 
@@ -1256,7 +1187,6 @@ To use maps and models accurately, consider:
 - **Assessing Risk**: Running the scenario multiple times in your mind reveals the potential for significant losses and the role of chance in the outcome.
 - **Decision-Making Implications**: This thought experiment highlights the importance of considering a wider range of possibilities and understanding the limits of our knowledge when making investment decisions.
 - **Reducing Reliance on Luck**: By analyzing potential scenarios, we can develop more robust decision-making processes that minimize the influence of chance and improve our chances of success.
-
 
 ### Supporting Idea: Necessity and Sufficiency
 
@@ -1273,12 +1203,6 @@ To use maps and models accurately, consider:
   - **Professional Sports**: Physical ability and training are necessary but not sufficient to guarantee success. Competition and other factors can prevent talented athletes from reaching the professional level.
 - **Sets in Mathematics**: The set of necessary conditions is a subset of the set of sufficient conditions. The sufficient set encompasses a wider range of factors.
 - **Avoiding Misleading Narratives**: Understanding the distinction between necessity and sufficiency helps us avoid drawing incorrect conclusions about success or failure based solely on the presence of necessary conditions. We must acknowledge the role of other factors, including chance. 
-
-
-
-
-
-
 
 ## Mental Model #5: Second-Order Thinking
 
@@ -1347,7 +1271,6 @@ To use maps and models accurately, consider:
 - **Example:** Choosing not to eat candy for better long-term health.
 - Historical examples can be difficult to analyze because positive outcomes don't always guarantee second-order thinking.
 
-
 #### Cleopatra's Alliance with Caesar (48 BC)
 
 - **Cleopatra's situation:**
@@ -1377,7 +1300,6 @@ To use maps and models accurately, consider:
 - **Outcome:**
   - Cleopatra successfully ruled Egypt for many years after the civil war.
   - Caesar's victory removed her opposition and secured her position.
-
 
 #### Constructing Effective Arguments
 
@@ -1444,10 +1366,6 @@ To use maps and models accurately, consider:
   - Seeking immediate payoffs in interactions, unless they are win-win, often leads to one-off interactions.
   - Building trust requires considering the long-term effects of actions on others and on one's reputation.
   - Maximizing benefits in relationships occurs over time through cooperation and trust.
-
-
-
-
 
 ## Mental Model #6: Probabilistic Thinking
 
@@ -1708,10 +1626,6 @@ To improve decision-making under uncertainty, three crucial aspects of probabili
 * Understanding the difference between correlation and causation is crucial for accurate analysis and decision-making.
 * Regression to the mean must be considered when evaluating the effectiveness of interventions or policies. 
 
-
-
-
-
 ## Mental Model #7: Inversion
 
 > "The test of a first-rate intelligence is the ability to hold two opposing ideas in mind at the same time and still retain the ability to function. One should, for example, be able to see that things are hopeless, yet be determined to make them otherwise." - F. Scott Fitzgerald 
@@ -1823,10 +1737,6 @@ To improve decision-making under uncertainty, three crucial aspects of probabili
 - **It can help overcome obstacles and achieve goals** by providing a different perspective.
 - **"Invert, always invert"** when facing challenges or seeking innovative solutions. 
 - **Taking the results of inversion seriously** can lead to significant progress and breakthroughs. 
-
-
-
-
 
 ## Mental Model #8: Occam's Razor
 
@@ -1957,12 +1867,6 @@ To improve decision-making under uncertainty, three crucial aspects of probabili
 - **Simple Execution**: Gerstner's approach emphasized tough-minded business execution over complex strategies.
 - **Success Through Simplicity**: By the end of the 1990s, IBM had recovered without relying on grand visions or technological overhauls. 
 - **This example demonstrates the power of simplicity in leadership and problem-solving.** 
-
-
-
-
-
-
 
 ## Mental Model #9: Hanlon's Razor
 
@@ -2098,14 +2002,5 @@ To improve decision-making under uncertainty, three crucial aspects of probabili
 - **Explanation**: The devil fallacy involves attributing negative outcomes to intentional evil rather than incompetence or unintended consequences.
 
 - **Hanlon's Razor as a Counter**: Hanlon's Razor helps us avoid the devil fallacy by reminding us to consider less malicious explanations. 
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

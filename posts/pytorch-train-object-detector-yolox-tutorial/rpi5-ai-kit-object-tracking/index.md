@@ -20,9 +20,6 @@ open-graph:
 * [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
 
-
-
-
 * [Introduction](#introduction)
 * [Prerequisites](#prerequisites)  
 * [Compiling Our Model](#compiling-our-model)  
@@ -35,12 +32,6 @@ open-graph:
 * [Loading the Inference Resources](#loading-the-inference-resources)  
 * [Tracking Objects in a Camera Feed](#tracking-objects-in-a-camera-feed)  
 * [Conclusion](#conclusion)
-
-
-
-
-
-
 
 ## Introduction
 
@@ -55,10 +46,6 @@ This post builds on those past tutorials by walking through deploying our model 
 Released in June 2024, the AI Kit uses the [Hailo-8L accelerator](https://hailo.ai/products/ai-accelerators/hailo-8l-ai-accelerator-for-ai-light-applications/) from [Hailo AI](https://hailo.ai/). The Hailo-8L can perform 13 tera-operations per second (TOPS), making it suitable for lightweight real-time inference on edge devices.
 
 Whether you are working with the pre-trained hand-sign detector used in this series or a custom model, real-time object tracking with the Raspberry Pi AI Kit opens up many possibilities for edge applications.
-
-
-
-
 
 ## Prerequisites
 
@@ -82,12 +69,6 @@ This tutorial uses the [Dataflow Compiler](https://hailo.ai/products/hailo-softw
 
 At the time of writing, Hailo AI only supports the Dataflow Compiler Python package on x86 Linux platforms. If you are on Windows, you can run the conversion process through [WSL](https://learn.microsoft.com/en-us/windows/wsl/about).
 
-
-
-
-
-
-
 ## Compiling Our Model
 
 We must first compile our YOLOX model for the Hailo-8L accelerator before running it on the AI Kit. The compilation process consists of the following steps:
@@ -99,8 +80,6 @@ We must first compile our YOLOX model for the Hailo-8L accelerator before runnin
 We use the [Dataflow Compiler](https://hailo.ai/products/hailo-software/hailo-ai-software-suite/#sw-dc) package provided by Hailo AI to perform these steps:
 
 - [Developer Zone - Dataflow Compiler User Guide](https://hailo.ai/developer-zone/documentation/v3-29-0/)
-
-
 
 ### Download the Dataflow Compiler
 
@@ -119,17 +98,9 @@ In the selection interface, choose the following options:
 - **OS:** `Linux`
 - **Python Version:** `3.10`
 
-
-
-
-
-
-
 ### Setting Up a Python Environment
 
 After downloading the Dataflow Compiler, we can set up our Python environment.
-
-
 
 #### Install Mamba Package Manager
 
@@ -151,8 +122,6 @@ bash Miniforge3-$(uname)-$(uname -m).sh -b
 bash
 ```
 
-
-
 #### Create a Python Environment
 
 Next, we will create and activate a Python 3.10 environment.
@@ -162,8 +131,6 @@ mamba create --name hailo-compiler-env python=3.10 -y
 mamba activate hailo-compiler-env
 ```
 
-
-
 #### Install the Dataflow Compiler
 
 We can install the Dataflow Compiler package once inside the mamba environment.
@@ -172,29 +139,24 @@ We can install the Dataflow Compiler package once inside the mamba environment.
 pip install hailo_dataflow_compiler-3.29.0-py3-none-linux_x86_64.whl
 ```
 
-
-
 #### Install Additional Dependencies
+
 We will install a few additional dependencies for the conversion process to wrap up our environment setup.
 
 ```bash
 pip install cjm_psl_utils cjm_pil_utils
 ```
 
-
-
 ### Getting Started with the Code
+
 This tutorial walks through the conversion process in a Jupyter Notebook, which is available at the link below:
 
 | Jupyter Notebook                                             |
 | ------------------------------------------------------------ |
 | [pytorch-yolox-object-detector-hailo-export.ipynb](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-detector-hailo-export.ipynb) |
 
-
-
-
-
 ### Importing the Required Dependencies
+
 First, we will import the necessary Python packages.
 
 ```python
@@ -225,18 +187,9 @@ from cjm_pil_utils.core import resize_img, get_img_files
 from cjm_pil_utils.annotation import draw_bboxes
 ```
 
-
-
-
-
-
-
-
-
 ### Setting Up the Project
 
 #### Set the Directory Paths
-
 
 ```python
 # The name for the project
@@ -283,10 +236,7 @@ pd.Series({
 
 :::
 
-
-
 #### Download a Font File
-
 
 ```python
 # Set the name of the font file
@@ -296,12 +246,9 @@ font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
 ### Loading the Checkpoint Data
 
 #### Load the Colormap
-
 
 ```python
 # The colormap path
@@ -323,7 +270,6 @@ int_colors = [tuple(int(c*255) for c in color) for color in colormap_dict.values
 
 #### Set Model Checkpoint Information
 
-
 ```python
 # The onnx model path
 onnx_file_path = list(checkpoint_dir.glob('*.onnx'))[0]
@@ -331,8 +277,6 @@ onnx_file_path = list(checkpoint_dir.glob('*.onnx'))[0]
 # Set max stride value for processing output
 max_stride = 32
 ```
-
-
 
 ### Parsing
 
@@ -409,9 +353,8 @@ hn, npz = runner.translate_onnx_model(
 [info] Translation completed on ONNX model hagrid-sample-30k-384p-yolox_tiny (completion time: 00:00:00.72)
 ```
 
-
-
 #### Inspect HAR Output Shape
+
 If we compare the input and output shapes of the Hailo Archive to the original ONNX model, we can see the `translate_onnx_model` method converted the model to a channels-last format. We must account for this when processing the model output during inference.
 
 ```python
@@ -460,8 +403,6 @@ The zeros in the onnx shapes indicate dynamic axes.
 
 :::
 
-
-
 #### Save the Hailo Archive
 
 We can then save the Hailo Archive using the [`save_har`](https://hailo.ai/developer-zone/documentation/v3-29-0/?sp_referrer=api%2Fbuild_api.html#hailo_sdk_client.runner.client_runner.ClientRunner.save_har) method.
@@ -503,10 +444,6 @@ After saving the HAR file, we can visualize its graph structure using the Hailo 
 
 Now that we have our Hailo Archive file, we can move on to the optimization step.
 
-
-
-
-
 ### Model Optimization
 
 The optimization process involves converting our full-precision HAR file to a quantized 8-bit HAR file.
@@ -530,8 +467,6 @@ The Dataflow Compiler handles this process for us. It determines the best way to
 We will use a subset of images from the original training dataset to generate this calibration data. This approach ensures that our quantized model can handle the types of inputs it is likely to encounter in real-world usage.
 
 By quantizing our model in this way, we can significantly reduce its memory footprint and increase its inference speed, often with minimal loss in accuracy.
-
-
 
 #### Set the Dataset Path
 
@@ -591,9 +526,6 @@ pd.Series({
     </tr>
   </tbody>
 </table>
-
-
-
 
 #### Download the Dataset
 
@@ -680,7 +612,6 @@ Number of Images: 31833
 </table>
 </div>
 
-
 #### Select Sample Images
 
 Using every image in the dataset for the calibration process would be unnecessary and time-consuming, so we’ll select a random subset. The Dataflow Compiler documentation recommends at least `1024` samples.
@@ -690,8 +621,6 @@ Using every image in the dataset for the calibration process would be unnecessar
 random.seed(1234) # Set random seed for consistency 
 sample_img_paths = random.sample(img_file_paths, 1024)
 ```
-
-
 
 #### Define a Preprocessing Function
 
@@ -781,9 +710,8 @@ def preproc(image, output_height, output_width, resize_side):
     return normalized_image
 ```
 
-
-
 #### Verify the Preprocessing Function
+
 We can test the preprocessing function on one of the sample images.
 
 
@@ -809,8 +737,6 @@ processed_inp.shape: (288, 512, 3)
 
 ![](./images//output_61_1.png){fig-align="center"}
 
-
-
 #### Generate a Calibration Dataset
 
 Next, we will generate our dataset of preprocessing input samples and store it in a NumPy array.
@@ -833,8 +759,6 @@ for idx, img_path in enumerate(tqdm(sample_img_paths)):
     calib_dataset[idx, :, :, :] = img_preproc_np
 ```
 
-
-
 #### Initialize a Hailo Dataflow Compiler API Client
 
 After generating the calibration dataset, we will initialize a  DFC API client with the Hailo Archive file.
@@ -844,8 +768,6 @@ After generating the calibration dataset, we will initialize a  DFC API client w
 # By default it uses the hw_arch that is saved on the HAR. For overriding, use the hw_arch flag.
 runner = ClientRunner(har=str(hailo_model_har_path))
 ```
-
-
 
 #### Quantize the Hailo Archive
 
@@ -1076,8 +998,6 @@ Refer to the user guide Hailo Dataflow Compiler user guide / Model Optimization 
 
 :::
 
-
-
 #### Save the Quantized Hailo Archive
 
 After the optimization process finishes, we can save the quantized Hailo Archive using the `save_har` method.
@@ -1094,8 +1014,6 @@ runner.save_har(quantized_model_har_path)
 ```
 
 As a final step, we should perform inference with the quantized model to verify it maintains sufficient accuracy.
-
-
 
 #### Define Functions to Handle Arbitrary Input Resolutions
 
@@ -1212,8 +1130,6 @@ def adjust_bbox(
 
     return (adjusted_x, adjusted_y, adjusted_w, adjusted_h)
 ```
-
-
 
 #### Define Postprocessing Functions
 
@@ -1381,8 +1297,6 @@ def nms_sorted_boxes(iou:np.ndarray, iou_thresh:float=0.45) -> np.ndarray:
     return np.arange(iou.shape[0])[mask]
 ```
 
-
-
 #### Define Bounding Box Annotation Function
 
 Lastly, we will define a function for annotating the source image with the predicted bounding boxes.
@@ -1450,8 +1364,6 @@ def draw_bboxes_pil(image, boxes, labels, colors, font, width:int=2, font_size:i
     return annotated_image
 ```
 
-
-
 #### Initialize a Hailo Dataflow Compiler API Client
 
 With our utility functions implemented, we can initialize a new DFC API client with the quantized HAR file.
@@ -1491,8 +1403,6 @@ input_tensor_np.shape: (1, 288, 512, 3)
 
 ![](./images//output_86_1.png){fig-align="center"}
 
-
-
 #### Perform Inference with the Quantized Model
 
 We perform inference with the quantized model using the `infer_context` method with the `SDK_QUANTIZED` inference context.
@@ -1516,10 +1426,6 @@ Inference: 8entries [00:31,  3.97s/entries]
 
 (1, 1, 24, 3024)
 ```
-
-
-
-
 
 #### Process the Model Output
 
@@ -1571,18 +1477,11 @@ display(annotated_img)
 
 That completes the optimization process. All that is left is to compile the quantized Hailo Archive for the target Hailo-8L accelerator.
 
-
-
-
-
-
-
 ### Compilation
 
 To compile the model, we only need to initialize a DFC API client with the quantized HAR file, call the compile method, and save the result as a binary Hailo Executable Format (HEF) file.
 
 #### Compile the Quantized Model
-
 
 ```python
 # Initialize a Hailo Dataflow Compiler API Client
@@ -2864,8 +2763,6 @@ Reverts on split failed: 0
 
 :::
 
-
-
 #### Run the Profiler Tool
 
 After compiling the model, we can run the Hailo profiler tool, which will open an HTML report in the browser.
@@ -2938,10 +2835,6 @@ CompletedProcess(args=['hailo', 'profiler', 'pytorch-yolox-object-detector/2024-
 
 At last, we have completed the compilation process. Now, we can load our compiled model onto the Raspberry Pi and perform real-time object tracking.
 
-
-
-
-
 ## Preparing the Raspberry Pi
 
 This tutorial continues on a Raspberry Pi 5 with a freshly installed operating system, and it assumes a CSI camera module and an AI Kit are connected.
@@ -2951,8 +2844,6 @@ If you do not have a Raspberry Pi prepared, you can go through the following sec
 - [Getting started with your Raspberry Pi](https://www.raspberrypi.com/documentation/computers/getting-started.html)
 - [Install a Raspberry Pi camera](https://www.raspberrypi.com/documentation/accessories/camera.html#install-a-raspberry-pi-camera)
 - [AI Kit - Install ](https://www.raspberrypi.com/documentation/accessories/ai-kit.html)
-
-
 
 ### Hailo AI Kit Setup
 
@@ -2995,13 +2886,11 @@ Installs the following dependencies:
 - Hailo Tappas core post-processing libraries
 - The `rpicam-apps` Hailo post-processing software demo stages
 
-
-
 ## Setting Up a Python Virtual Environment
 
 While we can install the Mamba package manager on the Raspberry Pi, a standard Python [virtual environment](https://docs.python.org/3/library/venv.html) provides a more streamlined setup process for our needs.
 
-#### Create a Python Virtual Environment
+### Create a Python Virtual Environment
 
 When creating the virtual environment, we will use the `--system-site-packages` option to give the virtual environment access to the system `site-packages` directory. 
 
@@ -3012,14 +2901,14 @@ That will allow us to access the `hailort`, `numpy`, `opencv-python`, and `picam
 python3 -m venv --system-site-packages object-tracking-env
 ```
 
-#### Activate Python Virtual Environment
+### Activate Python Virtual Environment
 
 ```bash
 # Activate the object-tracking-env venv
 source ./object-tracking-env/bin/activate
 ```
 
-#### Install Demo Dependencies
+### Install Demo Dependencies
 
 With the virtual environment active, we will install a few additional packages for our demo code.
 
@@ -3039,9 +2928,8 @@ Before continuing, copy the compiled HEF file and the JSON colormap file to same
 
 :::
 
-
-
 ## Getting Started with the Code
+
 This tutorial walks through the demo as a Jupyter Notebook, but the code is also available as a Python script.
 
 
@@ -3050,9 +2938,8 @@ This tutorial walks through the demo as a Jupyter Notebook, but the code is also
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [yolox-hailo-bytetrack-rpi.ipynb](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/yolox-hailo-bytetrack-rpi.ipynb) | [yolox-hailo-bytetrack-rpi.py](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/scripts/yolox-hailo-bytetrack-rpi.py) |
 
-
-
 ## Importing the Required Dependencies
+
 First, we will import the necessary Python packages.
 
 
@@ -3097,13 +2984,11 @@ from hailo_platform import (
 from picamera2 import Picamera2, Preview
 ```
 
-
-
 ## Define Utility Functions
 
 Next, we will add all the utility functions we implemented for the optimization step.
 
-#### Define Functions to Handle Arbitrary Input Resolutions
+### Define Functions to Handle Arbitrary Input Resolutions
 
 The original `resize_and_pad` function ended up being a performance bottleneck on the Raspberry Pi, so I updated it to use NumPy and the OpenCV `resize` method instead of PIL.
 
@@ -3204,7 +3089,7 @@ def adjust_bbox(
     return (adjusted_x, adjusted_y, adjusted_w, adjusted_h)
 ```
 
-#### Define Postprocessing Functions
+### Define Postprocessing Functions
 
 ```python
 def generate_output_grids_np(height, width, strides=[8,16,32]):
@@ -3368,8 +3253,7 @@ def nms_sorted_boxes(iou:np.ndarray, iou_thresh:float=0.45) -> np.ndarray:
     return np.arange(iou.shape[0])[mask]
 ```
 
-#### Define Bounding Box Annotation Function
-
+### Define Bounding Box Annotation Function
 
 ```python
 def draw_bboxes_pil(image, boxes, labels, colors, font, width:int=2, font_size:int=18, probs=None):
@@ -3433,14 +3317,11 @@ def draw_bboxes_pil(image, boxes, labels, colors, font, width:int=2, font_size:i
     return annotated_image
 ```
 
-
-
 ## Setting Up the Project
 
 Next, we will set the folder location for the HEF model and JSON colormap file.
 
 ### Set the Directory Paths
-
 
 ```python
 # The path to the checkpoint folder
@@ -3460,16 +3341,11 @@ font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
-
-
 ## Loading the Inference Resources
 
 Next, we will load the colormap and the compiled HEF model.
 
 ### Load the Colormap
-
 
 ```python
 # The colormap path
@@ -3490,7 +3366,6 @@ int_colors = [tuple(int(c*255) for c in color) for color in colormap_dict.values
 ```
 
 ### Load the Compiled HEF Model
-
 
 ```python
 # The HEF (Hailo Executable Format) model path
@@ -3525,16 +3400,11 @@ input_vstream_info = hef.get_input_vstream_infos()[0]
 output_vstream_info = hef.get_output_vstream_infos()[0]
 ```
 
-
-
-
-
 ## Tracking Objects in a Camera Feed
 
 Next, we will define the dimensions for the camera feed preview and inference parameters for processing the model output.
 
 ### Define Inference Parameters
-
 
 ```python
 # Set the desired preview size
@@ -3543,8 +3413,6 @@ preview_width, preview_height = 960, 540
 bbox_conf_thresh = 0.35
 iou_thresh = 0.45
 ```
-
-
 
 ### Detect, Track, and Annotate Objects
 
@@ -3717,12 +3585,6 @@ A new window should pop up displaying the camera feed. I got approximately 30fps
 
 ![](./images/20241007_10h26m55s_grim.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Conclusion
 
 Congratulations on completing this comprehensive tutorial. You've successfully learned how to deploy a YOLOX object detection model on a Raspberry Pi 5 using the Hailo-8L AI accelerator for real-time object tracking from a camera feed. This tutorial covered several aspects:
@@ -3743,12 +3605,6 @@ Some potential next steps to consider:
 4. Integrate the system with other IoT devices or cloud services for more complex applications
 5. Investigate power consumption optimization techniques for battery-powered deployments
 
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

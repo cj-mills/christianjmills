@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [1: Thou Shalt Not Fine-Tune](#thou-shalt-not-fine-tune)
 * [2: Thou Shalt Write a Freaking Prompt](#thou-shalt-write-a-freaking-prompt)
@@ -38,15 +32,11 @@ open-graph:
 * [10: Thou Shalt Not Take the Commandments Too Seriously](#thou-shalt-not-take-the-commandments-too-seriously)
 * [Q&A Highlights](#qa-highlights)
 
-
-
 ::: {.callout-tip title='Presentation Slides'}
 
 * [Ten Commandments to Deploy Fine-Tuned Models in Prod](https://docs.google.com/presentation/d/1IIRrTED0w716OsU_-PL5bONL0Pq_7E8alewvcJO1BCE/)
 
 :::
-
-
 
 ## Thou Shalt Not Fine-Tune
 
@@ -56,16 +46,13 @@ open-graph:
   - **Latency:**  Fine-tuning allows the use of smaller, faster models for real-time applications.
   - **Cost:**  Fine-tuning enables the use of smaller, more cost-effective models at scale.
 
-
-
-## Thou Shalt Write a Freaking Prompt 
+## Thou Shalt Write a Freaking Prompt
 
 - **Establish a Baseline:**  A well-crafted prompt provides a performance baseline for comparison with fine-tuned models.
 - **Assess Task Feasibility:**  Trying to solve the problem with prompting reveals whether the task is achievable with the available data and model capabilities.
 - **Check Data Quality:** 
   - Successful prompting suggests your data has enough signal for effective model learning. 
   - Failed prompting often indicates data issues like inconsistencies or insufficient information.
-
 
 ### Example: Logistics Company & Item Valuation
 
@@ -82,8 +69,6 @@ open-graph:
 
 1. **Prototype with GPT-4:** During the initial stages, focus on rapid iteration and validation of your application's core concept. Utilize GPT-4 and prompting to experiment and refine your approach.
 2. **Transition to Fine-tuning:** Once you have a working prototype that demonstrates value and scalability, consider incorporating fine-tuning to optimize performance further.
-
-
 
 ## Thou Shalt Review Thy Freaking Data
 
@@ -104,8 +89,6 @@ open-graph:
 
 - **Input Distribution:** Pay close attention to the variety, complexity, and common patterns within user inputs.
 - **Output Quality:** Assess the relevance, accuracy, and overall quality of model outputs in response to real-world inputs.
-
-
 
 ## Thou Shalt Use Thy Actual Freaking Data
 
@@ -138,9 +121,7 @@ open-graph:
 
 * **Caveat:**  This applies mainly to larger LLMs (4B+ parameters) where errors are relatively random. If there's a consistent pattern of errors, address it directly.
 
-
-
-## Thou Shalt Reserve a Test Set 
+## Thou Shalt Reserve a Test Set
 
 - **Importance of a Test Set:**  A dedicated test set, separate from the training data, is essential to evaluate the true performance of a fine-tuned language model.
 
@@ -150,8 +131,6 @@ open-graph:
 * **Recommendations:**
   * **Create a Randomly Sampled Test Set:** Reserve 5-10% of your data randomly as a test set. This ensures that the model's performance is evaluated on data representative of the overall distribution.
   * **Maintain Separate Test Sets:** Use both a randomly sampled test set for general performance evaluation and a separate set for targeted testing of specific corner cases or challenging examples.
-
-
 
 ## Thou Shalt Choose an Appropriate Model
 
@@ -169,11 +148,9 @@ open-graph:
 
 	![[Ten Commandments to Deploy Fine-Tuned Models in Prod - Slide 17](https://docs.google.com/presentation/d/1IIRrTED0w716OsU_-PL5bONL0Pq_7E8alewvcJO1BCE/edit#slide=id.g2720912eb0c_0_9)](./images/model-chart.png){fig-align="center"}
 
-
-
 ## Thou Shalt Write Fast Evals
 
-### Fast Evaluations: 
+### Fast Evaluations:
 
 *  Can be integrated into the training loop or prompt engineering workflow.
 *  Quick and inexpensive to run. 
@@ -194,8 +171,6 @@ open-graph:
 *  **Direction Confirmation:** Ensure that development efforts are moving in the right direction. 
 *  **Faster Feedback Cycle:** Avoid the long delays associated with slower, production-level evaluations.
 
-
-
 ## Also, Thou Shalt Write Slow Evals
 
 ### The Need for Slow Evaluations
@@ -209,11 +184,9 @@ open-graph:
 * **User Engagement Metrics:** OpenAI tracks metrics like how often users regenerate responses or give "thumbs down" as indicators of model performance.
 * **Side-by-Side Comparisons:**  While less frequent, OpenAI sometimes presents users with two responses side-by-side, allowing them to choose the better one. This provides direct comparative feedback.
 
-
-
 ## Thou Shalt Not Fire and Forget
 
-### Continuous Evaluation is Crucial 
+### Continuous Evaluation is Crucial
 
 - After deploying a fine-tuned model, it is essential to continuously evaluate its performance using objective metrics and real-world data. This helps detect any degradation in accuracy.
 
@@ -229,14 +202,10 @@ open-graph:
 
 - **Solution:** The problem was solved by retraining the model with a small set of examples from 2024, demonstrating the importance of keeping the training data up-to-date. 
 
-
-
 ## Thou Shalt Not Take the Commandments Too Seriously
 
 * The above recommendations are only guidelines, not hard requirements.
 * Tailor your approach based on the specific requirements of your project and data.
-
-
 
 ## Q&A Highlights
 
@@ -274,10 +243,5 @@ open-graph:
 - **Fine-Tuning Techniques Comparison (LoRa, QLoRa, DoRa):** Start with LoRa for its efficiency and regularization benefits.  Consider full fine-tuning or DoRa if LoRa's performance is insufficient. 
 - **Multimodal Scenarios:** While production use cases for vision-language models are still emerging, advancements in open-source models are expected to drive adoption. 
 - **Models on the Efficient Frontier:**  Current techniques may have reached a saturation point for model efficiency in smaller model sizes.
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

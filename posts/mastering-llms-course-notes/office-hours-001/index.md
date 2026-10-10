@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 ## 1. Template-Free Prompt Construction in Axolotl
 
@@ -65,12 +59,6 @@ open-graph:
   
   :::
 
-
-
-
-
-
-
 ## 2. How to Decide Data Type for Datasets on HuggingFace?
 
 * **Dataset Types:**
@@ -85,8 +73,6 @@ open-graph:
   * **[Intel/orca_dpo_pairs](https://huggingface.co/datasets/Intel/orca_dpo_pairs):** Question, chosen, rejected fields.
   * **[argilla/kto-mix-15k](https://huggingface.co/datasets/argilla/kto-mix-15k):** Prompt, completion, label, rating.
 
-
-
 ## 3. DPO and RLHF
 
 * **DPO (Direct Preference Optimization):**
@@ -97,8 +83,6 @@ open-graph:
   * More complex but potentially leads to higher quality alignment and multi-turn capabilities.
 * **Future Direction:** Both DPO and RLHF are important, with a potential shift towards more robust RL-based methods.
 
-
-
 ## 4. Difference Between Chat Template and Datasets Type Parameters
 
 * **Chat Template:** Defines the specific format of the chat conversation (e.g., LLAMA3, Mistral, ChatML). It gets added to the tokenizer config.
@@ -106,8 +90,6 @@ open-graph:
 * **Interaction:**
   * Setting a chat template can automatically set the output format for certain dataset types.
   * The `chat_template` parameter in the YAML file overrides any default settings.
-
-
 
 ## 5. No Ops for Validation
 
@@ -118,15 +100,11 @@ open-graph:
   * Carefully manage model precision during saving.
   * Implement custom checks to compare tokenization between training and inference pipelines.
 
-
-
 ## 6. Trust No One for Tokenization
 
 * **Key Takeaway:** Always verify the actual tokens being fed into the model, as string handling and YAML parsing can introduce subtle errors.
 * **Example:** YAML can remove trailing spaces in non-quoted strings, potentially affecting tokenization.
 * **Recommendation:** Implement rigorous checks to ensure consistent tokenization between training and inference.
-
-
 
 ## 7. Ensuring Consistent Tokenization
 
@@ -138,16 +116,12 @@ open-graph:
   * Implement tests to compare tokenization between fine-tuning and inference setups.
   * Consider introducing minor tokenization variations during training as a form of data augmentation.
 
-
-
 ## 8. Tokenizer Configs from Training to Inference
 
 * **Importance:** Consistent tokenizer configurations are crucial for seamless transition from training to inference.
 * **Axolotl's Approach:** Setting the `chat_template` parameter in the YAML file updates the tokenizer config, which is then used by inference engines.
 * **Challenge:** Not all inference engines may fully support or utilize the chat template information.
 * **Recommendation:** Verify that the chosen inference engine correctly interprets and applies the tokenizer config, including the chat template.
-
-
 
 ## 9. Multimodal Fine-tuning
 
@@ -160,8 +134,6 @@ open-graph:
   * Potentially supporting both Lava-like approaches and native multimodal models.
 * **Call for Contributions:**  Help is needed in developing and implementing multimodal capabilities.
 
-
-
 ## 10. Is RLHF Still a Common Fine-tuning Technique?
 
 * **Answer:** Yes, RLHF and other preference-based tuning methods (like DPO) are becoming increasingly common.
@@ -169,8 +141,6 @@ open-graph:
   * Supervised fine-tuning has limitations in achieving high-quality alignment.
   * RLHF and DPO enable learning from human preferences, leading to better model behavior.
 * **Future Trend:** Expect to see wider adoption of both RL-based and non-RL preference optimization techniques.
-
-
 
 ## 11. DPO Limitations and RL Advantages
 
@@ -182,8 +152,6 @@ open-graph:
   * RLHF is more complex and data-intensive than DPO.
   * DPO is simpler to implement and doesn't require a separate reward model.
 
-
-
 ## 12. Sample Files for PaliGemma and Phi-3
 
 * **Phi-3:**
@@ -192,8 +160,6 @@ open-graph:
 * **PaliGemma:**
   * No specific examples available yet.
   * LLM fine-tuning might be possible, but full support requires multimodal dataset handling.
-
-
 
 ## 13. Conversational Datasets vs. QA Pairs
 
@@ -204,8 +170,6 @@ open-graph:
   * **Conversational Datasets:** Beneficial for training models to engage in multi-turn dialogue.
 * **Instruction Tuning:** Recommended for gaining intuition about conversational datasets and fine-tuning.
 
-
-
 ## 14. Training Datasets for Completion Models
 
 * **Dataset Characteristics:** Typically similar to pre-training datasets, often with a single "text" field.
@@ -213,16 +177,12 @@ open-graph:
   * Story generation datasets.
   * Any dataset focused on text completion or continuation.
 
-
-
 ## 15. Prompt Template for LLAMA3 and LLAMA Index
 
 * **Goal:** Fine-tune LLAMA3 for use with LLAMA Index, which uses an OpenAI-like message abstraction.
 * **Recommendation:**
   * Choose a chat template that aligns with the message-based format (e.g., ChatML).
   * Avoid instruction-based templates as they might not be suitable for multi-turn interactions.
-
-
 
 ## 16. Future Directions of Axolotl
 
@@ -235,8 +195,6 @@ open-graph:
   * Integrating DPO, PPO, and enhanced dataset pipelines.
   * Creating a user-friendly CLI and cloud integration.
 
-
-
 ## 17. VRAM Estimation
 
 * **Need:** A tool for accurate VRAM estimation based on Axolotl configurations.
@@ -244,8 +202,6 @@ open-graph:
   * Complexities introduced by techniques like FSDP and DeepSpeed.
   * Variations in VRAM usage based on batch sizes and model parallelism.
 * **Potential Approach:** Leverage existing LLM math estimations and account for the impact of distributed training techniques.
-
-
 
 ## 18. Vibe Checks During Training
 
@@ -258,14 +214,10 @@ open-graph:
   * VRAM limitations might make it difficult to run inference alongside training.
   * Ensuring consistent tokenization and prompt handling between training and evaluation.
 
-
-
 ## 19. Familiarizing with Prompt Templates
 
 * **Recommendation:** Use the `axolotl.cli.preprocess` command with the `debug` flag to visualize how Axolotl processes and tokenizes prompts.
 * **Output:** Displays the tokenized prompt with color-coding to distinguish between input, output, and masked tokens.
-
-
 
 ## 20. Axolotl vs. Unsloth
 
@@ -277,30 +229,20 @@ open-graph:
   * Focuses on performance optimizations like sample packing.
 * **Recommendation:** Choose the tool that best aligns with your specific needs and priorities.
 
-
-
 ## 21. Quick and Dirty Fine-tuning
 
 * **Recommendation:**
   * Start with a small "tiny llama" example for faster iteration.
   * Use Gradio inference for quick model evaluation.
 
-
-
 ## 22. Function Calling Fine-Tunes
 
 * **Dataset Example:** Glade datasets from the Noose team.
 * **Configuration:** Might require specific role handling and a compatible version of the ShareGPT dataset type.
 
-
-
 ## 23. Visualizing Tokenization in Batches
 
 * **Challenge:** Axolotl's sample packing happens at runtime, making it difficult to visualize tokenization in batches during pre-processing.
 * **Potential Approach:** Modify the Transformers or LLAMA model code to print or log input IDs during the forward pass.
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

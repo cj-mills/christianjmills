@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
-
 
 * [Motivation and History](#motivation-and-history)
 * [GPU Performance Improvements: Huang’s Law](#gpu-performance-improvements-huangs-law)
@@ -43,19 +37,11 @@ open-graph:
 * [Conclusion](#conclusion)
 * [Q&A Session](#qa-session)
 
-
-
-
-
 ::: {.callout-tip title="Source Material"}
 
 * **YouTube:** [Trends in Deep Learning Hardware: Bill Dally (NVIDIA)](https://www.youtube.com/watch?v=kLiwvnr4L80)
 
 :::
-
-
-
-
 
 ## Motivation and History
 
@@ -92,8 +78,6 @@ open-graph:
     * **Increased individual GPU performance (~1000x).**
     * **Scaling up GPU numbers and training time (~10<sup>6</sup>x).**
 
-
-
 ## GPU Performance Improvements: Huang's Law
 
 * **Huang's Law:** Deep learning inference performance on NVIDIA GPUs has doubled annually for the last decade.
@@ -124,8 +108,6 @@ open-graph:
     * More efficient deep learning models have also contributed significantly to performance gains (estimated ~1000x).
     * Example: GoogleNet's efficiency improvements over VGGNet in the ImageNet competition.
 
-
-
 ## Complex Instructions and Their Importance
 
 | Operation | Energy** | Overhead* |
@@ -146,8 +128,6 @@ open-graph:
     * **QMMA (Hopper):** Quarter-precision (FP8) matrix multiply accumulate.
 * **Complex instructions make programmable GPUs as efficient as hardwired accelerators for deep learning while retaining programmability advantages.**
 
-
-
 ## NVIDIA Hopper GPU: Current State (2023)
 
 * **Hopper H100:**
@@ -161,8 +141,6 @@ open-graph:
   * 9 teraOPS/watt (int8/FP8).
   * Includes dynamic programming instructions for bioinformatics.
 * **Note:** Export restrictions to China may be counterproductive, potentially driving Chinese developers to Huawei's hardware.
-
-
 
 ## Scaling with Multiple GPUs
 
@@ -181,8 +159,6 @@ open-graph:
     * **Pre-configured software for rapid deployment.**
     * **Network collectives (all-reduce) on NVLink and InfiniBand for efficient data parallel training.**
 
-
-
 ## The Importance of Software
 
 * "Anybody can build a matrix multiplier, but software makes it useful."
@@ -197,8 +173,6 @@ open-graph:
 * **MLPerf Benchmarks:** Demonstrate the impact of software on performance.
   * NVIDIA GPUs consistently lead in these benchmarks, showcasing the strength of the software ecosystem.
   * **Significant performance gains are achieved through software optimizations even on existing hardware (e.g., Ampere's performance increased 2.5x since its initial release).**
-
-
 
 ## Future Directions
 
@@ -221,8 +195,6 @@ open-graph:
     * **Better communication circuits:** Reduce energy consumption in on-chip data transfer (e.g., using lower voltage signaling).
     * **3D memory:** Stack DRAM directly on top of the GPU for higher bandwidth and lower energy (long-term goal with significant technical challenges).
 
-
-
 ## Number Representation: Choosing the Right System
 
 * **Evaluating a number system:**
@@ -240,8 +212,6 @@ open-graph:
   * **Spiking:** Extremely inefficient in terms of energy consumption due to high toggling activity.
   * **Analog:** Advantages in individual operations are negated by the need for digital conversion for storage and movement.
 
-
-
 ## Logarithmic Number Systems
 
 * **Principle:** Similar to slide rules, using logarithmic scales to turn multiplication into addition.
@@ -257,8 +227,6 @@ open-graph:
   * **Perform a single lookup (or use hardwired constants) for each EF value.**
   * **Multiply partial sums by the looked-up values.**
   * **Convert the final sum back to logarithmic form.**
-
-
 
 ## Optimal Clipping
 
@@ -290,8 +258,6 @@ open-graph:
   
 * **Note:** Clipping is typically done post-training, but training the clipping factor along with the model's weights could potentially yield further improvements.
 
-
-
 ## Scaling Granularity
 
 * **Layer-wise scaling:** Initially used for both forward and backward propagation (separate scale factors).
@@ -299,8 +265,6 @@ open-graph:
   * **Example:** In ConvNets, scaling each 32-element vector in the channel dimension independently.
 * **Hardware support:** Requires additional multipliers to apply activation and weight scale factors (SW and SA) after the MAC operation.
 * **Benefits:** Tighter scaling for smaller groups of numbers leads to significantly reduced error, equivalent to gaining a couple of bits of precision.
-
-
 
 ## Sparsity
 
@@ -316,8 +280,6 @@ open-graph:
   * **Compression by storing only non-zero weights and metadata indicating their positions.**
   * **Benefits:** Predictable sparsity pattern enables efficient parallel computations, achieving ~2x speedup.
 * **Future directions:** Extending structured sparsity to activations and exploring other regular sparsity patterns.
-
-
 
 ## Accelerators vs. GPUs
 
@@ -338,8 +300,6 @@ open-graph:
   * On-chip (hundreds of MB): 50 picojoules/word (45 picojoules for communication).
   * Off-chip LPDDR/HBM: 640 picojoules/word (32-bit).
 
-
-
 ## Magnetic BERT Accelerator
 
 * **Design:**
@@ -349,8 +309,6 @@ open-graph:
 * **Performance:**
   * **95.6 teraOPS/watt for int8 operations (~10x more efficient than Hopper).**
   * Demonstrates the potential for further efficiency improvements in future GPU designs.
-
-
 
 ## Conclusion
 
@@ -364,13 +322,9 @@ open-graph:
   * Algorithm-architecture co-design.
 * **Accelerators like Magnetic BERT demonstrate the potential for further efficiency gains, paving the way for future GPU architectures.**
 
-
-
-
-
 ## Q&A Session
 
-#### Question 1: Network Size Optimization and Pruning Techniques
+### Question 1: Network Size Optimization and Pruning Techniques
 
 * **Question:** What techniques are used for optimizing network size (pruning)?
 * **Answer:**
@@ -383,12 +337,12 @@ open-graph:
             * Considers both the weight value and the sensitivity of the weight's connections to the output.
             * Prunes weights with the least sensitivity, taking into account both the weight value and its impact on the output.
 
-#### Question 2: Energy Savings Breakdown for Complex Instructions
+### Question 2: Energy Savings Breakdown for Complex Instructions
 
 * **Question:** Regarding the energy savings from complex instructions, could you elaborate on the breakdown between fetch/decode savings and operand loading savings?
 * **Answer:** While the exact breakdown isn't readily available, Dally believes that the majority of energy savings come from reduced fetch and decode operations. However, more detailed analysis would be required to provide specific numbers.
 
-#### Question 3: Systolic Array Architectures vs. NVIDIA's Approach
+### Question 3: Systolic Array Architectures vs. NVIDIA's Approach
 
 * **Question:** Does NVIDIA use systolic arrays for matrix multiplications, like Google's TPU?
 * **Answer:**
@@ -398,7 +352,7 @@ open-graph:
     * NVIDIA feeds matrix multipliers from register files, potentially incurring slightly higher shuffling overhead for smaller matrices compared to systolic arrays.
     * However, even this overhead is likely minimal (estimated around 10%) and comparable to the data movement costs in systolic arrays. Google's TPUs still require data movement to feed the systolic array, and they also have control overhead.
 
-#### Question 4: Hardware/Software Implementation of Clipping
+### Question 4: Hardware/Software Implementation of Clipping
 
 * **Question:** Is the clipping technique implemented in hardware, software, or programmable hardware like FPGAs?
 * **Answer:**
@@ -407,12 +361,5 @@ open-graph:
     * Clipping simply involves choosing a larger scale factor, causing some numbers to saturate to the maximum representable value.
     * The only hardware requirement is the presence of multipliers for applying activation and weight scale factors (SW and SA), which are already present in GPUs that support scaling.
     * The clipping itself and the granularity of scaling are software-controlled, allowing flexibility in implementation. 
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

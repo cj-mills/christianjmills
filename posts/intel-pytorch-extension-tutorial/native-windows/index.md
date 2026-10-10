@@ -15,8 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 * [Introduction](#introduction)
 * [Enable Resizable BAR in BIOS](#enable-resizable-bar-in-bios)
 * [Install Drivers](#install-drivers)
@@ -25,8 +23,6 @@ open-graph:
 * [Set Up a Python Environment](#set-up-a-python-environment)  
 * [Modify PyTorch Code](#modify-pytorch-code)  
 * [Conclusion](#conclusion)
-
-
 
 ## Introduction
 
@@ -62,10 +58,6 @@ Follow the steps in the linked section below to deactivate the Integrated Graphi
 
 :::
 
-
-
-
-
 ## Enable Resizable BAR in BIOS
 
 If you have an Arc GPU, one of the first things you should do is enable Resizable BAR. Resizable BAR allows a computer's processor to access the graphics card's entire memory instead of in small chunks. The Arc GPUs currently require this feature to perform as intended. You can enable the feature in your motherboard's BIOS.
@@ -81,10 +73,6 @@ Here are links on how to do this for some of the popular motherboard manufacture
 
 
 With Resizable BAR enabled, let's ensure we have the latest drivers for our Arc GPU.
-
-
-
-
 
 ## Install Drivers
 
@@ -124,16 +112,11 @@ Once the installation completes, click the `Reboot Recommended` button to reboot
 
 We can continue with the next step once we're back in Windows.
 
-
-
-
 ## Install Microsoft Visual C++ Redistributable
 
 Intel's documentation also lists the Microsoft Visual C++ Redistributable as a dependency for this extension version, so make sure to install it as well. You can download the latest version at the link below:
 
 * [Latest Microsoft Visual C++ Redistributable Version](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version)
-
-
 
 ## Disable Integrated Graphics
 
@@ -199,17 +182,9 @@ You will need to repeat this step when you install new graphics drivers in the f
 
 :::
 
-
-
-
-
-
-
-## Set Up a Python Environment 
+## Set Up a Python Environment
 
 Now, we can create a Python environment to run the training code. We'll install a patched version of PyTorch needed for Intel's extension, the extension itself, and the other dependencies for the training code.
-
-
 
 ### Install Mamba Package Manager
 
@@ -225,10 +200,6 @@ Open a command prompt window with the mamba environment active and navigate to a
 %USERPROFILE%\mambaforge\Scripts\activate
 ```
 
-
-
-
-
 ### Create a Python Environment
 
 Next, we'll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we'll use that.
@@ -238,17 +209,13 @@ mamba create --name pytorch-arc python=3.11 -y
 mamba activate pytorch-arc
 ```
 
-
-
-
 ### Install Prerequisite Packages
+
 The package for Intel's PyTorch extension requires the [libuv](https://anaconda.org/conda-forge/libuv) conda package:
 
 ```cmd
 mamba install libuv -y
 ```
-
-
 
 ### Install PyTorch and Intel’s PyTorch extension
 
@@ -258,8 +225,6 @@ The following command will install the patched version of PyTorch and the extens
 ```cmd
 pip install torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi torchaudio==2.3.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
-
-
 
 ### Install Training Code Dependencies
 
@@ -288,10 +253,6 @@ setx IPEX_XPU_ONEDNN_LAYOUT 0
 
 
 :::
-
-
-
-
 
 ## Modify PyTorch Code
 
@@ -323,9 +284,8 @@ Once downloaded, run the following command to launch the Jupyter Notebook Enviro
 jupyter notebook
 ```
 
-
-
 ### Import PyTorch Extension
+
 We import Intel's PyTorch extension with the following code:
 
 ```cmd
@@ -346,8 +306,6 @@ Intel PyTorch Extension Version: 2.3.110+xpu
 C:\Users\Personal\mambaforge\envs\pytorch-arc\Lib\site-packages\intel_extension_for_pytorch\llm\__init__.py:9: UserWarning: failed to use huggingface generation fuctions due to: No module named 'transformers'.
   warnings.warn(f"failed to use huggingface generation fuctions due to: {e}.")
 ```
-
-
 
 ### Update PyTorch Imports
 
@@ -380,8 +338,6 @@ from torch.utils.data import Dataset, DataLoader
 ```
 
 :::
-
-
 
 ### Verify Arc GPU Availability
 
@@ -471,10 +427,6 @@ pd.DataFrame(dict_properties_list)
 
 In this case, the A770 is the only device listed since we deactivated the integrated graphics on the CPU.
 
-
-
-
-
 ### Update the Device Name
 
 Next, we'll manually set the device name to `xpu`.
@@ -503,13 +455,8 @@ device, dtype
 
 ::: 
 
-
-
-
-
-
-
 ### Optimize the `model` and `optimizer` Objects
+
 Before we run the `train_loop` function, we'll use Intel's PyTorch extension to apply optimizations to the model and optimizer objects. We'll also cast the model to the `bfloat16` data type, so we can train using mixed precision.
 
 
@@ -569,11 +516,8 @@ metric = MulticlassAccuracy()
 
 ::: 
 
-
-
-
-
 ### Train the Model
+
 That's it for the required changes to the training code. We can now run the `train_loop` function.
 
 
@@ -608,11 +552,8 @@ Eval: 100% |█████████| 481/481 [00:21<00:00, 29.63it/s,�
 
 The training speed is significantly slower with this extension version. Although, it seems to improve with each iteration through the dataset.
 
-
-
-
-
 ### Update the Inference Code
+
 Since we cast the model to `bloat16`, we must ensure input data use the same type. We can update the inference  code using the auto-cast context manager as shown below:
 
 ::: {.panel-tabset}
@@ -635,23 +576,10 @@ with torch.no_grad():
 
 :::
 
-
-
-
-
-
-
-
 ## Conclusion
 
 In this tutorial, we set up Intel's PyTorch extension for the Windows OS and trained an image classification model using an Arc GPU. The exact setup steps may change with new versions, so check the [documentation](https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.3.110%2bxpu&os=windows&package=pip) for the latest version to see if there are any changes. I'll try to keep this tutorial updated with any significant changes to the process.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
 
 {{< include /_about-author-cta.qmd >}}

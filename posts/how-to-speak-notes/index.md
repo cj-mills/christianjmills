@@ -32,17 +32,11 @@ open-graph:
 * [How to Stop](#how-to-stop)  
 * [Conclusion](#conclusion)
 
-
-
 ::: {.callout-tip title="Source Material:"}
 
 * **MIT OpenCourseWare  Video:** [How To Speak by Patrick Winston](https://www.youtube.com/watch?v=Unzc731iCUY)
 
 :::
-
-
-
-
 
 ## Introduction
 
@@ -63,8 +57,6 @@ open-graph:
 - **Avoid Jokes:** Jokes are ineffective at the beginning of a talk because the audience is not yet fully engaged.
 - **Empowerment Promise:** Start with an empowerment promise that tells the audience what they will gain from the talk.
     - **Example:** "At the end of this 60 minutes, you will know things about speaking you don't know now, and something among those things you know will make a difference in your life."
-
-
 
 ## Sample Heuristics for Presentations
 
@@ -94,14 +86,10 @@ open-graph:
     - Choose questions that are neither too obvious nor too difficult.
     - Allow sufficient wait time (up to 7 seconds) for audience responses.
 
-
-
 ## Developing Your Personal Style
 
 - **Observe and Analyze:** Study effective speakers to identify the techniques they use and understand why they are successful.
 - **Build Your Repertoire:** Incorporate techniques that resonate with you and develop your own unique presentation style.
-
-
 
 ## Time and Place
 
@@ -123,8 +111,6 @@ open-graph:
     - **Rationale:** Allows you to anticipate and address any potential challenges.
 - **Reasonably Populated:** 
     - **Rationale:** Avoids the impression of a poorly attended or unimportant event.
-
-
 
 ## Boards, Props, and Slides
 
@@ -168,8 +154,6 @@ open-graph:
 - **Alternative to Laser Pointers:** Use arrows or other visual cues to highlight specific elements on the slide.
 - **Hapax Legomenon:** A slide that is so complex or unusual that it can only be used once in a presentation.
     - **Example:** A diagram illustrating the complexities of governance in Afghanistan.
-
-
 
 ## Special Cases
 
@@ -232,8 +216,6 @@ open-graph:
     - **Salient Idea:** Focus on a single key idea that stands out.
     - **Story:** Tell a compelling narrative about your research process and its implications.
 
-
-
 ## How to Stop
 
 ### Final Slide
@@ -258,15 +240,9 @@ open-graph:
     - **Saluting the Audience:** Expressing appreciation for their engagement and the opportunity to speak. (e.g., "It's been a great fun being here...")
     - **Using Established Conventions:** Mimicking culturally accepted signals for the end of an event (e.g., "Ite, missa est" in the Latin Mass).
 
-
 ## Conclusion
 
 - **Importance of Presentation Skills:** Acknowledging the value of effective communication in conveying ideas.
 - **Call to Action:** Encouraging continued learning and application of the presented techniques.
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

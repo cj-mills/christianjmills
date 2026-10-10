@@ -15,14 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
 
 ## Understanding Modal
 
@@ -38,8 +34,6 @@ open-graph:
   * Integration with popular frameworks like [FastAPI](https://fastapi.tiangolo.com/).
 * **Founders' Vision:**  Address common infrastructure challenges faced by data scientists and ML practitioners, emphasizing rapid development cycles and feedback loops.
 
-
-
 ## Startup Times and Optimization
 
 * **Concern:** Modal's startup time compared to traditional server-based solutions.
@@ -54,8 +48,6 @@ open-graph:
   * **CPU Tasks:** Easily sliced and diced, making them cost-effective in keep-warm mode due to minimal resource consumption during idle periods.
   * **Optimization Potential:**  The LLM fine-tuning repo hasn't been fully optimized for boot times; improvements are possible.
     * **GitHub Repository:** [llm-finetuning](https://github.com/modal-labs/llm-finetuning)
-
-
 
 ## Local Development and Modal Integration
 
@@ -75,8 +67,6 @@ open-graph:
   * **Resource:** Explore the `awesome-modal` repository on GitHub for production-ready examples, some utilizing a thicker client approach.
     * **GitHub Repository:** [awesome-modal](https://github.com/modal-labs/awesome-modal)
 
-
-
 ## Iterative Development Workflow
 
 * **Challenge:**  Fine-tuning models locally on a small scale with debugging and then scaling up on Modal with a full dataset and larger models.
@@ -88,8 +78,6 @@ open-graph:
   * **Dependency Management:** Leverage tools like `pip freeze` and poetry for tighter control over environments.
   * **Hardware Considerations:** Be mindful of potential discrepancies between local and Modal GPUs.
 
-
-
 ## Modal for CPU-Intensive Workloads
 
 * **Question:** Is Modal suitable for parallel CPU-bound tasks rather than just GPU acceleration?
@@ -97,8 +85,6 @@ open-graph:
 * **Reasons:**
   * **Cost-Effectiveness:** CPUs are cheaper on Modal due to efficient time-slicing and readily available resources.
   * **Simplified Parallelization:** Modal's architecture and tools streamline the execution of parallel CPU workloads. 
-
-
 
 ## Cost Comparison and Value Proposition
 
@@ -113,17 +99,13 @@ open-graph:
   * **GPU Accessibility:**  Modal offers readily available GPUs, circumventing the challenges of procurement and allocation.
   * **Developer Experience:**  Streamlined workflow and reduced operational burden can justify a potential price premium for some users.
 
-
-
-## Understanding Modal's Cost Structure 
+## Understanding Modal's Cost Structure
 
 * **Question:**  How can a keep-warm FastAPI app on Modal cost only 30 cents per month when CPU core pricing suggests a much higher cost?
 * **Explanation:**
   * **Time-Slicing:** CPUs are shared efficiently, and Modal only charges for actual usage, not idle time.
   * **Low Utilization:** Web apps typically have low average CPU utilization, further reducing costs.
   * **RAM-Based Pricing:** During idle periods, charges are primarily determined by RAM usage, which is often minimal for lightweight apps. 
-
-
 
 ## Streaming Output from LLMs
 
@@ -135,9 +117,6 @@ open-graph:
 * **Modal's Async Support:**  Modal simplifies asynchronous programming, making streaming implementations easier.
   * **Guide:** [Asynchronous API usage](https://modal.com/docs/guide/async)
 
-
-
-
 ## Code Portability and Modal Dependency
 
 * **Concern:** Modal's decorators might hinder code portability to other environments. 
@@ -146,8 +125,6 @@ open-graph:
   * Decorators can be removed or bypassed if needed to port code to different environments.
   * Achieving portability often involves trade-offs in performance and cost-effectiveness.
 
-
-
 ## Data Privacy
 
 * **Question:** Modal's policy on data privacy and potential use of user data for model training.
@@ -155,8 +132,6 @@ open-graph:
   * **Commitment to Security:**  Modal is [SOC 2 compliant](https://modal.com/blog/soc2) and working towards SOC 2 Type 2 certification, demonstrating a high standard of data security.
   * **User Data Protection:** Modal treats user application data as confidential. Permission is sought before reviewing data, even for support purposes.
   * **No User Data Training:** Modal, as an infrastructure company, doesn't use customer data for training internal models.
-
-
 
 ## Running Databases on Modal
 
@@ -171,16 +146,12 @@ open-graph:
     * Utilize libraries like [DuckDB](https://duckdb.org/) for efficient querying within the Modal environment.
     * **Example:** [Analyze NYC yellow taxi data with DuckDB on Parquet files from S3](https://modal.com/docs/examples/s3_bucket_mount#analyze-nyc-yellow-taxi-data-with-duckdb-on-parquet-files-from-s3)
 
-
-
 ## Balancing Cost and Uptime for GPU Inference
 
 * **Question:**  Finding the sweet spot between cost and uptime for GPU inference when needing varying levels of availability.
 * **Rule of Thumb:**
   * Modal tends to be more cost-effective when utilization is 60% or lower.
   * Consider factors like acceptable latency and workload characteristics (batch jobs vs. real-time requests).
-
-
 
 ## Local vs. Cloud Workload Distribution
 
@@ -190,8 +161,6 @@ open-graph:
   * **Evaluations:**  Larger eval sets might benefit from cloud GPUs for faster throughput, especially when running multiple evaluations concurrently.
   * **Fine-tuning:**  Often memory-intensive due to gradients and optimizer states. Cloud GPUs provide ample VRAM and simplify the use of techniques like sharding or larger batch sizes.
 * **Don't undervalue your time:** Spending a little more on faster cloud compute can save a significant amount of time versus trying to run everything locally on a single GPU.
-
-
 
 ## Quick Q&A
 
@@ -205,8 +174,5 @@ open-graph:
 * **Demo Preparation:**  "Hello World" and "TRT LLM" examples are good starting points.
   * **Example:** [Hello, world!](https://modal.com/docs/examples/hello_world)
   * **Example:** [Serverless TensorRT-LLM (LLaMA 3 8B)](https://modal.com/docs/examples/trtllm_llama)
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

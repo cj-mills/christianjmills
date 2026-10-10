@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
 * [Introduction](#introduction)
 * [Part 3: Knowledge](#part-3-knowledge)
 * [Part 2: Reasoning](#part-2-reasoning)
 * [Part 1: Language Structures](#part-1-language-structures)
-
-
 
 ::: {.callout-tip title="Resource Links"}
 
@@ -33,8 +27,6 @@ open-graph:
 * **Speaker:** [Zeyuan Allen-Zhu](http://zeyuan.allen-zhu.com/)
 
 :::
-
-
 
 ## Introduction
 
@@ -73,8 +65,6 @@ open-graph:
   1.  **Language Structures:** How LLMs learn language structures, focusing on context-free grammars (CFGs) (joint work with Professor Yuanzhi Li).
   2.  **Reasoning:** How LLMs perform reasoning, specifically at the level of grade-school math (joint work with Tian Ye, Zicheng Xu, and Yuanzhi Li ).
   3.  **Knowledge:** How LLMs acquire and manipulate knowledge (joint work with Professor Yuanzhi Li).
-
-
 
 ## Part 3: Knowledge
 
@@ -139,7 +129,6 @@ open-graph:
     >
     > **Where did Anya Briar Forger work?** 
     > *Answer: Menlo Park, CA.*
-
 
 #### Experiment Setup
 
@@ -267,14 +256,12 @@ open-graph:
 - Related to "multi-token prediction" work from Meta colleagues: Predicting multiple future tokens can change knowledge storage and improve capabilities.
   - **Paper:** [Better & Faster Large Language Models via Multi-token Prediction](https://arxiv.org/abs/2404.19737)
 
-
 #### Summary of 3.2
 
 - The model must state knowledge explicitly before manipulating it.
 - Knowledge inverse search is impossible unless the knowledge is reversed in the pre-trained data.
 - A concurrent work refers to this as the "reversal curse": If a model learns "A is B", it doesn't learn "B is A."
   - **Paper:** [Reverse Training to Nurse the Reversal Curse](https://arxiv.org/abs/2403.13799)
-
 
 ### 3.3 Scaling Laws for Knowledge Capacity
 
@@ -328,7 +315,6 @@ open-graph:
 -   Fixing data size, increasing model size doesn't increase knowledge learned beyond the data's inherent information content. 
     -   Before that point, the model's knowledge capacity closely follows two bits per parameter.
 
-
 #### Insufficient Training: Rare Knowledge
 
 -   **100 Exposures:** If knowledge is exposed only 100 times (rare knowledge), the capacity decreases to approximately one bit per parameter.
@@ -376,8 +362,6 @@ open-graph:
     -   Even scaling down the synthetic data by 5x maintains the validity of the results.
 
 -   **Probing:** All statements are supported by probing, revealing the internal workings of the models.
-
-
 
 ## Part 2: Reasoning
 
@@ -573,8 +557,6 @@ open-graph:
 -   **Controlled Experiments:** Manipulated data difficulty, mistake types, and training processes.
 -   **Probing:** Used probing to understand reasoning, mistakes, and the relationship between model depth and reasoning length.
 
-
-
 ## Part 1: Language Structures
 
 ::: {.callout-tip title="Resource Links"}
@@ -658,11 +640,5 @@ open-graph:
 -   **GPT-5/GPT-6:** To surpass current limitations (e.g., GPT-4's reasoning limit), synthetic data will be necessary.
 -   **Research Questions:** What are the optimal formats for synthetic data to maximize knowledge acquisition and reasoning abilities?
 -   **AGI:** This research is crucial for building language models that approach AGI.
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -28,7 +28,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Image Classification](#image-classification)
 * [From Dogs and Cats to Pet Breeds](#from-dogs-and-cats-to-pet-breeds)
 * [Presizing](#presizing)
@@ -37,12 +36,10 @@ open-graph:
 * [Improving Our Model](#Improving Our Model)
 * [References](#references)
 
-
-
 ## Image Classification
+
 - There are a lot of details you need to get right for your models to be accurate and reliable
 - You must be able to look inside your neural network as it trains and as it makes predictions, find possible problems and know how to fix them
-
 
 ## From Dogs and Cats to Pet Breeds
 
@@ -69,7 +66,7 @@ from fastai.vision.all import *
 matplotlib.rc('image', cmap='Greys')
 ```
 
-#### The Oxford-IIIT Pet Dataset
+### The Oxford-IIIT Pet Dataset
 
 * [https://www.robots.ox.ac.uk/~vgg/data/pets/](https://www.robots.ox.ac.uk/~vgg/data/pets/)
 * a 37 category pet dataset with roughly 200 images for each class
@@ -142,8 +139,6 @@ fname
 ```text
 Path('images/Birman_121.jpg')
 ```
-
-
 
 ### Regular Expressions
 
@@ -397,10 +392,6 @@ pd.DataFrame(dls.categorize.vocab)
   </tbody>
 </table>
 </div>
-
-
-
-
 
 ## Presizing
 
@@ -742,8 +733,6 @@ learn.fine_tune(2)
 </table>
 </div>
 
-
-
 ## Cross-Entropy Loss
 
 - the combination of taking the softmax and then the log likelihood
@@ -751,6 +740,7 @@ learn.fine_tune(2)
 - results in faster and more reliable training
 
 ### Viewing Activations and Labels
+
 ```python
 x,y = dls.one_batch()
 ```
@@ -813,8 +803,6 @@ len(preds[0]),preds[0].sum()
 ```text
 (37, TensorBase(1.0000))
 ```
-
-
 
 ### Softmax
 
@@ -946,8 +934,6 @@ tensor([[0.6025, 0.3975],
         [0.5959, 0.4041],
         [0.3661, 0.6339]])
 ```
-
-
 
 ### Log Likelihood
 
@@ -1082,8 +1068,6 @@ df
 tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```
 
-
-
 #### F.nll_loss
 
 * [https://pytorch.org/docs/stable/generated/torch.nn.functional.nll_loss.html#torch.nn.functional.nll_loss](https://pytorch.org/docs/stable/generated/torch.nn.functional.nll_loss.html#torch.nn.functional.nll_loss)
@@ -1111,8 +1095,6 @@ F.nll_loss(sm_acts, targ, reduction='none')
 ```text
 tensor([-0.6025, -0.4979, -0.1332, -0.0034, -0.4041, -0.3661])
 ```
-
-
 
 ### Taking the Log
 
@@ -1195,16 +1177,17 @@ nn.CrossEntropyLoss(reduction='none')(acts, targ)
 tensor([0.5067, 0.6973, 2.0160, 5.6958, 0.9062, 1.0048])
 ```
 
-
-
 ## Model Interpretation
+
 - It is very hard to interpret loss functions directly as they are optimized for differentiation and optimization, not human consumption
 
-#### ClassificationInterpretation
+### ClassificationInterpretation
+
 * [https://docs.fast.ai/interpret.html#Interpretation](https://docs.fast.ai/interpret.html#Interpretation)
 * Interpretation base class for exploring predictions from trained models
 
-#### ClassificationInterpretation.from_learner
+### ClassificationInterpretation.from_learner
+
 * [https://docs.fast.ai/interpret.html#Interpretation.from_learner](https://docs.fast.ai/interpret.html#Interpretation.from_learner)
 * Construct interpretation object from a learner
 
@@ -1240,10 +1223,10 @@ interp.most_confused(min_val=4)
  ('american_pit_bull_terrier', 'staffordshire_bull_terrier', 4)]
 ```
 
-
-
 ## Improving Our Model
+
 ### The Learning Rate Finder
+
 - picking the right learning rate is one of the most important things we can doe when training a model
     - a learning rate that is too small can take many, many epochs, increasing both training time and the risk of overfitting
     - a learning rate that is too big can prevent the model from improving at all
@@ -1311,6 +1294,7 @@ learn.fine_tune(1, base_lr=0.1)
 Using a very high learning rate resulted in an increasing error rate
 
 #### Learner.lr_find
+
 * [https://docs.fast.ai/callback.schedule.html#Learner.lr_find](https://docs.fast.ai/callback.schedule.html#Learner.lr_find)
 * Launch a mock training to find a good learning rate and return suggestions as a named tuple
 
@@ -1458,8 +1442,6 @@ learn.fine_tune(2, base_lr=3e-3)
 </table>
 </div>
 
-
-
 ### Unfreezing and Transfer Learning
 
 - freezing: only updating the weights in newly added layers while leaving the rest of a pretrained model unchanged
@@ -1471,6 +1453,7 @@ learn.fine_tune(2, base_lr=3e-3)
     5. train for a more epochs
 
 #### Learner.fine_tune
+
 * [https://docs.fast.ai/callback.schedule.html#Learner.fine_tune](https://docs.fast.ai/callback.schedule.html#Learner.fine_tune)
 * Fine tune with Learner.freeze for freeze_epochs, then with Learner.unfreeze for epochs, using discriminative LR.
 
@@ -1528,9 +1511,8 @@ learn.fit_one_cycle(3, 3e-3)
 </table>
 </div>
 
-
-
 #### Learner.unfreeze()
+
 * [https://docs.fast.ai/learner.html#Learner.unfreeze](https://docs.fast.ai/learner.html#Learner.unfreeze)
 * Unfreeze the entire model
 ```python
@@ -1627,8 +1609,6 @@ learn.fit_one_cycle(6, lr_max=1e-5)
   </tbody>
 </table>
 </div>
-
-
 
 ### Discriminative Learning Rates
 
@@ -1794,14 +1774,12 @@ learn.recorder.plot_loss()
 **Note:** Accuracy may continue to improve, even when the validation loss starts to get worse
 * validation loss can get worse when your model gets overconfident, not just when it starts to memorize the training data
 
-
 ### Selecting the Number of Epochs
 
 - you will often find that you are limited by time, rather than generalization and accuracy
 1. you should start with picking a number of epochs that will train in the amount of time that you are happy to wait for
 2. then look at the training and validation loss plots, and your metrics
 3. you will know that you have not trained for too long if they are still getting better even in your final epochs
-
 
 ### Deeper Architectures
 
@@ -1815,6 +1793,7 @@ learn.recorder.plot_loss()
 - take longer to train
 
 #### Learner.to_fp16
+
 * [https://docs.fast.ai/callback.fp16.html#Learner.to_fp16](https://docs.fast.ai/callback.fp16.html#Learner.to_fp16)
 * [Mixed Precision Training](https://on-demand.gputechconf.com/gtc/2019/video/_/S9143/)
 
@@ -1917,8 +1896,6 @@ learn.fine_tune(6, freeze_epochs=3)
 </table>
 </div>
 
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1929,9 +1906,5 @@ learn.fine_tune(6, freeze_epochs=3)
 **Previous:** [Notes on fastai Book Ch. 4](../chapter-4/)
 
 **Next:** [Notes on fastai Book Ch. 6](../chapter-6/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

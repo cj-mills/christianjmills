@@ -39,7 +39,6 @@ open-graph:
 
 ------
 
-
 ```python
 import transformers
 import datasets
@@ -83,16 +82,12 @@ def print_source(obj, exclude_doc=True):
 ```
 -----
 
-
-
 ## Introduction
 
 * Transformer-based language models like GPT-2 and GPT-3 can generate text almost indistinguishable from text written by humans.
 * Such models acquire a broad set of skills and pattern recognition abilities by learning to predict the next word in the text of millions of web pages.
 * We can activate these skills with different kinds of input prompts.
 * Language models are exposed to sequences of tasks during pretraining that we can adapt during inference.
-
-
 
 ## The Challenge with Generating Coherent Text
 
@@ -101,6 +96,7 @@ def print_source(obj, exclude_doc=True):
 * The quality and diversity of the generated text depend on the choice of decoding method and associated hyperparameters.
 
 ### GPT-2 Pretraining Process
+
 * GPT-2 is pretrained to estimate the probability $P\left(y \vert x \right)$ of a sequence of tokens $y = y_{1},y_{2},\ldots,y_{t}$ occurring in the text $x = x_{1},x_{2},\ldots,x_{k}$, given some initial prompt or context sequence.
 * It is common to use the chain rule of probability to factorize it as a product of conditional probabilities.
 
@@ -113,23 +109,25 @@ def print_source(obj, exclude_doc=True):
 * Some call this type of text generation conditional text generation since the output sequence depends on the choice of input prompt.
 
 ### Decoding
+
 * A decoding method determines which token to select at each timestep.
 * The language model produces a logit $z_{t,i}$ per token in the vocabulary at each time step.
 * We can get the probability distribution over the next possible token $w_{i}$ by taking the softmax.
 
 ### $$P\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = softmax \left( z_{t,i} \right)$$
+
 * Most decoder methods search for the most likely overall sequence by picking a $\hat{y}$ such that
 
 ### $$\hat{y} = \underset{y}{argmax} P\left(y \vert x \right)$$
+
 * We use approximations for $\hat{y}$ instead of finding it directly.
-
-
 
 ## Greedy Search Decoding
 
 * The simplest decoding method is to greedily select the token with the highest probability at each timestep.
 
 ### $$\hat{y}_{t} = \underset{y}{argmax} {P\left(y_{t} \vert y_{ \ < \ t},x \right)}$$
+
 * Greedy search decoding tends to produce repetitive output sequences.
 * Greedy search can miss sequences whose overall probability is higher when low probability words precede high-probability words.
 * Greedy search is not suitable for text generation tasks that require diversity. 
@@ -313,6 +311,7 @@ pd.DataFrame(iterations)
 -----
 
 #### `GenerationMixin.generate`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/text_generation#transformers.generation_utils.GenerationMixin.generate)
 * Generates sequences of token ids for models with a language modeling head.
 * **greedy decoding:** 
@@ -423,8 +422,6 @@ print(tokenizer.decode(output_greedy[0]))
 ```
 **Note:** The results demonstrate the repetitive output that is characteristic of greedy search decoding.
 
-
-
 ## Beam Search Decoding
 
 * Beam search keeps track of the $top-b$ most probable next tokens, where $b$ is the number of beams or partial hypotheses.
@@ -432,7 +429,6 @@ print(tokenizer.decode(output_greedy[0]))
 * We choose the next set of beams by considering all possible next-token extensions of the existing ones and selecting the $b$ most likely extensions.
 * We repeat this process until we reach the maximum length or an EOS token.
 * We select the most likely sequence by ranking the $b$ beams according to their log probabilities.
-
 
 ### $$\log{P\left(y_{1},\ldots,y_{t} \vert x \right)} = \sum^{N}_{t=1}{\log{P\left(y_{t} \vert y_{ \ < \ t},x \right)}}$$
 
@@ -471,9 +467,9 @@ import torch.nn.functional as F
 -----
 
 #### `log_softmax`
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.functional.log_softmax.html)
 * Mathematically equivalent to `log(softmax(x))`
-
 
 ### $$\text{LogSoftmax}(x_{i}) = \log\left(\frac{\exp(x_i)}{ \sum_j \exp(x_j)} \right)$$
 
@@ -587,17 +583,17 @@ print(f"\nlog-prob: {logp:.2f}")
 
 -----
 
-
-
 ## Sampling Methods
 
 * The simplest sampling method is to randomly sample from the probability distribution of the model's outputs over the entire vocabulary at each timestep.
 
 ### $$P\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\exp(z_{t,i})}{ \sum^{|V|}_{j=1} \exp(z_{t,j})}$$
+
 * where $\vert V \vert$ denotes the cardinality of the vocabulary
 * We can control the diversity of the output by adding a temperature parameter $T$ that rescales the logits before taking the softmax.
 
 ### $$\left(y_{t} = w_{i} \vert y_{ \ < \ t},x \right) = \text{softmax} \left( z_{t,i} \right) = \frac{\frac{\exp(z_{t,i})}{T}}{ \sum^{|V|}_{j=1} \frac{\exp(z_{t,j}}{T})}$$
+
 * We can tune the temperature parameter to control the shape of the probability distribution.
 * A $T$ value much less than $1$ suppresses the rare tokens.
 * A $T$ value much greater than $1$ causes each token to become equally likely.
@@ -696,8 +692,6 @@ print(tokenizer.decode(output_temp[0]))
 
 -----
 
-
-
 ## Top-k and Nucleus Sampling
 
 **Reset random seed**
@@ -769,6 +763,7 @@ plt.tight_layout()
 -----
 
 ### Top-k Sampling
+
 * The idea behind top-k sampling is to avoid low-probability choices by only choosing from the k tokens with the highest probability.
 * We can find a good value for k by looking at some text quality metrics.
 
@@ -868,15 +863,11 @@ print(tokenizer.decode(output_topp[0]))
 
 -----
 
-
-
 ## Which Decoding Method Is Best?
 
 * The best approach depends on the nature of the task.
 * Lower the temperature or use deterministic methods to perform a precise task like arithmetic or providing an answer to a specific question.
 * Switch to sampling methods and increase the temperature when you want the model to generate longer text and be more creative.
-
-
 
 ## References
 
@@ -888,9 +879,5 @@ print(tokenizer.decode(output_topp[0]))
 **Previous:** [Notes on Transformers Book Ch. 4](../chapter-4/)
 
 **Next:** [Notes on Transformers Book Ch. 6](../chapter-6/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

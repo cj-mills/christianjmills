@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 ::: {.callout-tip title="Presentation Resources:"}
 
@@ -32,9 +26,7 @@ open-graph:
 
 :::
 
-
-
-### About Jo Kristian Bergum
+## About Jo Kristian Bergum
 
 * **Distinguished Engineer** at Vespa.ai
 * 18 years at Vespa.ai, 20 years in search and recommendation.
@@ -44,9 +36,7 @@ open-graph:
   * **Blog:** [https://blog.vespa.ai/](https://blog.vespa.ai/)
 * Active on Twitter ([@jobergum](https://x.com/jobergum)), enjoys posting memes.
 
-
-
-### Talk Overview
+## Talk Overview
 
 * **Stuffing Text into Language Model Prompts:** Using RAG beyond question answering, e.g., for classification by retrieving relevant training examples. 
 * **Information Retrieval (The R in RAG):** Exploring the core concepts of retrieval and its importance in RAG pipelines.
@@ -57,9 +47,7 @@ open-graph:
   * Discussing **sparse** and **dense** representations (BM25, vectors, embeddings).
   * Examining baselines for comparison.
 
-
-
-### Demystifying RAG
+## Demystifying RAG
 
 * **RAG (Retrieval Augmented Generation):** A technique for enhancing language model outputs by retrieving relevant context from external knowledge sources.
 * **Common Use Cases:** Question answering, chatbots, generating grounded responses.
@@ -109,9 +97,7 @@ open-graph:
   * **Language Models:** The core component for generating text.
   * **State:** Data storage, including files, search engines, vector databases, and databases.
 
-
-
-### Cutting Through the Hype
+## Cutting Through the Hype
 
 * **Challenges in the RAG Landscape:**
   * Constant stream of new models, components, and tricks.
@@ -122,9 +108,7 @@ open-graph:
   * It's more complex than simply encoding text into a single vector representation.
   * Building effective RAG solutions requires understanding and leveraging existing retrieval techniques.
 
-
-
-### Evaluating Information Retrieval Systems
+## Evaluating Information Retrieval Systems
 
 * **Information Retrieval System as a Black Box:**
   * Input: Query
@@ -149,9 +133,7 @@ open-graph:
   * Often compare flat lists, not personalized results.
   * Don't always transfer well to specific domains or use cases. 
 
-
-
-### Building Your Own Relevancy Dataset
+## Building Your Own Relevancy Dataset
 
 * **The Importance of Measuring:**  To improve RAG performance, measure relevance on your specific data.
 
@@ -230,12 +212,8 @@ open-graph:
   * Iterate and measure the impact of changes to your retrieval system.
   * Track improvements in metrics like nDCG.
   * **Example:** Vespa documentation search showing improvement in nDCG with hybrid retrieval methods.
-  
-    
 
-
-
-### Representational Approaches and Scoring Functions
+## Representational Approaches and Scoring Functions
 
 * **Motivation for Efficient Retrieval:** Avoid scoring all documents in the collection for each query.
 * **Sparse Representations:**
@@ -265,9 +243,7 @@ open-graph:
   * **Example:** BM25 outperforming embedding models on long context documents in ColBERT evaluation.
     * **Blog Post:** [Announcing Vespa Long-Context ColBERT](https://blog.vespa.ai/announcing-long-context-ColBERT-in-vespa/)
 
-
-
-### Hybrid Approaches
+## Hybrid Approaches
 
 * **Combining Sparse and Dense Representations:**
   * Can overcome limitations of individual approaches.
@@ -277,9 +253,7 @@ open-graph:
   * Determining when to ignore embedding results.
   * Requires careful tuning and evaluation.
 
-
-
-### Long Context and Chunking
+## Long Context and Chunking
 
 * **Desire for Long Context Models:**  Eliminate the need for chunking.
 * **Reality of Chunking:** 
@@ -291,9 +265,7 @@ open-graph:
   * Split long documents into smaller segments.
   * Index multiple vectors per row in a database.
 
-
-
-### Real-World RAG Considerations
+## Real-World RAG Considerations
 
 * **Google Search Signals:** 
   * **Text Similarity:** BM25, vector cosine similarity.
@@ -306,9 +278,7 @@ open-graph:
   * Effective for combining tabular features.
   * Still relevant for real-world search.
 
-
-
-### Summary
+## Summary
 
 * **Information retrieval is more than just vector representations.**
 * **Build your own evaluations to improve retrieval.**
@@ -316,13 +286,9 @@ open-graph:
 * **Choose technologies with hybrid capabilities.**
 * **Real-world search involves more than just text similarity.**
 
+## Q&A Session
 
-
-
-
-### Q&A Session
-
-#### Q1: Metadata for Vector DB in RAG
+### Q1: Metadata for Vector DB in RAG
 
 * **Question:** What kind of metadata is most valuable to put into a vector DB for doing RAG?
 * **Answer:**
@@ -333,7 +299,7 @@ open-graph:
   * **Real-World Use Cases:** 
     * Consider factors beyond text, such as freshness, authority, quality, and even revenue.
 
-#### Q2: Calibration of Different Indices
+### Q2: Calibration of Different Indices
 
 * **Question:** Do you have any thoughts on calibration of different indices? How can we obtain confidence scores for recommendations?
 * **Answer:**
@@ -347,7 +313,7 @@ open-graph:
     * **Synthetic Data:**  Use large language models to generate synthetic training data.
   * **No Easy Tricks:** There's no universal solution for calibration without training data and evaluation.
 
-#### Q3: Efficacy of Re-rankers
+### Q3: Efficacy of Re-rankers
 
 * **Question:** What are your observations on the efficacy of re-rankers? Do you recommend using them?
 * **Answer:**
@@ -358,7 +324,7 @@ open-graph:
   * **Trade-offs:** Re-rankers add computational cost and latency.
   * **Recommendation:**  If accuracy is a priority and the cost is acceptable, re-rankers are recommended.
 
-#### Q4: Combining Usage Data and Semantic Similarity
+### Q4: Combining Usage Data and Semantic Similarity
 
 * **Question:**  Do you have advice on combining usage data (e.g., number of views) with semantic similarity?
 * **Answer:**
@@ -366,12 +332,12 @@ open-graph:
   * **Label Generation:** Convert interaction data into labeled training data. Different interactions (e.g., views, clicks, add-to-cart) may have different weights in the label generation process.
   * **Model Training:**  Train a ranking model (e.g., GBDT) using the labeled data, including semantic similarity scores and usage data as features.
 
-#### Q5: Jason Liu's Post on Structured Summaries 
+### Q5: Jason Liu's Post on Structured Summaries
 
 * **Question:** What are your thoughts on Jason Liu's post about the value of generating structured summaries and reports for decision makers instead of doing RAG as commonly done today?
 * **Answer:**  Jo was not familiar with the specific post.
 
-#### Q6: Recent Advancements in Text Embedding Models
+### Q6: Recent Advancements in Text Embedding Models
 
 * **Question:** What are some of your favorite advancements recently in text embedding models or other search technologies?
 * **Answer:**
@@ -379,7 +345,7 @@ open-graph:
   * **Improved Pre-trained Models:** Better pre-training techniques and data can lead to more robust and generalizable embedding models.
   * **Caution on Long Context:** Jo is not overly enthusiastic about increasing context length for embedding models. Research suggests diminishing returns for high-precision search with very long contexts.
 
-#### Q7: Query Expansion with BM25
+### Q7: Query Expansion with BM25
 
 * **Question:** Does query expansion of out-of-vocabulary words with BM25 work better at search? Are people utilizing classical search techniques like query expansion enough?
 * **Answer:**
@@ -387,7 +353,7 @@ open-graph:
   * **Query Expansion's Potential:** Query expansion and understanding are powerful techniques. Language models can be used for query expansion, and tools for prompting LLMs for this purpose are improving.
   * **Importance of Evaluation:** Building your own evaluation setup allows you to systematically test different techniques like query expansion on your specific data and determine their effectiveness.
 
-#### Q8: Handling Jargon and Tokenization Issues
+### Q8: Handling Jargon and Tokenization Issues
 
 * **Question:** How do you overcome limitations in fixed vocabulary and poor tokenization in domains with a lot of jargon, when using an out-of-the-box model?
 * **Answer:**
@@ -397,16 +363,12 @@ open-graph:
   * **Pre-training from Scratch:**  Training a BERT-like model from scratch with a custom vocabulary tailored to the domain is becoming more feasible. 
     * This is a common practice in e-commerce.
 
-#### Q9: ColBERT and Tokenizer Problems
+### Q9: ColBERT and Tokenizer Problems
 
 * **Question:** Would ColBERT-based methods improve retrieval when we are concerned with tokenizer problems?
 * **Answer:**
   * **ColBERT's Approach:** ColBERT learns token-level vector representations instead of a single vector for the whole passage or query. It offers high accuracy while being computationally less expensive than cross-encoders.
   * **Vocabulary Limitations:** ColBERT still relies on the same vocabulary as other BERT-based models, so it's not a complete solution to tokenizer problems.
   * **Future Direction:** Better pre-trained models with larger vocabularies would benefit ColBERT and other embedding models.
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction and Overview](#introduction-and-overview)
 * [Motivation: Long Context Transformers and Applications](#motivation-long-context-transformers-and-applications)
@@ -38,10 +33,6 @@ open-graph:
 * [History and Resources](#history-and-resources)
 * [Q&A](#qa)
 
-
-
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 13: Ring Attention](https://www.youtube.com/watch?v=ws7angQYIxI)
@@ -53,20 +44,12 @@ open-graph:
 
 :::
 
-
-
-
-
-
-
 ## Introduction and Overview
 
 - **Speaker**: Andreas Kopf, co-founder of the CUDA/GPU Mode Discord server, AI engineer at [Aleph Alpha](https://aleph-alpha.com/).
 - **Lecture Date:** April 6, 2024
 - **Topic**: Ring Attention, a method for sequence parallel attention across multiple devices.
 - **Focus**: High-level orchestration of multiple GPUs, rather than individual GPU utilization.
-
-
 
 ## Motivation: Long Context Transformers and Applications
 
@@ -88,9 +71,6 @@ open-graph:
 - **Open Question (Unanswered)**: How Claude, Gemini, and GPT-4 support long context lengths remains undisclosed. 
   - Andreas suggests it may not be ring attention due to high inference costs, especially for extremely long sequences like 10 million tokens.
 
-
-
-
 ## Background: Multimodal Input and Transformers
 
 - **Transformer Architecture**: Multi-headed attention and feedforward network in multiple layers.
@@ -100,8 +80,6 @@ open-graph:
   - **LWM**: VQGAN encodes 256x256 images into 144 tokens, allowing for video processing and next-text token prediction.
 - **Multimodal Applications**: Text, image, and video as individual or combined inputs and outputs, including text-to-image, text-to-video, image-to-text, video-to-text, and image-text combinations.
   - **[Classifier-Free Guidance](https://huggingface.co/papers/2207.12598)**:  Used in LWM to steer autoregressive generation and produce images as output.
-
-
 
 ## Challenge: Memory Limitations
 
@@ -116,10 +94,6 @@ open-graph:
   * Brute-force compute (tiling, blockwise)
 - **Ring Attention Approach**: Brute-force computation of all attention scores, but with memory optimizations to avoid quadratic memory scaling.
 
-
-
-
-
 ## Vanilla Attention Recap
 
 - **Process**: Two matrix multiplications: (1) Query x Transposed Keys = Attention Scores; (2) Softmax(Attention Scores) x Values = Output.
@@ -127,8 +101,6 @@ open-graph:
   ![Slide 8: Vanilla Attention](./images/vanilla-attention-slide-8.png)
 
 - **Parallel Computation Potential**: Each query's output can be computed independently, though typically done in batches for efficiency.  Individual query processing is a potential memory optimization, though quadratic attention scaling remains a problem.
-
-
 
 ## Compute Scaling with Context Length
 
@@ -144,10 +116,6 @@ open-graph:
   - **Example:** Training a 65B parameter model with 256k context length (64x increase) requires only 5.8x the compute compared to 4k context length.  
     - This is partly due to requiring fewer batches.  
     - However, quadratic scaling still dominates at extremely long context lengths (e.g., 100 million tokens).
-
-
-
-
 
 ## Online Softmax and LogSumExp Trick
 
@@ -331,8 +299,6 @@ open-graph:
 
   - Queries are processed against blocks of keys, intermediate outputs are generated, and these outputs are combined using the log-sum-exp trick to produce the final output.
 
-
-
 ## Ring Attention Details
 
 - **Paper:** [Ring Attention with Blockwise Transformers for Near-Infinite Context](https://arxiv.org/abs/2310.01889)
@@ -381,12 +347,6 @@ open-graph:
       4. **End for**
   5. **End for**
 
-
-
-
-
-
-
 ## Causal Masking and Stripe Attention
 
 - **Causal Masking**:  
@@ -417,8 +377,6 @@ open-graph:
 
 - **Benefits of Stripe Attention**:  Even distribution of work and data, allowing more efficient use of all devices.  By dropping the first query and last key, standard causal masking and flash attention can be used within the stripe attention framework.
 
-
-
 ## Flash Decoding
 
 - **Webpage:** [Flash-Decoding for long-context inference](https://crfm.stanford.edu/2023/10/12/flashdecoding.html)
@@ -442,8 +400,6 @@ open-graph:
 
 - **Implementation**: Andreas hasn't found a production-ready implementation (might be in [xformers](https://github.com/facebookresearch/xformers)).
 
-
-
 ## History and Resources
 
 - **Paper History**:
@@ -461,10 +417,6 @@ open-graph:
   - **[Zilin Zhu](https://github.com/zhuzilin)'s Ring Flash Attention**: [zhuzilin/ring-flash-attention](https://github.com/zhuzilin/ring-flash-attention)
   - **GPU Mode Implementation**: [gpu-mode/ring-attention](https://github.com/gpu-mode/ring-attention)
 - **Other Resources**:  [Andreas' "LogSumExp" IPython notebook](https://github.com/gpu-mode/lectures/blob/main/lecture_013/howto_log_sum_exp.ipynb)
-
-
-
-
 
 ## Q&A
 
@@ -495,9 +447,5 @@ open-graph:
   - Cloud deployments often have larger batch sizes due to higher throughput requirements.
   - On-premise deployments may face batch size one scenarios more frequently, impacting cost-effectiveness of high-end GPUs.
   - The business case and specific requirements (privacy, cost, latency) determine the optimal deployment strategy.
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

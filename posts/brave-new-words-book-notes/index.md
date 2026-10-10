@@ -16,12 +16,6 @@ open-graph:
  
 ---
 
-
-
-
-
-
-
 - [Introduction: Let’s write a new story together](#introduction-lets-write-a-new-story-together) 
 - [Part I꞉ Rise of the AI Tutor](#part-i-rise-of-the-ai-tutor)  
 - [Part II: Giving Voice to the Social Sciences](#part-ii-giving-voice-to-the-social-sciences)  
@@ -33,17 +27,9 @@ open-graph:
 - [Part VIII: AI Assessments and Admissions](#part-viii-ai-assessments-and-admissions)  
 - [Part IX: Work and What Comes Next](#part-ix-work-and-what-comes-next)
 
-
-
-
-
 ::: {.callout-note title="Book LInks:"}
 * [Publisher Page](https://www.penguinrandomhouse.com/books/740806/brave-new-words-by-salman-khan/)
 :::
-
-
-
-
 
 ## Introduction: Let's write a new story together
 
@@ -206,19 +192,11 @@ open-graph:
 - **A Turning Point**:  Highlights the transformative nature of AI and its implications for learning, work, and human purpose. 
 - **Conclusion**: The future of education is being shaped by AI, and embracing this technology with educated bravery is crucial for unlocking its full potential and navigating the challenges it presents. 
 
-
-
-
-
-
-
 ## Part I꞉ Rise of the AI Tutor
 
 > "A great teacher can teach calculus with a paperclip and literature in an empty field. Technology is just another tool, not a destination." - Unknown
 >
 > "In your primer, you have a resource that will make you highly educated, but it will never make you intelligent. That comes from life. Your life up to this point has given you all the experience you need to be intelligent. But you have to think about those experiences. If you don't think about them, you'll be psychologically unwell. If you do think about them, you will become not merely educated, but intelligent." - Neil Stevenson, The Diamond Age
-
-
 
 ### Chapter 1: Throwing Away the Bottle
 
@@ -308,8 +286,6 @@ open-graph:
 * **Learning Smarter with AI**: Brockman advocates for helping students learn smarter with AI.
 * **Conclusion**: "The genie is out of the bottle. It is time to throw the bottle away and our fear of generative AI along with it."
 
-
-
 ### Chapter 2: How to Teach Everything to Everyone
 
 #### Identifying Problems AI Can Solve in Education
@@ -365,8 +341,6 @@ open-graph:
 * **Facilitating Student Interactions**: Potential for facilitating interactions among multiple students.
 * **AI-Driven Simulations**: Future potential for AI-based practice and assessments using simulations.
 * **Enhancing Learning Domains**:  Potential to enhance learning across various domains: writing, reading comprehension, math, science, coding, and art.
-
-
 
 ### Chapter 3: Rise of the AI Tutor
 
@@ -529,17 +503,11 @@ open-graph:
   * AI tutors can make human tutors' jobs easier and more effective by providing complementary support. 
   * AI tutors have the potential to significantly improve the learning experience for millions of learners. 
 
-
-
-
-
 ## Part II: Giving Voice to the Social Sciences
 
 > "Art is a collaboration between God and the artist, and the less the artist does, the better." - André Gide
 >
 > "A single conversation across the table with a wise man is better than ten years' mere study of books." - Henry Wadsworth Longfellow
-
-
 
 ### Chapter 4: Why Students Write
 
@@ -619,8 +587,6 @@ open-graph:
   - Reports on the student-AI collaboration process to the teacher, providing insights into student progress and areas for improvement.
   - Detects potential cheating by identifying discrepancies between the collaborative process and the final submission.
 
-
-
 ### Chapter 5: The Future of Reading Comprehension, Where Literature Comes Alive
 
 #### Conversing with Characters: Sanvi's Experience
@@ -657,8 +623,6 @@ open-graph:
 - **Expanding beyond language arts**:
   - AI-powered reading comprehension tools can be applied to textbooks and articles across various subjects.
   - Students can engage in interactive dialogues with simulations of historical figures or scientists (e.g., debating the Federalist Papers with James Madison or conducting experiments with Marie Curie).
-
-
 
 ### Chapter 6: AI and Creativity
 
@@ -706,8 +670,6 @@ open-graph:
 - **Expanding creative skill sets**: generative AI may push creatives to broaden their skill sets and take on more diverse roles within their fields (e.g., screenwriters becoming full-fledged movie producers).
 - **Coppola's optimistic view**: AI can empower a new generation of creatives, leading to an explosion of artistic and scientific innovation.
 - **AI as a creative companion**: AI can augment human creativity, sparking new ideas, providing feedback, and enabling collaborative exploration.
-
-
 
 ### Chapter 7: Conversing with History
 
@@ -773,19 +735,11 @@ open-graph:
 - **Khanmigo as a precursor to the holodeck**: AI simulations offer a glimpse into the future of immersive and interactive learning experiences.
 - **Future possibilities**: with advancements in VR and AI, students may soon be able to experience history in a way that was previously unimaginable. 
 
-
-
-
-
-
-
 ## Part III: Empowering the Next Innovators
 
 > "What is a scientist, after all? It is a curious man looking through a keyhole, the keyhole of nature, trying to know what's going on." - Jacques-Yves Cousteau
 >
 > "If an elderly but distinguished scientist says that something is possible, he is almost certainly right. But if he says that it is impossible, he is very probably wrong." - Arthur C. Clark
-
-
 
 ### Chapter 8: Using Science to Study Science
 
@@ -881,8 +835,6 @@ open-graph:
   - Promoted active learning by encouraging hypothesis generation and critical thinking.
   - Demonstrated pedagogical expertise by adapting explanations to Khan's understanding and pushing for deeper conceptual understanding.
 
-
-
 ### Chapter 9: One Plus One Equals Closing the Math Gap
 
 #### John Spencer and AI in Math Education
@@ -944,8 +896,6 @@ open-graph:
 - **Clarification**: Khanmigo is not a replacement for human teachers but a powerful tool for students needing clarification, extra help, or review.
 - **Khanmigo's Pedagogical Features**: Engages students, encourages question rephrasing and problem summarization, and utilizes effective quizzing techniques.
 
-
-
 ### Chapter 10: Accessing Courses that Students Otherwise Would Not
 
 #### AI Tutors and the Need for Curriculum
@@ -1003,8 +953,6 @@ open-graph:
   - Offers check-ins, reflection prompts, and proactive interventions for struggling students.
 - **Example**: Khanmigo can send emails reminding students of their goals and offering support.
 
-
-
 ### Chapter 11: The Most Important Subject Matter Domain to Master
 
 #### Field Testing in Education
@@ -1043,19 +991,11 @@ open-graph:
 - Mastering the interconnectedness of knowledge is a foundational skill.
 - Once this understanding is achieved, other subjects become easier to learn. 
 
-
-
-
-
-
-
 ## Part IV: Better Together
 
 > "Electric communication will never be a substitute for the face of someone who with their soul encourages another person to be brave and true." - Charles Dickens
 >
 > "To know oneself is to study oneself in action with another person." - Bruce Lee
-
-
 
 ### Chapter 12: Bolstering Collaborative Learning
 
@@ -1109,8 +1049,6 @@ open-graph:
 - **Schooling's broader purpose**: Schooling is not just about academics; it's also about building human connections.
   - AI can facilitate these interactions beyond academic support.
 
-
-
 ### Chapter 13: AI meets student mental health coaching
 
 #### AI Academic Coach: A Scenario
@@ -1163,8 +1101,6 @@ open-graph:
   - LLMs can interact in a way that feels like interacting with a caring therapist.
   - AI models are being augmented with listening, speech, and vision capabilities to enhance their understanding of user emotions.
 - **Artificial Empath (AE)**: A potential term for AI that simulates empathy and could be a valuable tool in addressing loneliness, depression, and anxiety.
-
-
 
 ### Chapter 14: The Place for parents in AI-based education
 
@@ -1227,8 +1163,6 @@ open-graph:
 - **AI as a tool**: AI provides parents with additional tools and context to better understand and guide their children.
 - **Accessibility**: The best teacher or parent assistant is one that is readily available when needed.
 
-
-
 ### Chapter 15: Increasing points of connection between parents and their kids
 
 #### Reflecting on AI's Potential and Concerns
@@ -1269,21 +1203,11 @@ open-graph:
 - **Technology as a vector for shared learning**: Technology can empower parents and children to explore the world of knowledge together.
 - **AI-guided journeys**:  AI can create engaging and interactive learning experiences for families.
 
-
-
-
-
-
-
-
-
 ## Part V: Keeping Kids Safe
 
 > "Never travel faster than your guardian angel can fly." - Mother Teresa
 >
 > "Distrust and caution are the parents of security." - Benjamin Franklin
-
-
 
 ### Chapter 16: Delivering the Facts – The State of Bias and Misinformation
 
@@ -1364,8 +1288,6 @@ open-graph:
 - **Promoting Balanced Viewpoints**: AI systems are becoming more balanced and less susceptible to manipulation by individual actors.
   - AI can help guide students away from misinformation and towards moderate viewpoints and credible sources.
 
-
-
 ### Chapter 17: What about data collection?
 
 #### Data Collection and Personalized Ads
@@ -1401,8 +1323,6 @@ open-graph:
 - **Data Monetization**: Organizations might be tempted to monetize data, even if they initially intended to use it responsibly.
 - **Data Security**: Inadequate data security measures can lead to breaches and data vulnerability.
 - **Parental and Educator Advice**: Ensure that applications, especially those used by children, have clear data use policies and robust security measures.
-
-
 
 ### Chapter 18: AI and the Gift of Transparency
 
@@ -1450,8 +1370,6 @@ open-graph:
   - **Overbearing Monitoring**: Excessive parental control can lead to resentment and trust issues.
   - **Pressure to Perform**: Constant monitoring can create undue pressure on children to perform academically.
 - **Finding the Right Balance**: Parents and application developers need to strike a balance between monitoring and respecting children's privacy and independence.
-
-
 
 ### Chapter 19: AI as Guardian Angel
 
@@ -1512,21 +1430,11 @@ open-graph:
 - **Personalized Guidance**: AI can act as a personalized guide, filtering content based on our needs rather than the interests of corporations.
 - **Conclusion**: AI has the potential to be our guardian angel in the online world. 
 
-
-
-
-
-
-
-
-
 ## Part VI: Teaching in the Age of AI
 
 >  "I am indebted to my father for living, but to my teacher for living well." - Alexander the Great
 >
 >  "A teacher who is attempting to teach without inspiring the pupil with the desire to learn is hammering on cold iron." - Horace Mann
-
-
 
 ### Chapter 20: How AI Will Supercharge Teachers and Teaching
 
@@ -1576,8 +1484,6 @@ open-graph:
      - **Benefits**:
        - Replaces traditional homework with interactive in-class activities.
        - AI simplifies lecture delivery, allowing teachers to focus on other aspects of teaching.
-
-
 
 ### Chapter 21: Dawn of the AI Teaching Assistant
 
@@ -1654,8 +1560,6 @@ open-graph:
 - **Benefits**: Improves student experiences, increases teacher job satisfaction, and addresses teacher burnout.
 - **Emphasis on Human Connection**:  Human-to-human connection remains crucial in education, and teachers will always play a central role.
 
-
-
 ### Chapter 22: Helping Build Alternative Education Models
 
 #### The Rise of Homeschooling
@@ -1721,8 +1625,6 @@ open-graph:
 - AI and online platforms are fostering a more personalized and flexible educational landscape.
 - **Empowering Families**: Provides families with greater agency in choosing educational pathways.
 - **Supporting Diverse Learning Needs**:  Offers a range of options beyond traditional schooling to cater to individual student needs and preferences.
-
-
 
 ### Chapter 23: Fixing Cheating in College
 
@@ -1804,17 +1706,9 @@ open-graph:
 - **Enriched Learning**: AI-powered tools can create a richer and more productive learning environment.
 - **Preparing Students for the Future**:  By thoughtfully integrating AI, colleges can better equip students with the skills and integrity needed for success in their future careers.
 
-
-
-
-
-
-
 ## Part VII: The Global Classroom
 
 > "The world has enough for everyone's need, but not enough for everyone's greed." - Mahatma Gandhi
-
-
 
 ### Chapter 24: The Global Classroom
 
@@ -1904,8 +1798,6 @@ open-graph:
   - Provides educators with robust tools to create conducive learning environments.
   - Augments the motivation provided by adult relationships.
   - Supports personalized learning and motivation.
-
-
 
 ### Chapter 25: Economics of AI in Education
 
@@ -1999,17 +1891,11 @@ open-graph:
 - **Transformative Potential**: AI technology can be transformative in areas with limited resources and pedagogical approaches.
 - **Optimism for the Future**: The potential of AI to improve educational access and quality globally. 
 
-
-
-
-
 ## Part VIII: AI Assessments and Admissions
 
 > "Not everything that can be counted counts, and not everything that counts can be counted." - William Bruce Cameron
 >
 > "Evaluation is creation. Hear it, you creators. Evaluating is itself the most valuable treasure of all that we value. It is only through evaluation that value exists. And without evaluation, the nut of existence would be hollow. Hear it, you creators." - Friedrich Nietzsche
-
-
 
 ### Chapter 26: The Future of K-12 Assessments
 
@@ -2104,8 +1990,6 @@ open-graph:
   - Expanding the scope of assessment to include previously immeasurable skills like communication, creativity, and curiosity.
   - Motivating the education system to focus on holistic development of individuals.
 
-
-
 ### Chapter 27: The AI of College Admissions
 
 #### AI's Impact on College Admissions Components
@@ -2185,19 +2069,11 @@ open-graph:
 - Thoughtful and ethical implementation of AI can lead to a fairer and more transparent admissions process.
 - Potential for AI to shift the focus from subjective narratives to standardized assessment of both academic and soft skills, potentially creating a more equitable and meritocratic system. 
 
-
-
-
-
-
-
 ## Part IX: Work and What Comes Next
 
 > "The one who plants trees knowing that he will never sit in their shade has at least started to understand the meaning of life." - Rabindranath Tagore
 >
 > "Learn the rules like a pro so you can break them like an artist." - Pablo Picasso
-
-
 
 ### Chapter 28: The AI Revolution and the Future of Work
 
@@ -2254,8 +2130,6 @@ open-graph:
 
 - **AI's Broad Capabilities:** AI can understand language, recognize patterns, solve problems, diagnose illnesses, make stock market trades, compose music, fight lawsuits, understand emotions, analyze genetic code, handle insurance claims, engineer, and write articles.
 - **Adaptation as the Key Strategy:** The successful approach will be to adapt to AI rather than resist it.
-
-
 
 ### Chapter 29: Preparing Kids for the AI-Driven Workplace
 
@@ -2339,8 +2213,6 @@ open-graph:
   - Utilizing AI tools to support mastery of core skills.
   - Providing more time and space for student agency and creativity.
 
-
-
 ### Chapter 30: AI-Powered Matchmaking in the Job Market
 
 #### Predictions for the Future of Work
@@ -2384,8 +2256,6 @@ open-graph:
 - **AI as a Potential Improvement:** While perfect objectivity is impossible, AI can be designed to be demonstrably less biased and more consistent than current subjective human processes.
 - **Scrutiny and Regulation:** AI systems used in recruiting should be carefully scrutinized and regulated to mitigate bias.
 - **Potential for Increased Inclusivity and Fairness:** Ultimately, AI tools can contribute to a more inclusive, efficient, and less biased hiring process.
-
-
 
 ### Chapter 31: Navigating the AI Future with Educated Bravery
 
@@ -2459,12 +2329,5 @@ open-graph:
 - **Embrace AI with Educated Bravery:** We must approach the AI revolution with a combination of hope, caution, and a commitment to responsible development and utilization.
 - **Use AI to Uplift Humanity:** AI can be a powerful tool for improving lives, expanding opportunities, and creating a more equitable and prosperous future for all. 
 - **Work Together to Shape a Positive AI Future:** By working together, we can ensure that AI is used to unlock human potential and create a world that surpasses our current imagination. 
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

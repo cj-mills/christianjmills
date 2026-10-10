@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction](#introduction)
 * [Overview of the Talk](#overview-of-the-talk)
@@ -34,10 +29,6 @@ open-graph:
 * [Auto-Tuning](#auto-tuning)  
 * [Conclusion and Resources](#conclusion-and-resources)
 
-
-
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 14: Practitioners Guide to Triton](https://www.youtube.com/watch?v=DdTsX6DQk24)
@@ -45,10 +36,6 @@ open-graph:
 
 
 :::
-
-
-
-
 
 ## Introduction
 
@@ -66,8 +53,6 @@ open-graph:
     - Independent open-source contributor.
     - **Ko-fi**: [https://ko-fi.com/umerha](https://ko-fi.com/umerha)
 
-
-
 ## Overview of the Talk
 
 - **Title**: A Practitioner's Guide to Triton
@@ -82,8 +67,6 @@ open-graph:
   - **Benchmarking and Auto-Tuning**
     - Performance Measurement
     - Kernel Optimization
-
-
 
 ## Why and When to Use Triton
 
@@ -143,8 +126,6 @@ open-graph:
 - **Recommendation**:
   - **Debugging** is important; use "simulator mode" when possible.
   - Be aware of limitations on older GPUs or with certain operations.
-
-
 
 ## How to Write Triton Kernels
 
@@ -435,8 +416,6 @@ open-graph:
 - **Vectorized Operations**:
   - Simultaneous operations on multiple data points.
 
-
-
 ## Practical Examples
 
 ```python
@@ -469,8 +448,6 @@ x, y, x+y
  tensor([1, 3, 3, 5, 5, 7]))
 ```
 
-
-
 ### Example 1: Copying a Tensor
 
 ```python
@@ -501,8 +478,6 @@ def copy(x, bs, kernel_fn):
     kernel_fn[grid](x, z, n, bs)
     return z
 ```
-
-
 
 #### Objective
 
@@ -666,8 +641,6 @@ def copy(x, bs, kernel_fn):
 - Use **masks** to handle data boundaries.
 - **Debugging** is facilitated by simulator mode.
 
-
-
 ### Example 2: Grayscaling an Image
 
 ::: {.callout-note}
@@ -749,13 +722,9 @@ def show_img(x, figsize=(4,3), **kwargs):
     plt.imshow(x.cpu(), **kwargs)
 ```
 
-
-
 #### Objective
 
 - Convert a color image to grayscale using a Triton kernel.
-
-
 
 #### Steps
 
@@ -893,8 +862,6 @@ def rgb2grey_k(x_ptr, out_ptr, h, w, bs0: tl.constexpr, bs1: tl.constexpr):
   
   - Successfully converted grayscale image.
 
-
-
 ### Example 3: Matrix Multiplication
 
 ::: {.callout-note}
@@ -911,8 +878,6 @@ import torch
 import triton
 import triton.language as tl
 ```
-
-
 
 #### Objective
 
@@ -948,8 +913,6 @@ import triton.language as tl
      - Multiply and accumulate.
 5. **Store Result**:
    - Write the computed block to **C**.
-
-
 
 #### Implementation
 
@@ -1167,8 +1130,6 @@ import triton.language as tl
   ✅ Triton and Torch match
   ```
 
-
-
 ### Example 4: Faster Matrix Multiplication
 
 #### Swizzling for Cache Optimization
@@ -1373,8 +1334,6 @@ import triton.language as tl
       tl.store(c, acc, mask=mask)
   ```
 
-  
-
 #### Validation
 
 - **Testing**:
@@ -1421,8 +1380,6 @@ import triton.language as tl
 
   - Compare output with PyTorch's `torch.matmul`.
   - Use various matrix sizes for thorough testing.
-
-
 
 ## Benchmarking
 
@@ -1544,8 +1501,6 @@ matmul-performance:
 6              2048.0  0.014159  0.014179  0.079470
 ```
 
-
-
 #### Benchmark #2
 
 ```python
@@ -1626,8 +1581,6 @@ matmul-performance:
 1        32.0  0.375000  0.360902    0.3
 2        64.0  0.352941  0.352941    0.3
 ```
-
-
 
 #### Benchmark #3
 
@@ -1731,8 +1684,6 @@ matmul-performance:
 - **NVIDIA Nsight Compute (NCU)**:
   - Provides detailed performance metrics.
   - Helps identify optimization opportunities.
-
-
 
 ## Auto-Tuning
 
@@ -1995,8 +1946,6 @@ matmul-performance:
   - Refer to Triton documentation and community resources.
   - Experiment with different configurations.
 
-
-
 ## Conclusion and Resources
 
 ### Summary
@@ -2019,13 +1968,5 @@ matmul-performance:
   * **LightLLM Triton Kernels:** [lightllm/common/basemodel/triton_kernel](https://github.com/ModelTC/lightllm/tree/main/lightllm/common/basemodel/triton_kernel)
   * **unsloth Triton Kernels:** [unsloth/kernels](https://github.com/unslothai/unsloth/tree/main/unsloth/kernels)
   * **Triton Puzzles:** [srush/Triton-Puzzles](https://github.com/srush/Triton-Puzzles)
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

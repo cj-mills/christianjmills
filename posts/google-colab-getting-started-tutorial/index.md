@@ -15,8 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 * [Introduction](#introduction)
 * [Access Google Colab](#access-google-colab)
 * [The Notebook Selection Window](#the-notebook-selection-window)
@@ -27,16 +25,9 @@ open-graph:
 * [Save Your Notebook](#save-your-notebook)
 * [Conclusion](#conclusion)
 
-
-
-
 ## Introduction
 
 In this tutorial, I'll introduce you to Google Colab, its features, and how to use it to run your code. Google Colab provides a free, cloud-based Jupyter Notebook environment that allows you to write, run, and share Python code in your browser without any setup or installation. A Jupyter Notebook is an interactive web-based tool for creating and sharing documents that contain live code, visualizations, and narrative text, often used in data analysis, visualization, and education.
-
-
-
-
 
 ## Access Google Colab
 
@@ -46,8 +37,6 @@ To access Google Colab, follow these steps:
 2. Sign in with your Google account. If you don't have a Google account, create one [here](https://accounts.google.com/signup).
 
 ![google-colab-welcome-notebook-signed-out](./images/google-colab-welcome-notebook-signed-out.png){fig-align="center"}
-
-
 
 ## The Notebook Selection Window
 
@@ -65,14 +54,6 @@ The "Welcome to Colaboratory" notebook is already open behind the Notebook Selec
 
 ![google-colab-welcome-page-exit-popup](./images/google-colab-welcome-page-exit-popup.png){fig-align="center"}
 
-
-
-
-
-
-
-
-
 ## Understanding the Notebook Interface
 
 A notebook consists of a list of cells. Google Colab notebooks have two main types of cells: code cells and text cells. Code cells allow you to write and run Python code, while text cells let you add formatted text, images, and equations using [Markdown](https://www.markdownguide.org/getting-started/). The first few cells in the welcome notebook are text cells.
@@ -80,8 +61,6 @@ A notebook consists of a list of cells. Google Colab notebooks have two main typ
 
 
 ![google-colab-welcome-notebook-top](./images/google-colab-welcome-notebook-top.png){fig-align="center"}
-
-
 
 ### Text Cells
 
@@ -125,9 +104,8 @@ Google Colab will add the new Markdown cell below the currently selected cell.
 
 ![google-colab-welcome-notebook-new-text-cell](./images/google-colab-welcome-notebook-new-text-cell.png){fig-align="center"}
 
-
-
 ### Code Cells
+
 To create a new code cell, click the `+ Code` button in the toolbar at the top of the notebook or press `Ctrl+M B`. 
 
 ![google-colab-welcome-notebook-new-code-cell](./images/google-colab-welcome-notebook-add-new-code-cell.png){fig-align="center"}
@@ -156,17 +134,9 @@ We can also use code cells to access the command line by adding an exclamation p
 
 ![google-colab-welcome-notebook-access-command-line](./images/google-colab-welcome-notebook-access-command-line.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Working with Data
 
 Google Colab allows you to upload and download files to and from your computer and connect notebooks to your Google Drive.
-
-
 
 ### Uploading Files
 
@@ -198,10 +168,6 @@ You can upload files from your local machine to use in your Google Colab noteboo
 
 ![google-colab-load-image-file](./images/google-colab-load-image-file.png){fig-align="center"}
 
-
-
-
-
 ### Downloading Files
 
 To download a file from your Google Colab workspace to your local machine, follow these steps:
@@ -212,12 +178,6 @@ To download a file from your Google Colab workspace to your local machine, follo
 ![google-colab-download-file](./images/google-colab-download-file.png){fig-align="center"}
 
 The file will download to your local machine.
-
-
-
-
-
-
 
 ### Connecting to Google Drive
 
@@ -264,12 +224,6 @@ Your Google Drive should now be mounted and accessible from the file browser.
 
 You can read, write, and manage your Google Drive files directly from your Google Colab notebook. To access the files, use the path `/content/drive/MyDrive/` followed by the file or folder name.
 
-
-
-
-
-
-
 ## Using Hardware Acceleration
 
 Google Colab offers free access to GPUs and TPUs to accelerate your code. To enable GPU or TPU acceleration:
@@ -308,11 +262,6 @@ Your notebook will now use the selected hardware accelerator. Note that free GPU
 
 ![google-colab-disable-hardware-acceleration](./images/google-colab-disable-hardware-acceleration.png){fig-align="center"}
 
-
-
-
-
-
 ## Create a New Notebook
 
 To create a new notebook:
@@ -332,12 +281,6 @@ A new notebook will open in a separate tab. The runtime for the previous noteboo
 You can rename the notebook by clicking the notebook name at the top of the page. For now, we can name it "My First Notebook."
 
 ![google-colab-rename-notebook](./images/google-colab-rename-notebook.png){fig-align="center"}
-
-
-
-
-
-
 
 ## Save Your Notebook
 
@@ -363,12 +306,6 @@ Google Colab will open our new copy of the notebook in a separate tab.
 If we check the "Colab Notebooks" folder in Google Drive, we should now see our copy of the welcome notebook.
 
 ![google-drive-verify-copy-of-welcome-notebook](./images/google-drive-verify-copy-of-welcome-notebook.png){fig-align="center"}
-
-
-
-
-
-
 
 ## Sharing Notebooks
 
@@ -402,13 +339,9 @@ You can share your Google Colab notebook with others, similar to other Google Dr
 
    ![google-colab-enable-shareable-link-copy-link](./images/google-colab-enable-shareable-link-copy-link.png){fig-align="center"}
 
-
-
 ## Version Control with GitHub
 
 Google Colab can save and load notebooks from GitHub repositories, enabling seamless collaboration and tracking of changes in your code.
-
-
 
 ### Saving a notebook to a GitHub repository:
 
@@ -428,8 +361,6 @@ Google Colab can save and load notebooks from GitHub repositories, enabling seam
 
 ![google-colab-copy-to-github-click-ok](./images/google-colab-copy-to-github-click-ok.png){fig-align="center"}
 
-
-
 ### Loading a notebook from a GitHub repository:
 
 1. Go to the [Google Colab website](https://colab.research.google.com/).
@@ -446,22 +377,11 @@ Google Colab can save and load notebooks from GitHub repositories, enabling seam
 
 4. Select the notebook you want to open, and it will open in a new tab.
 
-   
-
-
-
 ## Conclusion
 
 You've now learned the fundamentals of Google Colab. This tutorial covered creating and editing cells, working with data, hardware acceleration, and saving and sharing notebooks via Google Drive and GitHub.
 Keep exploring Google Colab to uncover more features that can enhance your projects.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

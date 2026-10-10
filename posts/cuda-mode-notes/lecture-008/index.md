@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
-
 
 * [Introduction](#introduction)
 * [The Importance of SRAM](#the-importance-of-sram)
@@ -39,10 +33,6 @@ open-graph:
 * [Case Study 6: Rewriting Algorithms with Better Math (Flash Attention)](#case-study-6-rewriting-algorithms-with-better-math-flash-attention)
 * [Conclusion](#conclusion)
 
-
-
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 8: CUDA Performance Checklist](https://www.youtube.com/watch?v=SGhfUhlowB4)
@@ -51,12 +41,6 @@ open-graph:
 * **Lightning AI Studio:** [CUDA Mode Lectures](https://lightning.ai/msaroufim/studios/cuda-mode-lectures?section=featured&query=cuda+mode)
 
 :::
-
-
-
-
-
-
 
 ## Introduction
 
@@ -79,8 +63,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 
 :::
 
-
-
 ## The Importance of SRAM
 
 - **Blog Post:** [Why SRAM is faster than DRAM](https://siliconvlsi.com/why-sram-is-faster-than-dram/)
@@ -93,8 +75,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
   - **Notes:** [Notes on *Trends in Deep Learning Hardware: Bill Dally (NVIDIA)*](../trends-in-deep-learning-hardware-bill-dally-nvidia/)
 - Key takeaway: While hardware limitations exist, we can leverage software tricks to improve performance.
 
-
-
 ## CUDA Performance Tricks
 
 - **Coalescing global memory accesses:** Ensuring contiguous memory access for efficient data transfer.
@@ -106,8 +86,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 - **Thread coarsening:** Increasing the workload per thread, particularly beneficial for memory-bound kernels.
 - ***Rewriting algorithms using better math:*** Employing algorithmic and mathematical optimizations to improve performance (e.g., Flash Attention).
 - Most of these tricks are discussed in the "Programming Massively Parallel Processors" (PMPP) book.
-
-
 
 ## Memory Latency and the Roofline Model
 
@@ -126,8 +104,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
     - **Y-axis:** Performance.
     - **Memory-bound workloads:** Performance limited by memory bandwidth (low operational intensity).
     - **Compute-bound workloads:** Performance limited by GPU compute capability (high operational intensity).
-
-
 
 ## Case Study 1: Coalescing Global Memory Accesses
 
@@ -271,8 +247,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 
   ​    
 
-
-
 ## Case Study 2: Maximizing Occupancy
 
 - **Occupancy:** The ratio of active warps to the maximum number of warps a streaming multiprocessor (SM) can handle.
@@ -392,8 +366,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 
 - **Key takeaway:** Maximizing occupancy is crucial for achieving optimal performance, especially for compute-bound kernels.
 
-
-
 ## Understanding Memory vs. Compute Bound Workloads
 
 - **Slides:** [NVIDIA Tensor Core DL Performance Guide](https://developer.download.nvidia.com/video/gputechconf/gtc/2019/presentation/s9926-tensor-core-performance-the-ultimate-guide.pdf)
@@ -423,8 +395,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 - **Optimizations for Compute-Bound Kernels:**
     - **Algorithm optimization:** Rewriting the algorithm with fewer operations or improved mathematical formulations.
 - **Key takeaway:** Understanding the bottleneck (memory or compute) is crucial for selecting the right optimization strategies.
-
-
 
 ## Case Study 3: Minimizing Control Divergence
 
@@ -573,8 +543,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
     | Avg. Divergent Branches   |             | 0            |
 
 - **Key takeaway:** Minimizing control divergence is important for maintaining high warp utilization and overall performance.
-
-
 
 ## Case Study 4: Thread Coarsening
 
@@ -777,8 +745,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 - **Note:** Larger coarsening factors may not always yield further improvements (Zippy's experiments in CUDA Mode Discord).
 
 - **Key takeaway:** Thread coarsening can significantly improve performance for memory-bound kernels by reducing memory traffic.
-
-
 
 ## Case Study 5: Privatization
 
@@ -1047,8 +1013,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 
 - **Key takeaway:** Privatization can be effective, but its impact depends on the specific algorithm and memory access patterns.
 
-
-
 ## Case Study 6: Rewriting Algorithms with Better Math (Flash Attention)
 
 - **Flash Attention:** An example of algorithm optimization for attention mechanisms.
@@ -1148,8 +1112,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 
 - **Key takeaway:** Algorithmic and mathematical optimizations can significantly improve performance, especially for compute-bound kernels.
 
-
-
 ## Conclusion
 
 - This lecture presented several key optimizations for improving CUDA kernel performance.
@@ -1170,12 +1132,5 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 - Understanding whether a workload is memory or compute bound is crucial for choosing the right optimization strategies.
 
 - **CUDA Mode:** Represents the mastery of both math and computer science to co-design software with hardware in mind.
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

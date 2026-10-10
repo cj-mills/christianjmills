@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Introduction to AutoTrain](#introduction-to-autotrain)
 * [Getting Started with AutoTrain](#getting-started-with-autotrain)
@@ -33,10 +27,6 @@ open-graph:
 * [Config Files and Advanced Options](#config-files-and-advanced-options)
 * [Additional Features and Considerations](#additional-features-and-considerations)
 * [Q&A Session](#qa-session)
-
-
-
-
 
 ## Introduction to AutoTrain
 
@@ -49,8 +39,6 @@ open-graph:
   * **Computer Vision:** Image classification, Object Detection
   * **Tabular Data:** Classification, Regression
 * Leverages the Hugging Face ecosystem, including transformers, datasets, diffusers, and Accelerate, ensuring compatibility with the latest models and tools.
-
-
 
 ## Getting Started with AutoTrain
 
@@ -65,8 +53,6 @@ open-graph:
   * Configure parameters or use default settings.
   * Monitor training progress and logs.
 * **Documentation:** [Creating a New AutoTrain Space](https://huggingface.co/docs/autotrain/quickstart_spaces#creating-a-new-autotrain-space)
-
-
 
 ## Fine-tuning LLMs with AutoTrain
 
@@ -88,8 +74,6 @@ open-graph:
 * Trains a custom reward model for sequence classification.
 * Dataset requires "chosen" and "rejected" text columns.
 
-
-
 ### DPO and ORPO
 
 * **DPO - Direct Preference Optimization**
@@ -101,8 +85,6 @@ open-graph:
 * ORPO is recommended over DPO as it requires less memory and compute.
 * Dataset requires "prompt," "chosen," and "rejected" columns (all conversations).
 * Supports chat templates.
-
-
 
 ## Training Your Model
 
@@ -137,8 +119,6 @@ open-graph:
     autotrain --config <path_to_config_file>
     ```
 
-    
-
 #### Local Installation
 
 ::: {.panel-tabset}
@@ -161,15 +141,11 @@ conda install -c "nvidia/label/cuda-12.1.0" cuda-nvcc
 
 :::
 
-
-
 ### Training on Other Platforms
 
 * **[Jarvis Labs](https://jarvislabs.ai/):** Provides AutoTrain templates for easy setup and training.
 * **[DGX Cloud](https://www.nvidia.com/en-us/data-center/dgx-cloud/):** Rent high-performance GPUs for training large models.
 * **[Google Colab](https://colab.research.google.com/):** Run AutoTrain directly in Colab using provided notebooks and UI.
-
-
 
 ## Config Files and Advanced Options
 
@@ -179,16 +155,11 @@ conda install -c "nvidia/label/cuda-12.1.0" cuda-nvcc
 * Access example config files in the AutoTrain GitHub repository.
   * **GitHub Repository:** [autotrain-advanced/configs](https://github.com/huggingface/autotrain-advanced/tree/main/configs)
 
-
-
-
 ## Additional Features and Considerations
 
 * AutoTrain automatically handles multi-GPU training using DeepSpeed or distributed data parallel.
 * QLORA is supported on DeepSpeed for efficient training.
 * Sentence Transformer fine-tuning is available for tasks like improving RAG models.
-
-
 
 ## Q&A Session
 
@@ -199,11 +170,5 @@ conda install -c "nvidia/label/cuda-12.1.0" cuda-nvcc
 * **CPU Training:** Possible, but may come with performance limitations.
 * **Custom Chat Templates:** Can be added by modifying the `tokenizer_config.json` file of a cloned model.
 * **Synthetic Data Generation:** Not currently supported, but users can generate their own.
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

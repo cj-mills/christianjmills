@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Fine-Tuning Fundamentals](#fine-tuning-fundamentals)
 * [Axolotl Framework for Fine-Tuning](#axolotl-framework-for-fine-tuning)
@@ -35,10 +29,6 @@ open-graph:
 * [DeepSpeed and FSDP Configurations in Axolotl](#deepspeed-and-fsdp-configurations-in-axolotl)
 * [Training on Modal](#training-on-modal)
 * [Q&A Session](#qa-session)
-
-
-
-
 
 ## Fine-Tuning Fundamentals
 
@@ -52,7 +42,7 @@ open-graph:
 * **Popularity and Practicality:** 7 billion parameter base models are widely used for finetuning, evidenced by high download counts, suggesting a good starting point for most users.
 * **Consider Resource Constraints:** Larger models (e.g., 70 billion parameters) require significant computational resources and may not be necessary for all applications.
 
-#### Model Family 
+#### Model Family
 
 * **Staying Current:** Opt for recently released and well-regarded models (e.g., Llama3).
 * **Resources for Identifying Trends:** 
@@ -96,9 +86,9 @@ open-graph:
 * **Minimal Performance Impact:** While some accuracy trade-off is expected, the practical impact on results is often smaller than anticipated.
 * **Common Practice:** Many practitioners use QLoRA as their default fine-tuning method due to its efficiency. 
 
-### Importance of Data Quality 
+### Importance of Data Quality
 
-####  Data Improvement over Hyperparameter Tuning 
+#### Data Improvement over Hyperparameter Tuning
 
 * Many ML practitioners often prioritize hyperparameter optimization over data quality.
 * The impact of improving data quality on model performance is significantly higher than that of hyperparameter tuning.
@@ -107,22 +97,17 @@ open-graph:
   * **Scenario:** You've fine-tuned a model, then improved and expanded your dataset. Should you continue fine-tuning the existing model or start from scratch?
   * **Recommendation:** Start fine-tuning from the base model again using the enhanced dataset.
 
-
 #### Axolotl: Simplifying ML and Enabling Data Focus
 
 * Axolotl abstracts away the complexities of transformers, enabling users to focus on data and model training without needing in-depth technical knowledge.
 * Axolotl's user-friendliness, enables a shift in focus from code debugging to data analysis.
 * This ease of use allows for more experimentation and exploration of the data, leading to a better understanding of the problem and potentially better solutions.
 
-####  Axolotl: Built-in Best Practices and Efficiency
+#### Axolotl: Built-in Best Practices and Efficiency
 
 * Axolotl comes with sensible default values and best practices, saving users time and effort. 
 * The speaker mentions "sample packing" as a specific example of a clever optimization feature within Axolotl that speeds up training.
 * Users can leverage these pre-built optimizations instead of spending time figuring them out independently. 
-
-
-
-
 
 ## Axolotl Framework for Fine-Tuning
 
@@ -179,8 +164,6 @@ cd axolotl
 
 pip install -e '.[flash-attn,deepspeed]'
 ```
-
-
 
 ### Configuration Files
 
@@ -301,8 +284,6 @@ pip install -e '.[flash-attn,deepspeed]'
 
     :::
 
-
-
 ### Datasets
 
 * Axolotl supports various data formats, including the common "alpaca" format.
@@ -329,7 +310,6 @@ pip install -e '.[flash-attn,deepspeed]'
 
   * Each sample contains an instruction, optional input, and desired response.
   * The model is trained to predict the text following the "Response:" section.
-
 
 ### Preprocessing Data
 
@@ -386,11 +366,6 @@ pip install -e '.[flash-attn,deepspeed]'
      - The Gradio app allows for easy testing and interaction with the trained model in a web browser.
 
        - The Gradio app is for testing and not for production use.
-     
-
-
-
-
 
 ## Honeycomb Case Study: Fine-tuning LLMs for Natural Language Querying
 
@@ -502,12 +477,6 @@ This case study highlights the importance of a holistic approach to fine-tuning 
 * Building tools and processes that incorporate domain expertise.
 * Going beyond basic metrics and deeply analyzing data and model behavior to identify areas for improvement.
 
-
-
-
-
-
-
 ## Debugging Axolotl
 
 * **Use the latest version of Axolotl:** Ensure you're using the most up-to-date version to avoid known issues.
@@ -525,12 +494,6 @@ This case study highlights the importance of a holistic approach to fine-tuning 
   * Axolotl's documentation provides detailed guidance on debugging techniques.
     * **Debugging How-To Guide:** [https://openaccess-ai-collective.github.io/axolotl/docs/debugging.html](https://openaccess-ai-collective.github.io/axolotl/docs/debugging.html)
   * Consider using VS Code to connect to Docker containers for easier debugging. 
-
-
-
-
-
-
 
 ## Scaling Model Training with More Compute
 
@@ -564,7 +527,6 @@ This case study highlights the importance of a holistic approach to fine-tuning 
     | ------- | :------- | :-------: | :-----------: | :------------: | :-------: |
     | float32 | 28.21 GB | 28.21 GB  |   56.43 GB    |   112.84 GB    | 112.84 GB |
     | float16 | 28.21 GB | 42.32 GB  |   56.43 GB    |    56.43 GB    | 56.43 GB  |
-
 
 ### Distributed Training
 
@@ -611,10 +573,6 @@ This case study highlights the importance of a holistic approach to fine-tuning 
   * Load weights only on one GPU and distribute to others when needed, saving CPU RAM.
 * **Sync Module States:** Ensures consistent model states across GPUs, crucial for FSDP.
 
-
-
-
-
 ## Scaling Model Training with Accelerate
 
 * **Source Slides:** [https://huggingface.co/spaces/muellerzr/llm-conf](https://huggingface.co/spaces/muellerzr/llm-conf)
@@ -642,14 +600,14 @@ Accelerate consists of three primary frameworks:
 * **`accelerate launch`:**
   * Executes the training script.
 
-### Why Accelerate Matters: Simplifying Distributed Training 
+### Why Accelerate Matters: Simplifying Distributed Training
 
 * Launching and managing distributed training can be complicated, often involving different commands and setups for PyTorch, DeepSpeed, and other tools.
 * Accelerate simplifies this process. Running a basic Python script often lacks distributed training capabilities, especially distributed data parallelism.  
 * **Example:**  Without Accelerate, you would need to use specific commands like `torchrun`  with multiple arguments for running a script on two GPUs. 
 * `accelerate launch` streamlines this process by handling the complexities and allowing users to specify the desired configuration without needing to remember numerous commands.
 
-### Configuration and Execution with Accelerate 
+### Configuration and Execution with Accelerate
 
 *  Accelerate employs config files (similar to Axolotl) to define training parameters. 
 *  **Example:** A config file can specify using a local multi-GPU setup with BF16 mixed precision on eight GPUs.  
@@ -664,7 +622,7 @@ Accelerate consists of three primary frameworks:
    * Developers create an "accelerator" object that prepares the environment.
    * Simply replacing the standard backward function with `accelerator.backwards` is often sufficient for integrating Accelerate. 
 
-###  Accelerate in Action: Data Sharding and Global Steps 
+### Accelerate in Action: Data Sharding and Global Steps
 
 * **Data Sharding:** Similar to FSDP, Accelerate handles data sharding, distributing data efficiently across multiple GPUs.
 * **Global Step:** It maintains a global training step to ensure consistency across distributed training. 
@@ -717,13 +675,9 @@ Accelerate consists of three primary frameworks:
 - [Fully Sharded Data Parallelism and 🤗 Accelerate](https://huggingface.co/docs/accelerate/usage_guides/fsdp)
 - [FSDP vs DeepSpeed In-Depth](https://huggingface.co/docs/accelerate/concept_guides/fsdp_and_deepspeed)
 
-
-
-
-
 ## DeepSpeed and FSDP Configurations in Axolotl
 
-###  DeepSpeed and FSDP Equivalencies
+### DeepSpeed and FSDP Equivalencies
 
 *   **DeepSpeed 03 is now equivalent to FSDP.** This means both offer similar functionalities for distributed training.
 *   **Other DeepSpeed options (01, 02) are not directly equivalent to FSDP.**
@@ -741,15 +695,11 @@ Accelerate consists of three primary frameworks:
 *   **Start with a pre-built config and adjust as needed.** Consult Zach's presentations and documentation for advanced customization.
 *   **Specify the desired config file within Axolotl's main config file.**
 
-###  Clarifications and Tips
+### Clarifications and Tips
 
 *   **DeepSpeed 03 (equivalent to FSDP) requires explicit BF16 specification in the config file.**  This differs from DeepSpeed 01/02 where 'auto' can be used.
 *   **Set BF16 directly in the DeepSpeed 03 configuration file.**  Failure to do so may cause issues during trainer initialization.
 *   **DeepSpeed 01 and 02 can leverage the 'auto' setting for BF16 and FP16.** DeepSpeed handles the data type selection after the trainer loads.
-
-
-
-
 
 ## Training on Modal
 
@@ -763,7 +713,7 @@ Accelerate consists of three primary frameworks:
     *   **Local-like Remote Development:** Mimics local development while leveraging remote resources.
     *   **Massively Parallel:** Easily parallelizes tasks like hyperparameter tuning, making it efficient for Axolotl.
 
-####  Understanding Modal
+#### Understanding Modal
 
 *   **Explore the Documentation:** Detailed Modal documentation is available; start with the "Getting Started" and "Web Endpoint" guides.
     *   **[Web Endpoint Tutorial](https://modal.com/docs/guide/webhooks):**  Highlights Modal's real-time code update capabilities. Modify code and see the changes reflected in production instantly.
@@ -778,11 +728,11 @@ Accelerate consists of three primary frameworks:
     *   **Data Flag:**  Requires a data flag for specifying the dataset; relying on the config file alone is insufficient.
     *   **DeepSpeed Configuration:**  Sourced from the Axolotl repository.
 
-####  Using the `llm-finetuning` Repository
+#### Using the `llm-finetuning` Repository
 
 * Follow the [QuickStart guide](https://github.com/modal-labs/llm-finetuning?tab=readme-ov-file#quickstart) in the README.
 
-####  Code Structure
+#### Code Structure
 
 *   **`src` Folder:**  Contains Modal-specific code.
     *   **`training.py`:**  Includes the `train` function that wraps the Axolotl CLI command.
@@ -799,10 +749,6 @@ Accelerate consists of three primary frameworks:
     *   Retrieve the run tag from the logs.
     *   Access the last run prepared folder using the run tag.
     *   Analyze the data similarly to the Honeycomb example, ensuring the correct format.
-
-
-
-
 
 ## Q&A Session
 
@@ -865,9 +811,5 @@ Accelerate consists of three primary frameworks:
 
 * Mac M-series GPUs: PyTorch is supported, but MLX is recommended for a better fine-tuning experience.
 * Agentic LLM Applications: Most, if not all, real-world LLM applications involve function calls, making them "agentic." Focus on thorough testing, including unit and integration tests, for function call workflows. 
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

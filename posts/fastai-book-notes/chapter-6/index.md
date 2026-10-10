@@ -26,12 +26,9 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
-
 * [Multi-Label Classification](#multi-label-classification)
 * [Regression](#regression)
 * [References](#references)
-
 
 ## Multi-Label Classification
 
@@ -129,8 +126,6 @@ df.head()
 
 
 Class lables are stored in a space-delimited string
-
-
 
 ### Pandas and DataFrames
 
@@ -262,8 +257,6 @@ tmp_df
   </tbody>
 </table>
 </div>
-
-
 
 ### Constructing a DataBlock
 
@@ -582,8 +575,6 @@ Applying batch_tfms to the batch built
       (TensorImage of size 4x3x128x128, TensorMultiCategory of size 4x20)
 ```
 
-
-
 ### Binary Cross-Entropy
 
 - Getting Model Activations
@@ -601,6 +592,7 @@ learn = cnn_learner(dls, resnet18)
 ```
 
 #### to_cpu(b)
+
 * [https://docs.fast.ai/torch_core.html#to_cpu](https://docs.fast.ai/torch_core.html#to_cpu)
 * Recursively map lists of tensors in `b` to the cpu.
 
@@ -657,12 +649,13 @@ binary_cross_entropy(activs, y)
 TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
 
-
 #### nn.BCELoss
+
 * [https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss](https://pytorch.org/docs/stable/generated/torch.nn.BCELoss.html#torch.nn.BCELoss)
 * measures the binary cross entropy between the predictions and target
 
 #### nn.BCEWithLogitsLoss
+
 * [https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss](https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss)
 * combines a sigmoid layer and the BCELoss in a single class
 
@@ -688,8 +681,8 @@ loss
 TensorMultiCategory(1.0367, grad_fn=<AliasBackward0>)
 ```
 
-
 #### Python Partial Functions
+
 * [https://docs.python.org/3/library/functools.html#functools.partial](https://docs.python.org/3/library/functools.html#functools.partial)
 * return a new [partial object](https://docs.python.org/3/library/functools.html#partial-objects) that will behave like a function with the positional and keyword arguments
 * allows us to bind a function with some arguments or keyword arguments
@@ -727,6 +720,7 @@ f("Jeremy"),f("Sylvain")
 ```
 
 #### accuracy_multi
+
 * [https://docs.fast.ai/metrics.html#accuracy_multi](https://docs.fast.ai/metrics.html#accuracy_multi)
 * compute accuracy using a threshold value
 
@@ -873,18 +867,12 @@ plt.plot(xs,accs);
 
 ![](./images/output_60_0.png){fig-align="center"}
 
-
-
-
-
 ## Regression
 
 - a model is defined by it independent and dependent variables, along with its loss function
 - image regression: the independent variable is an image and the dependent variable is one or more floating point numbers
 - key point model:
     - a key point refers to a specific location represented in an image
-
-
 
 ### Assemble the Data
 
@@ -1246,13 +1234,6 @@ learn.show_results(ds_idx=1, nrows=3, figsize=(6,8))
 
 ![](./images/output_94_2.png){fig-align="center"}
 
-
-
-
-
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1263,9 +1244,5 @@ learn.show_results(ds_idx=1, nrows=3, figsize=(6,8))
 **Previous:** [Notes on fastai Book Ch. 5](../chapter-5/)
 
 **Next:** [Notes on fastai Book Ch. 7](../chapter-7/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

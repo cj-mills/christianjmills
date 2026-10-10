@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction](#introduction)
 * [Notation Clarifications](#notation-clarifications)  
@@ -34,22 +29,12 @@ open-graph:
 * [CuTe Framework](#cute-framework)  
 * [Practical Implementation and Usage](#practical-implementation-and-usage)
 
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 15: CUTLASS](https://www.youtube.com/watch?v=G6q719ck7ww)
 
 
 :::
-
-
-
-
-
-
-
-
 
 ## Introduction
 
@@ -59,7 +44,6 @@ open-graph:
 - **Topic:** **Cutlass** - NVIDIA's CUDA Templates for Linear Algebra Subroutines
   - Focuses on the **conceptual understanding** of Cutlass rather than the API specifics.
   - Aims to help attendees **loosen the lid** and get started with learning Cutlass.
-
 
 ### What is Cutlass
 
@@ -130,10 +114,6 @@ open-graph:
   - When requiring lower-level control than what CUDA BLAS (cuBLAS) provides
   - For implementing and testing new model architectures
 
-
-
-
-
 ## Notation Clarifications
 
 ### Interval Notation
@@ -154,8 +134,6 @@ open-graph:
 - **CuTe** refers to **Cutlass 3.0**, which introduced new tensor notation.
 - Emphasizes **nested structures** and layouts for tensors.
 
-
-
 ## Tensors in Cutlass
 
 ### Engine (Pointer)
@@ -173,10 +151,6 @@ open-graph:
     - Also represented as nested integer tuples.
     - Used in calculating the memory address for a given tensor coordinate.
 
-
-
-
-
 ## Layout and Coordinate Systems
 
 ### Mapping Coordinates to Linear Offsets
@@ -191,6 +165,7 @@ open-graph:
 ### Shape and Stride Concepts
 
 #### Shape Definition
+
 - Specifies allowable input coordinates
 - Uses upper bounds notation
 - Example: Shape `(M, N, K)` means:
@@ -199,6 +174,7 @@ open-graph:
   - k coordinates: [0, K)
 
 #### Layout Notation
+
 - Format: `shape:stride`
 - Example: `(M,N,K):(1,M,MN)`
   - Shape component: `(M,N,K)`
@@ -207,6 +183,7 @@ open-graph:
 ### Layout Concatenation
 
 #### Basic Concatenation
+
 - Can combine one-dimensional layouts
 - Example: `(3:1,2:3) = (3,2):(1,3)`
 - Benefits:
@@ -216,6 +193,7 @@ open-graph:
 ### Nested Layouts
 
 #### Structure
+
 - **Flat Layout**:
   - All dimensions are at the same level.
   - Coordinates are simple tuples.
@@ -231,6 +209,7 @@ open-graph:
   - Accepts coordinates like `((1,2),1)`
 
 #### Congruence Concept
+
 - **Congruent**: Having the same nesting structure
 - Requirements:
   - Shape and stride must be congruent
@@ -247,6 +226,7 @@ open-graph:
 - Not meant to provide rigorous definitions but to aid understanding.
 
 #### Drawing Conventions
+
 - Positive i direction: downward
 - Positive j direction: rightward
 - Starting point: always zero
@@ -286,29 +266,28 @@ open-graph:
   - Elements are offset according to strides in each dimension.
   - Helps in understanding complex memory layouts.
 
-
-
 ### Special Stride Types
 
 #### Layout Left
+
 - Generalized **column-major** ordering
 - Stride calculation: Running prefix product from left
 - Example for shape `(A,B,C,D)`:
   - Resulting stride: `(1,A,AB,ABC)`
 
 #### Layout Right
+
 - Generalized **row-major** ordering
 - Stride calculation: Running prefix product from right
 - Example for shape `(A,B,C,D)`:
   - Resulting stride: `(BCD,CD,D,1)`
-
-
 
 ## Sub-Tiles and Memory Organization
 
 ### Sub-Tile Concepts
 
 #### Basic Properties of Sub-Tiles
+
 - **Shape**: Different (smaller) than parent tensor
 - **Stride**: Identical to parent tensor
 - **Base Pointer**: Offset from parent tensor's base
@@ -338,8 +317,6 @@ open-graph:
   - **Clarification**:
     - The nesting structure must be consistent across shape, stride, and the coordinates used.
     - Nestedness facilitates operations where dimensions need to be grouped logically.
-
-
 
 ### Q&A
 
@@ -387,8 +364,6 @@ open-graph:
     - **Example**:
       - A tensor with a negative stride in one dimension will decrement the memory offset when indexing along that dimension.
 
-
-
 ### Non-Contiguous Layouts
 
 - **Definition**:
@@ -402,12 +377,14 @@ open-graph:
 ### Multiple Sub-Tiles
 
 #### Common Properties
+
 - All sub-tiles of same size have:
   - Identical shape
   - Identical stride
   - Different base pointers
 
 #### Distinguishing Features
+
 - Only differ in base pointer offset
 - Each maintains parent tensor's memory layout pattern
 - Base pointer calculation uses parent tensor's layout
@@ -415,6 +392,7 @@ open-graph:
 ### Memory Management
 
 #### Tensor Components Review
+
 1. **Engine** (pointer/memory):
    - Base pointer location
    - Memory type (shared, global, etc.)
@@ -424,25 +402,24 @@ open-graph:
    - Stride (memory pattern)
 
 #### Bounds Checking
+
 - Cutlass performs bounds checking
 - Many checks possible at compile time due to static integers
 - Type system encodes layout information
-
-
-
-
 
 ## Tiling
 
 ### Tiling Operations
 
 #### Basic Tiling Structure
+
 - Division of larger tensor into smaller parts
 - Two components:
   1. **Outer Part**: Which tile we're examining
   2. **Inner Part**: Which element within the tile
 
 #### Mathematical Representation
+
 For tensor size `A×B×C` tiled by `a×b×c`:
 - Outer dimensions: `(A/a) × (B/b) × (C/c)`
 - Inner dimensions: `a × b × c`
@@ -450,6 +427,7 @@ For tensor size `A×B×C` tiled by `a×b×c`:
 ### Partial Tiling
 
 #### Mode-Specific Tiling
+
 - Can tile specific dimensions while leaving others untouched
 - Example tiling modes A and C:
   - Outer part: `(A/a) × B × (C/c)`
@@ -458,11 +436,13 @@ For tensor size `A×B×C` tiled by `a×b×c`:
 ### Compute Resource Tiling
 
 #### Purpose
+
 - Maps both data and compute resources
 - Common in accelerator operations
 - Example: Tensor core operations requiring specific thread counts
 
 #### Components to Tile
+
 1. **Compute Resources**:
    - Thread arrangements
    - Warp-level operations
@@ -497,7 +477,6 @@ For tensor size `A×B×C` tiled by `a×b×c`:
      - Placed in outer part
      - Represents untiled dimensions
 
-
 #### Layout Division Implementation
 
 * **Example with Layout Left:**
@@ -517,7 +496,6 @@ For tensor size `A×B×C` tiled by `a×b×c`:
      - Stride: Original stride × small shape size
      - Calculation: `(1×a, A×b, AB×c)`
 
-
 ### Example of Tiling
 
 - **Original Shape**: `(M, N)`
@@ -529,20 +507,18 @@ For tensor size `A×B×C` tiled by `a×b×c`:
   - Calculated as:
     - `(1 * m, M * n)`
 
-
-
-
-
 ## CuTe Framework
 
 ### Overview and Context
 
 #### Timeline and Integration
+
 - Introduced with Cutlass 3.0
 - Released: Late 2022
 - Integrated with Hopper architecture features
 
 #### Framework Components
+
 - Layout algebra
 - Tensor operations
 - Shape manipulation
@@ -551,6 +527,7 @@ For tensor size `A×B×C` tiled by `a×b×c`:
 ### Layout Algebra Concepts
 
 #### Core Operations
+
 1. **Composition**:
    - Combines two layouts
    - Used for creating subtiles
@@ -566,10 +543,12 @@ For tensor size `A×B×C` tiled by `a×b×c`:
 ### Implementation Details
 
 #### Memory Types
+
 - **SMEM Pointer**: Shared memory reference
 - **GMEM Pointer**: Global memory reference
 
 #### Static vs Dynamic Elements
+
 - **Static Elements**:
   - Known at compile time
   - Uses underscore notation (e.g., `_3`)
@@ -582,6 +561,7 @@ For tensor size `A×B×C` tiled by `a×b×c`:
 ### Library Architecture
 
 #### Directory Structure
+
 1. **Include Directory**:
    - Core library components
    - Header-only implementation
@@ -681,15 +661,12 @@ For tensor size `A×B×C` tiled by `a×b×c`:
     - **Use Cases**:
       - Cutlass is ideal for developers needing low-level control to implement custom algorithms or optimize specific operations not covered by higher-level libraries.
 
-
-
-
-
 ## Practical Implementation and Usage
 
 ### Matrix Multiplication Implementation
 
 #### SGEMM (Single Precision General Matrix Multiply)
+
 - Source Code: [examples/cute/tutorial/sgemm_1.cu](https://github.com/NVIDIA/cutlass/blob/8aa95dbb888be6d81c6fbf7169718c5244b53227/examples/cute/tutorial/sgemm_1.cu#L458)
 - **Name Convention Origin**:
   - S: Single precision
@@ -721,6 +698,7 @@ beta     // Scalar multiplier for accumulation
 ### Memory Management Features
 
 #### Memory Types and Tags
+
 - **Shared Memory**:
   - Tag: `smem_ptr`
   - Used for thread block local storage
@@ -732,27 +710,18 @@ beta     // Scalar multiplier for accumulation
 ### Example Code Structure
 
 #### Basic Include Pattern
+
 ```cpp
 #include <cute/tensor.hpp>
 ```
 
 #### Tensor Creation
+
 ```cpp
 // Creating tensors
 make_tensor()
 make_layout()
 make_coord()
 ```
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,18 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
-
-
-
 
 ::: {.callout-tip title="Resource Links:"}
 
@@ -35,17 +27,11 @@ open-graph:
 
 :::
 
-
-
-
-
 ## Introduction
 
 - **Presenter:** Jane, a member of the PyTorch core team specializing in optimizers.
 - **Focus:** Runtime optimization (speed) of optimizers, not memory optimization.
 - **Disclaimer:** Some optimization techniques discussed may require increased memory usage.
-
-
 
 ## Optimization Analogy: Towing Cars
 
@@ -56,8 +42,6 @@ open-graph:
 - **Constraint:** A low-clearance bridge on the route that the large truck cannot pass through.
 - **Trade-off:** Runtime optimization (large truck) is desirable, but constraints (bridge) may necessitate choosing memory optimization (small truck) instead.
 - **Today's Focus:** Speed optimization, assuming no constraints.
-
-
 
 ## Optimizer Basics and Optimization Levels
 
@@ -97,8 +81,6 @@ open-graph:
      - **Kernel Source:** Inspired by NVIDIA Apex, PyTorch collaborates with NVIDIA to port and utilize fused CUDA kernels.
 - **Key Idea:** Reducing the number of CUDA kernel launches improves performance because kernel launches are expensive.
 
-
-
 ## Multi-Tensor Apply: The Powerhouse
 
 - **Multi-Tensor Apply:** An internal PyTorch function that enables operating on lists of tensors simultaneously.
@@ -113,14 +95,10 @@ open-graph:
     ```
   - **ForEach Add (Challenge):** How would you design a CUDA kernel signature to handle tensor lists?
 
-
-
 ## Attempt 1: Passing Standard Vector (Failed)
 
 - **Idea:** Pass a `std::vector` of pointers to tensors into the CUDA kernel.
 - **Problem:** CUDA does not support `std::vector` as a kernel argument; it won't even compile.
-
-
 
 ## Attempt 2: Passing Pointers to Pointers (Failed)
 
@@ -129,8 +107,6 @@ open-graph:
 - **Explanation:**
   - **Standard Add:** Pointers passed to the kernel are CUDA memory addresses, so dereferencing them within the kernel is valid.
   - **Pointers to Pointers:** The outer pointer is a CPU memory address. When dereferenced within the kernel, it attempts to access CPU memory, resulting in an illegal memory access error.
-
-
 
 ## Attempt 3: Passing by Chonky Boy (Partially Successful)
 
@@ -155,8 +131,6 @@ open-graph:
 - **Observation:** Illegal memory access occurs when the number of tensors exceeds 423.
 - **Conclusion:** The struct approach works as long as the number of tensor pointers does not exceed the 4 kilobyte limit.
 
-
-
 ## Solution 1: Batching (Current Implementation)
 
 - **Idea:** Divide the tensor list into smaller batches that fit within the 4 kilobyte limit.
@@ -166,8 +140,6 @@ open-graph:
 - **Outcome:** Works reliably but requires multiple kernel launches, which can be inefficient.
 - **Visualization:** Instead of a single fused kernel, multiple smaller kernels are launched.
   ![Slide 41](./images/solution-1-viz.png)
-
-
 
 ## Solution 2: Revisiting Pointers to Pointers with Memcpy
 
@@ -185,8 +157,6 @@ open-graph:
   - Requires careful memory management to avoid dangling pointers and memory leaks.
   - Assumes that pointer values are consistent between CPU and GPU memory.
 
-
-
 ## Solution 3: Unified Memory (Future Exploration)
 
 - **Unified Memory:** Allows CUDA threads to access data allocated in CPU memory.
@@ -197,8 +167,6 @@ open-graph:
 - **Example: Paged Optimizer (Tim Dettmers):** Uses unified memory to implement a paged optimizer, achieving efficient memory management.
 - **Future Work:** Explore the feasibility and benefits of integrating unified memory support into PyTorch optimizers.
 
-
-
 ## Fused Optimizers and Multi-Tensor Apply
 
 - **Fused Optimizers:** Implementations like `fusedAdamW` rely on multi-tensor apply to achieve vertical fusion of operations within a single kernel.
@@ -207,8 +175,6 @@ open-graph:
   - **Multi-Tensor Apply Callable:** Uses a custom functor (`FusedAdamMathFunctor`) to perform all AdamW operations within the kernel.
   - **Functor Implementation:** Handles pointer management, memory alignment, vectorization, and finally calls a math function to perform the actual AdamW calculations.
 - **Observation:** Writing fused kernels manually is complex and requires detailed CUDA knowledge.
-
-
 
 ## Torch Compile and the Future of Fused Optimizers
 
@@ -240,8 +206,6 @@ open-graph:
   - Improve Torch Compile's horizontal fusion capabilities.
   - Enhance Triton's features and performance.
   - Reduce compile times through caching and optimization.
-
-
 
 ## Q&A Session
 
@@ -320,8 +284,5 @@ open-graph:
     - Device-to-device copy can be performed through CPU API calls or directly within GPU threads using warp-level primitives.
     - Specific requirements for direct peer-to-peer copy are not readily available but involve factors like GPU topology and interconnect capabilities.
     - Device-to-device copy is less common than other types of memory transfers.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

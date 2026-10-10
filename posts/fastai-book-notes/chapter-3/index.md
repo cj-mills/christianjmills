@@ -29,7 +29,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Data Ethics](#data-ethics)
 * [Key Examples for Data Ethics](#key-examples-for-data-ethics)
 * [Integrating Machine Learning with Product Design](#integrating-machine-learning-with-product-design)
@@ -38,9 +37,7 @@ open-graph:
 * [Role of Policy](#role-of-policy)
 * [References](#references)
 
-
 ## Data Ethics
-
 
 - Sometimes machine learning models can go wrong
     - the can have bugs
@@ -71,8 +68,6 @@ open-graph:
 
 - deep learning practitioners will likely face situations where they need to consider data ethics
 
-  
-
 ## Key Examples for Data Ethics
 
 ### Bugs and Recourse: Buggy Algorithm Used for Healthcare Benefits
@@ -100,7 +95,6 @@ open-graph:
 - Dr. Latanya Sweeney is a professor at Harvard and director of the university’s data privacy lab
     - discovered that Googling her name resulted in adverstisements saying “Latanya Sweeney Arrested?”, despite being the only Latanya Sweeney and never having been arrested
     - discovered that historically Black names received advertisements suggesting the person had a criminal record
-    
 
 ### Why Does This Matter?
 
@@ -131,8 +125,6 @@ open-graph:
     - make sure the right issues are being considered
 - need to know when to refuse to do a piece of work
 
-
-
 ## Integrating Machine Learning with Product Design
 
 - Lots of decisions are involved when collecting your data and developing your model
@@ -146,8 +138,6 @@ open-graph:
 - Data scientists need to be part of a tightly integrated, cross-disciplinary team
 - Researchers need to work closely with the kinds of people who will end up using their research.
 - Ideally, domain experts should learn enough to be able to train and debug some models themselves
-
-
 
 ## Topics in Data Ethics
 
@@ -233,8 +223,6 @@ open-graph:
 - [How Will We Prevent AI-Based Forgery?](https://hbr.org/2019/03/how-will-we-prevent-ai-based-forgery)
     - “AI is poised to make high-fidelity forgery inexpensive and automated, leading to potentially disastrous consequences for democracy, security, and society.”
 
-
-
 ## Identifying and Addressing Ethical Issues
 
 - make finding and dealing with mistakes part of the design of any system that includes machine learning
@@ -305,8 +293,6 @@ open-graph:
     2. Try to come up with an example in which that apparant solution results in a proposal that no one would consider acceptable
     3. This can then lead to further refinement of the solution
 
-
-
 ## Role of Policy
 
 - purely technical solutions are not sufficient to address the underlying problems that have led to our current state.
@@ -328,9 +314,6 @@ open-graph:
 - [Datasheets for Datasets](https://arxiv.org/abs/1803.09010)
 - [The Nut Behind the Wheel](https://99percentinvisible.org/episode/nut-behind-wheel/)
 
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -343,11 +326,5 @@ open-graph:
 **Previous:** [Notes on fastai Book Ch. 2](../chapter-2/)
 
 **Next:** [Notes on fastai Book Ch. 4](../chapter-4/)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,20 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.         
 :::
-
-
-
-
 
 * [Lecture Information](#lecture-information)
 * [Profiling PyTorch Square with Autograd Profiler](#profiling-pytorch-square-with-autograd-profiler)
@@ -38,13 +28,8 @@ open-graph:
 * [Optimization & Profiling with Nsight Compute](#optimization-profiling-with-nsight-compute)
 * [Q&A](#qa)
 
-  
-
-
-
-
-
 ## Lecture Information
+
 * **Speaker:**  Mark Saroufim
 * **Topic:** Integrate and profile custom CUDA kernels in PyTorch programs.
 * **Resources:**
@@ -53,9 +38,6 @@ open-graph:
   - **GitHub Repository:** [GPU MODE Lecture 1](https://github.com/cuda-mode/lectures/tree/main/lecture_001)
   - **Discord Channel:** [GPU MODE](https://discord.gg/cudamode)
   - **YouTube Channel:** [GPU MODE](https://www.youtube.com/@CUDAMODE)
-
-
-
 
 ## Profiling PyTorch Square with Autograd Profiler
 
@@ -86,8 +68,6 @@ open-graph:
 * **Solution:** Run the target function a few times to initialize the CUDA context before taking performance measurements.
 
 :::
-
-
 
 ### Profile Squaring a PyTorch Tensor
 
@@ -333,10 +313,6 @@ STAGE:2024-04-24 18:37:25 1254869:1254869 ActivityProfilerController.cpp:324] Co
 
 ---
 
-
-
-
-
 ## PyTorch Profiler
 
 * Timestamp: [14:02](https://youtu.be/LuhJEEJQgUM?si=PBWrtlYHwvtdtVTZ&t=842)
@@ -347,7 +323,6 @@ STAGE:2024-04-24 18:37:25 1254869:1254869 ActivityProfilerController.cpp:324] Co
       - [chrome://tracing/](chrome://tracing/)
   * Provides information on memory copies, kernel launches, and flow events.
   * Does not provide information on the kernel performance or how to improve it.
-
 
 ### Profiling the `torch.square()` function
 
@@ -360,7 +335,6 @@ from torch.profiler import profile, ProfilerActivity
 ```
 
 #### Default usage
-
 
 ```python
 ## Default way to use profiler
@@ -375,9 +349,7 @@ prof.export_chrome_trace("default_trace.json")
     STAGE:2024-04-25 14:18:18 33490:33490 ActivityProfilerController.cpp:320] Completed Stage: Collection
     STAGE:2024-04-25 14:18:18 33490:33490 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
 
-
 #### Non-default profiler schedule
-
 
 ```python
 ## With warmup and skip
@@ -486,16 +458,6 @@ STAGE:2024-04-25 14:18:19 33490:33490 ActivityProfilerController.cpp:324] Comple
 
 :::
 
-
-
-
-
-
-
-
-
-
-
 ## Integrating CUDA Kernels in PyTorch
 
 * Timestamp: [17:48](https://youtu.be/LuhJEEJQgUM?si=z3eqrEXpK10a0ZAJ&t=1068)
@@ -509,9 +471,6 @@ STAGE:2024-04-25 14:18:19 33490:33490 ActivityProfilerController.cpp:324] Comple
   * Automatically generates CUDA source files with required headers
   * Automatically generates `build.ninja` script for compiling the C++ code
   * Automatically builds the extension
-
-
-
 
 ### Hello World Example
 
@@ -688,10 +647,6 @@ m.def("hello_world", torch::wrap_pybind_function(hello_world), "hello_world");
 ```
 
 :::
-
-
-
-
 
 ### Custom CUDA kernel for Square Operation
 
@@ -946,10 +901,6 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
 
 :::
 
-
-
-
-
 ### Alternatives
 
 * Numba
@@ -957,12 +908,8 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
   * Write CUDA kernels directly in Python.
   * Easier syntax compared to C++, but may have performance limitations.
 
-
-
-
-
-
 ## Triton
+
 * Timestamp: [26:14](https://youtu.be/LuhJEEJQgUM?si=fPptD3s7ZD2Ppa35&t=1574)
 * Documentation: ([link](https://triton-lang.org/main/index.html))
 * Python-based domain-specific language (DSL) for GPU programming.
@@ -985,14 +932,10 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
 
 :::
 
-
-
 ### Code Example: Square operation using Triton
 
 * Operates over rows instead of threads
 * The block size had a significant impact on performance
-
-
 
 ### Triton debugger
 
@@ -1081,9 +1024,8 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
 * Can see the memory throughput, compute throughput, block size, etc.
 * Can examine individual lines of code
 
-
-
 ### Moving from PyTorch to Triton to CUDA
+
 * Try triton first if PyTorch is not enough
 * Use NCU profiler to see what performance improvements can be made over the triton attempt
 * Consider moving to CUDA if the hints suggest tweaking something (e.g., long scoreboard stalls) that triton controls
@@ -1095,11 +1037,8 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
 | Scheduling (Withing SMs) | Manual | Automatic |
 | Scheduling (Across SMs)  | Manual | Manual    |
 
-
-
-
-
 ## Q&A
+
 * Timestamp: [44:57](https://youtu.be/LuhJEEJQgUM?si=bgCHDc8KtYaEqtb0&t=2697)
 * Relationship between triton and `torch.compile`
   * Compilers are quite dumb
@@ -1121,21 +1060,5 @@ m.def("square_matrix", torch::wrap_pybind_function(square_matrix), "square_matri
   * The design philosophy of torch compile is that you should not need to change your code
   * Writing your code with torch compile in mind can result in SOTA performance
     * SAM, Stable Diffusion, etc.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

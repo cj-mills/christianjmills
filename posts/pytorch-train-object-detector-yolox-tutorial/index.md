@@ -20,15 +20,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
-
-
-
 
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
@@ -41,7 +36,6 @@ open-graph:
 * [Fine-tuning the Model](#fine-tuning-the-model)
 * [Making Predictions with the Model](#making-predictions-with-the-model)
 * [Conclusion](#conclusion)
-
 
 ## Introduction
 
@@ -56,8 +50,6 @@ After completing the tutorial, you will have a real-time gesture detector, plus 
 This tutorial is suitable for anyone with rudimentary PyTorch experience. If you are new to PyTorch and want to start with a beginner-focused project, check out my tutorial on fine-tuning image classifiers.
 
 * [Fine-Tuning Image Classifiers with PyTorch and the timm library for Beginners](../pytorch-train-image-classifier-timm-hf-tutorial/)
-
-
 
 ## Getting Started with the Code
 
@@ -101,15 +93,9 @@ I've added a notebook for training models on the [COCO dataset](https://cocodata
 
 :::
 
-
-
-
-
 ## Setting Up Your Python Environment
 
 Before diving into the code, we'll cover the steps to create a local Python environment and install the necessary dependencies. The dedicated Colab Notebook includes the code to install the required dependencies in Google Colab.
-
-
 
 ### Creating a Python Environment
 
@@ -137,10 +123,6 @@ mamba activate pytorch-env
 ```
 
 :::
-
-
-
-
 
 ### Installing PyTorch
 
@@ -177,10 +159,6 @@ pip install torch torchvision torchaudio
 
 :::
 
-
-
-
-
 ### Installing Additional Libraries
 
 We also need to install some additional libraries for our project.
@@ -215,10 +193,6 @@ pip install distinctipy jupyter matplotlib pandas pillow torchtnt==0.2.0 tqdm
 pip install tabulate pyarrow fastparquet
 ```
 
-
-
-
-
 ### Installing Utility Packages
 
 Walking through the code for the YOLOX model and the code for computing loss values during training would make this tutorial unreasonably long. Therefore, I included that code in a dedicated [pip package.](https://pypi.org/project/cjm-yolox-pytorch/) A link to the documentation is available in the table below.
@@ -249,10 +223,6 @@ pip install cjm_yolox_pytorch
 # Install additional utility packages
 pip install cjm_pandas_utils cjm_pil_utils cjm_psl_utils cjm_pytorch_utils cjm_torchvision_tfms
 ```
-
-
-
-
 
 ## Importing the Required Dependencies
 
@@ -323,8 +293,6 @@ from torchvision.transforms.v2 import functional as TF
 from tqdm.auto import tqdm
 ```
 
-
-
 ## Setting Up the Project
 
 In this section, we set up some basics for our project, such as  initializing random number generators, setting the PyTorch device to run the model, and preparing the folders for our project and datasets.
@@ -355,8 +323,6 @@ device, dtype
 ```text
 ('cuda', torch.float32)
 ```
-
-
 
 ### Setting the Directory Paths
 
@@ -413,8 +379,6 @@ pd.Series({
 </table>
 </div>
 Double-check the project and dataset directories exist in the specified  paths and that you can add files to them before continuing. At this  point, our project is set up and ready to go. In the next section, we  will download and explore the dataset.
-
-
 
 ## Loading and Exploring the Dataset
 
@@ -473,9 +437,6 @@ pd.Series({
 </table>
 </div>
 
-
-
-
 ### Downloading the Dataset
 
 We can now download the dataset archive file and extract the dataset using the [`download_file`](https://cj-mills.github.io/cjm-psl-utils/core.html#download_file) and [`file_extract`](https://cj-mills.github.io/cjm-psl-utils/core.html#file_extract) functions from the `cjm_psl_utils` package. We can delete the archive afterward to save space.
@@ -502,8 +463,6 @@ else:
     # Delete the archive if specified
     if delete_archive: archive_path.unlink()
 ```
-
-
 
 ### Getting the Image and Annotation Folders
 
@@ -647,7 +606,6 @@ Image Directory: /mnt/980_1TB_2/Datasets/hagrid-sample-30k-384p/hagrid_30k
 </table>
 </div>
 
-
 ### Get Image File Paths
 
 Each image file has a unique name that we can use to locate the  corresponding annotation data. Let’s make a dictionary that maps image  names to file paths. The dictionary will allow us to retrieve the file  path for a given image more efficiently.
@@ -704,7 +662,6 @@ Number of Images: 31833
   </tbody>
 </table>
 </div>
-
 
 ### Get Bounding Box Annotations
 
@@ -794,14 +751,11 @@ annotation_df.head()
 Note that one of the samples contains a `no_gesture` label to identify an idle hand in the image.
 :::
 
-
-
 ### Inspecting the Class Distribution
 
 Now that we have the annotation data, we can get the unique class  names and inspect the distribution of samples among the gesture classes.
 
 #### Get image classes
-
 
 ```python
 # Get the number of samples for each object class
@@ -908,10 +862,7 @@ pd.DataFrame(class_counts)
 </table>
 </div>
 
-
-
 #### Visualize the class distribution
-
 
 ```python
 # Plot the distribution
@@ -930,8 +881,6 @@ plt.show()
 
 
 Each class, excluding `no_gesture`, has roughly the same number of samples. There are approximately four times as many `no_gesture` samples because of the immense variety of non-matching hand positions.
-
-
 
 ### Visualizing Bounding Box Annotations
 
@@ -956,8 +905,6 @@ distinctipy.color_swatch(colors)
 
 
 ![](./images/output_30_0.png){fig-align="center"}
-
-
 
 #### Download a font file
 
@@ -987,7 +934,6 @@ We can use the unique ID for an image in the image dictionary to get  the image�
 
 #### Load the sample image
 
-
 ```python
 # Get the file ID of the first image file
 file_id = list(img_dict.keys())[0]
@@ -1007,11 +953,7 @@ Image Dims: (384, 512)
 ```
 ![](./images/output_37_1.png){fig-align="center"}
 
-
-
-
 #### Inspect the corresponding annotation data
-
 
 ```python
 # Get the row from the 'annotation_df' DataFrame corresponding to the 'file_id'
@@ -1053,8 +995,6 @@ annotation_df.loc[file_id].to_frame()
 </div>
 The bounding box annotations are in the format `[top-left X, top-left Y, width, height]`. The HaGRID dataset also normalizes bounding box annotations for this dataset to the range `[0,1]` based on the image dimensions. Therefore, we need to scale the `top-left X` and `width` values by the image width and the `top-left Y` and `height` values by the image height.
 
-
-
 #### Annotate sample image
 
 The `draw_bounding_boxes` function expects bounding box annotations in `[top-left X, top-left Y, bottom-right X, bottom-right Y]` format, so we’ll use the [`box_convert`](https://pytorch.org/vision/stable/generated/torchvision.ops.box_convert.html#torchvision.ops.box_convert) function included with torchvision to convert the bounding box annotations from `[x,y,w,h]` to `[x,y,x,y]` format.
@@ -1086,14 +1026,11 @@ tensor_to_pil(annotated_tensor)
 
 We have loaded the dataset, inspected its class distribution, and  visualized the bounding box annotations for a sample image. In the next  section, we will select and load our model.
 
-
-
 ## Selecting a Model
 
 I provide five predefined model configurations of different sizes in the [`cjm_yolox_pytorch`](https://cj-mills.github.io/cjm-yolox-pytorch/) package. Each predefined config comes with a model checkpoint trained on the [COCO](https://cocodataset.org/) (Common Objects in Context) dataset.
 
 ### Exploring Available Models
-
 
 ```python
 pd.DataFrame(MODEL_CFGS).transpose()
@@ -1170,8 +1107,6 @@ pd.DataFrame(MODEL_CFGS).transpose()
 </div>
 We’ll go with the `yolox_tiny` configuration as it is the most efficient and sufficiently accurate on this dataset.
 
-
-
 ### Loading the YOLOX-Tiny Model
 
 We can initialize a `yolox_tiny` model with the pretrained weights and the appropriate number of output classes using the [`build_model`](https://cj-mills.github.io/cjm-yolox-pytorch/model.html#build_model) function included with the `cjm_yolox_pytorch` package.
@@ -1198,8 +1133,6 @@ model.name = model_type
 # Get stride values for processing output
 strides = model.bbox_head.strides
 ```
-
-
 
 ### Get Normalization Statistics
 
@@ -1241,7 +1174,6 @@ pd.DataFrame(norm_stats)
   </tbody>
 </table>
 </div>
-
 
 ### Summarizing the Model
 
@@ -1334,8 +1266,6 @@ For reference, the `yolox_x` model has about `99` million trainable parameters, 
 
 That completes the model selection and setup. In the next section, we will prepare our dataset for training.
 
-
-
 ## Preparing the Data
 
 The data preparation involves several steps, such as applying data  augmentation techniques, setting up the train-validation split for the  dataset, resizing and padding the images, defining the training dataset  class, and initializing DataLoaders to feed data to the model.
@@ -1387,10 +1317,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
-
-
-
 
 ### Data Augmentation
 
@@ -1524,10 +1450,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
-
-
-
 
 ### Training Dataset Class
 
@@ -1670,8 +1592,6 @@ Always use the [`SanitizeBoundingBoxes`](https://pytorch.org/vision/stable/gener
 
 :::
 
-
-
 ### Initialize Datasets
 
 Now we can create our training and validation dataset objects using the dataset splits and transforms.
@@ -1709,14 +1629,11 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Inspect Samples
 
 Let’s verify the dataset objects work properly by inspecting the first samples from the training and validation sets.
 
 #### Inspect training set sample
-
 
 ```python
 dataset_sample = train_dataset[0]
@@ -1733,11 +1650,7 @@ tensor_to_pil(annotated_tensor)
 
 ![](./images/output_69_0.png){fig-align="center"}
 
-
-
-
 #### Inspect validation set sample
-
 
 ```python
 dataset_sample = valid_dataset[0]
@@ -1753,8 +1666,6 @@ tensor_to_pil(annotated_tensor)
 ```
 
 ![](./images/output_71_0.png){fig-align="center"}
-
-
 
 ### Initialize DataLoaders
 
@@ -1809,8 +1720,6 @@ pd.Series({
 </div>
 
 That completes the data preparation. Now we can finally train our hand gesture detector.
-
-
 
 ## Fine-tuning the Model
 
@@ -1969,8 +1878,6 @@ def train_loop(model,
         getattr(torch, device.type).empty_cache()
 ```
 
-
-
 ### Set the Model Checkpoint Path
 
 Before we proceed with training, let’s generate a timestamp for the  training session and create a directory to save the checkpoints during  training.
@@ -1998,10 +1905,7 @@ pytorch-yolox-object-detector/2024-02-17_00-31-07/yolox_tiny.pth
 
 Let’s save a copy of the normalization stats and the colormap for the current dataset in the training folder for future use.
 
-
-
 ### Save the Normalization Stats
-
 
 ```python
 # Convert tuples to dictionaries for easier JSON representation
@@ -2019,9 +1923,7 @@ print(f"{checkpoint_dir}/norm_stats.json")
 pytorch-yolox-object-detector/2024-02-17_00-31-07/norm_stats.json
 ```
 
-
 ### Save the Color Map
-
 
 ```python
 # Create a color map and write it to a JSON file
@@ -2114,8 +2016,6 @@ Eval: 100% |██████████| 99/99 [00:12<00:00, 12.01it/s, loss=
 
 At last, we have our hand gesture detector. To wrap up the tutorial,  we can test our model by performing inference on individual images.
 
-
-
 ## Making Predictions with the Model
 
 In this final part of the tutorial, we will cover how to perform  inference on individual images with our YOLOX model and filter the  predictions.
@@ -2125,7 +2025,6 @@ In this final part of the tutorial, we will cover how to perform  inference on i
 Whenever we make predictions with the model, we must normalize the  input data, scale the predicted bounding boxes, and calculate the  associated confidence scores. Since these steps are always required, I  included a [wrapper class](https://cj-mills.github.io/cjm-yolox-pytorch/inference.html#yoloxinferencewrapper) with the `cjm_yolox_pytorch` package.
 
 #### Wrap the model with preprocessing and post-processing steps
-
 
 ```python
 # Convert the normalization stats to tensors
@@ -2242,10 +2141,6 @@ pd.Series({
 </table>
 </div>
 
-
-
-
-
 #### Pass the input data to the model
 
 Now we can convert the test image to a tensor and pass it to the wrapped model.
@@ -2270,8 +2165,6 @@ torch.Size([1, 3780, 6])
 ```
 
 With an input resolution of `384x480`, there are `3780` bounding box proposals. Each contains the top-left X and Y coordinates  and dimensions for a bounding box, plus the class index and the  associated confidence score. Most of these proposals are useless, so  we’ll filter them out.
-
-
 
 ### Filtering Model Output
 
@@ -2347,11 +2240,7 @@ proposals_df
 </div>
 By the end, we have a single `one` gesture proposal. All that’s left is to see how it compares to the ground-truth bounding box for this sample.
 
-
-
-
 #### Annotate image using bounding box proposals
-
 
 ```python
 # Extract x0, y0, width, height columns
@@ -2403,8 +2292,6 @@ pd.Series({
 </div>
 
 The predicted bounding box is not a perfect match to the ground-truth values, but it’s pretty close. Now let’s test the model on a brand-new  image.
-
-
 
 ### Testing the Model on New Data
 
@@ -2761,27 +2648,15 @@ pd.Series({
 2. Once you finish training and download the files, turn off hardware acceleration for the Colab Notebook to save GPU time. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#using-hardware-acceleration))
 :::
 
-
-
-
 ## Conclusion
 
 Congratulations on completing this tutorial for training real-time object detection models in PyTorch! By now, you have successfully built a hand gesture detector that can identify and locate various gestures within images. The skills and knowledge you've acquired here serve as a solid foundation for future object detection projects. 
-
-
 
 ## Recommended Tutorials
 
 - [**Exporting YOLOX Models from PyTorch to ONNX**](./onnx-export/)**:** Learn how to export YOLOX models from PyTorch to ONNX and perform inference using ONNX Runtime.
 - [**Exporting YOLOX Models from PyTorch to TensorFlow.js**](./tfjs-export/)**:** Learn how to export YOLOX models from PyTorch to TensorFlow.js to leverage efficient object detection in web applications.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

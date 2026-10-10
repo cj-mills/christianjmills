@@ -89,7 +89,6 @@ def print_source(obj, exclude_doc=True):
 
 ------
 
-
 ## Introduction
 
 * Non-English pretrained models typically exist only for languages like German, Russian, or Mandarin, where plenty of web text is available for pretraining.
@@ -98,8 +97,6 @@ def print_source(obj, exclude_doc=True):
     * We can fine-tune a model using one language and apply it to others without further training.
 * Multilingual transformers are well-suited for situations where a speaker alternates between two or more languages in the context of a single conversation.
 
-
-
 ## Project: Multilingual Named Entity Recognition
 
 * The goal is to fine-tine the transformer model [XLM-RoBERTa](https://arxiv.org/abs/1911.02116) to perform named entity recognition for a customer in Switzerland, where there are [four national languages](https://en.wikipedia.org/wiki/Languages_of_Switzerland).
@@ -107,11 +104,10 @@ def print_source(obj, exclude_doc=True):
 * Named entity recognition involves extracting real-world objects like products, places, and people from a piece of text.
     * Some potential NER applications include gaining insights from company documents, augmenting the quality of search engines, and building a structured database from a corpus. 
 
-
-
 ## The Dataset
 
 ### WikiAnn (a.k.a PAN-X)
+
 * WikiAnn is a dataset for cross-lingual name tagging and linking based on Wikipedia articles in 295 languages.
 * Each article has annotations for location, person, and organization tags in the [IOB2](https://en.wikipedia.org/wiki/Inside%E2%80%93outside%E2%80%93beginning_(tagging)) format.
     * The IOB2 format indicates the beginning of an entity with a `B-` prefix, consecutive tags belonging to the same entity with an `I-` prefix, and tokens that do not belong to any entity with an `O` tag.
@@ -194,6 +190,7 @@ from datasets import get_dataset_config_names
 ```
 
 #### `get_dataset_config_names`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/loading_methods#datasets.get_dataset_config_names)
 * Get the list of available configuration names for a particular dataset.
 
@@ -221,7 +218,6 @@ print_source(get_dataset_config_names)
 ------
 
 #### [`xtreme` Hugging Face Dataset Card](https://huggingface.co/datasets/xtreme)
-
 
 ```python
 # Get the names of the subsets for the XTREME dataset
@@ -476,10 +472,12 @@ fracs = [0.629, 0.229, 0.084, 0.059]
 ------
 
 #### `Dataset.shuffle`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.shuffle)
 * Create a new dataset with shuffled rows.
 
 #### `Dataset.select`
+
 * [Documentation](https://huggingface.co/docs/datasets/v2.0.0/en/package_reference/main_classes#datasets.Dataset.select)
 * Create a new dataset with rows selected following the list/array of indices.\
 
@@ -863,7 +861,6 @@ pd.DataFrame.from_dict(split2freqs, orient="index")
 
 ------
 
-
 ## Multilingual Transformers
 
 * Multilingual transformers use a corpus consisting of documents in many languages for pretraining. 
@@ -872,10 +869,10 @@ pd.DataFrame.from_dict(split2freqs, orient="index")
 * Many use the CoNLL-2002 and CoNLL-2003 datasets as benchmarks to measure the progress of cross-lingual transfer for named entity recognition for English, Dutch, Spanish, and German.
 
 ### Evaluation Methods
+
 1. **en:** Fine-tune using the English training data and then evaluate the model on each language's test set.
 2. **each:** Fine-tune and evaluate using monolingual test data to measure per-language performance.
 3. **all:** Fine-tune using all the training data to evaluate the model on each language's test set.
-
 
 ## A Closer Look at Tokenization
 
@@ -961,26 +958,30 @@ pd.DataFrame([bert_tokens, xlmr_tokens], index=["BERT", "XLM-R"])
 
 ------
 
-
 ### The Tokenizer Pipeline
 
 #### 1. Normalization
+
 * The normalization step includes the operations to clean up raw text, such as stripping whitespace and removing accented characters.
 * [Unicode normalization schemes](https://unicode.org/reports/tr15/) replace the various ways to write the same character with standard forms.
     * Unicode normalization is particularly effective when working with multilingual corpora.
 * Lowercasing can help reduce the vocabulary size when the model only accepts and uses lowercase characters.
 
 #### 2. Pretokenization
+
 * The pre-tokenization step splits a text into smaller objects, and the final tokens will be subunits of these objects.
 * Some languages might require language-specific pre-tokenization methods.
 
 #### 3. Tokenizer Model
+
 * The tokenizer model analyzes the training corpus to find the most commonly occurring groups of characters, which become the vocab.
 
 #### 4. Postprocessing
+
 * The postprocessing step applies some additional transformations, such as adding special characters to the start or end of an input sequence.
 
 ### The SentencePiece Tokenizer
+
 * The SentencePiece tokenizer builds on the Unigram subword segmentation algorithm and encodes each input text as a sequence of Unicode characters.
 * SentencePiece supports the [byte-pair-encoding (BPE)](https://aclanthology.org/P16-1162/) algorithm and the [unigram language model](https://arxiv.org/abs/1804.10959).
 * SentencePiece replaces whitespace with the Unicode symbol `U+2581` for `_`.
@@ -997,15 +998,11 @@ pd.DataFrame([bert_tokens, xlmr_tokens], index=["BERT", "XLM-R"])
 
 ------
 
-
-
 ## Transformers for Named Entity Recognition
 
 * For text classification, BERT uses the `[CLS]` token to represent an entire sequence of text.
 * For named entity recognition, BERT feeds the representation of each input token through the same fully connected layer to output the entity of each one.
     * We can assign the entity label to the first subword of a word and ignore the rest.
-
-
 
 ## The Anatomy of the Transformers Model Class
 
@@ -1013,6 +1010,7 @@ pd.DataFrame([bert_tokens, xlmr_tokens], index=["BERT", "XLM-R"])
 * We can extend existing models for specific use cases with little overhead.
 
 ### Bodies and Heads
+
 * Hugging Face Transformers splits model architectures into a body and head
 * The body is task-agnostic, and the model head is unique to a specific downstream task.
 
@@ -1057,10 +1055,12 @@ print_source(TokenClassifierOutput)
 * The base class for all model outputs.
 
 #### `RobertaModel`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/roberta#transformers.RobertaModel)
 * A bare RoBERTa Model transformer outputting raw hidden-states without any specific head on top.
 
 #### `RobertaPreTrainedModel`
+
 * [Source Code](https://github.com/huggingface/transformers/blob/febe42b5daf4b416f4613e9d7f68617ee983bb40/src/transformers/models/roberta/modeling_roberta.py#L585)
 * An abstract class to handle weights initialization and a simple interface for downloading and loading pretrained models.
 
@@ -1395,8 +1395,6 @@ def tag_text(text, tags, model, tokenizer):
 ```
 ------
 
-
-
 ## Tokenizing Texts for NER
 
 **Collect the words and tags as ordinary lists**
@@ -1642,7 +1640,7 @@ pd.DataFrame(tokens, columns=["tokens"]).T
 
 ------
 
-#### `BatchEncoding.word_ids.word_ids`
+### `BatchEncoding.word_ids.word_ids`
 
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/tokenizer#transformers.BatchEncoding.word_ids)
 * Get a list indicating the word corresponding to each token.
@@ -1997,14 +1995,13 @@ panx_de_encoded
 
 ------
 
-
-
 ## Performance Measures
 
 * Standard performance measures for NER tasks include [precision](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html), [recall](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.recall_score.html), and [F1-score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
 * The model needs to correctly predict all words of an entity for a prediction to count as correct.
 
 ### seqval
+
 * [GitHub Repository](https://github.com/chakki-works/seqeval)
 * A Python framework for sequence labeling evaluation
 
@@ -2072,8 +2069,6 @@ def align_predictions(predictions, label_ids):
 ```
 
 ------
-
-
 
 ## Fine-Tuning XLM-RoBERTa
 
@@ -2149,7 +2144,7 @@ from transformers import DataCollatorForTokenClassification
 
 ------
 
-#### `DataCollatorForTokenClassification`
+### `DataCollatorForTokenClassification`
 
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/data_collator#transformers.DataCollatorForTokenClassification)
 * Create a data collator that will dynamically pad inputs and labels.
@@ -2454,8 +2449,6 @@ tag_text(text_de, tags, trainer.model, xlmr_tokenizer)
 
 ------
 
-
-
 ## Error Analysis
 
 * Error analysis is an effective tool to understand a model's strengths and weaknesses.
@@ -2463,6 +2456,7 @@ tag_text(text_de, tags, trainer.model, xlmr_tokenizer)
 * There are several failure modes where a model might appear to perform well but have serious flaws.
 
 ### Failure Modes
+
 * We might accidentally mask too many tokens and some labels, resulting in a promising loss drop.
 * The metrics function might have a bug.
 * We might include the zero class, skewing the accuracy and $F_{1}$-score.
@@ -3354,8 +3348,6 @@ for sample in get_samples(df_tmp): display(sample)
 * We can use these insights to clean up the dataset and retrain the model.
 ------
 
-
-
 ## Cross-Lingual Transfer
 
 **Create a helper function to evaluate the model on different datasets**
@@ -3755,6 +3747,7 @@ plt.show()
 ------
 
 ### Fine-Tuning on Multiple Languages at Once
+
 * We can mitigate the performance drop from zero-shot cross-lingual transfer by fine-tuning with multiple languages at once.
 
 ------
@@ -4122,8 +4115,6 @@ f1_scores_df
 
 ------
 
-
-
 ## References
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
@@ -4134,9 +4125,5 @@ f1_scores_df
 **Previous:** [Notes on Transformers Book Ch. 3](../chapter-3/)
 
 **Next:** [Notes on Transformers Book Ch. 5](../chapter-5/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

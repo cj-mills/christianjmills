@@ -15,24 +15,16 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
 
 * [Introduction](#introduction)
 * [Setup](#setup)
 * [Exercise 1: RGB to Grayscale Conversion](#exercise-1-rgb-to-grayscale-conversion)  
 * [Exercise 2: Matrix Multiplication](#exercise-2-matrix-multiplication)  
 * [Conclusion and Next Steps](#conclusion-and-next-steps)
-
-
-
-
 
 ::: {.callout-tip title="Resource Links"}
 
@@ -45,10 +37,6 @@ open-graph:
 
 :::
 
-
-
-
-
 ## Introduction
 
 - **CUDA (Compute Unified Device Architecture):**  A parallel computing platform and programming model developed by NVIDIA for programming NVIDIA GPUs.
@@ -58,10 +46,6 @@ open-graph:
   - **Basic PyTorch Knowledge**:
     - Familiarity with tensors, indexing, and basic operations.
     - **Recommended:** [Practical Deep Learning for Coders](https://course.fast.ai/) (especially Part 1).
-
-
-
-
 
 ## Setup
 
@@ -101,10 +85,6 @@ open-graph:
   ```text
   /home/innom-dt/mambaforge/envs/cuda-mode
   ```
-
-  
-
-
 
 ## Exercise 1: RGB to Grayscale Conversion
 
@@ -442,10 +422,6 @@ open-graph:
 
   ![](./images/output_26_0.png){fig-align="center"}
 
-
-
-
-
 ### 7. CUDA Setup in a Notebook
 
 - **Setup:**
@@ -516,8 +492,6 @@ open-graph:
   inline unsigned int cdiv(unsigned int a, unsigned int b) { return (a + b - 1) / b;}
   '''
   ```
-
-  
 
 ### 8. Writing and Compiling CUDA Kernels
 
@@ -735,10 +709,6 @@ open-graph:
   ![](./images/output_43_0.png){fig-align="center"}
 
   - **Performance:** The CUDA kernel execution is significantly faster on the full size image than the Python implementation on the smaller image (636 μs vs. 726 ms).
-
-
-
-
 
 ## Exercise 2: Matrix Multiplication
 
@@ -958,9 +928,6 @@ open-graph:
   - Uses nested loops to iterate through rows of the first matrix and columns of the second matrix.
   - Calculates the dot product for each element in the output matrix.
   - **Performance:** Slow for large matrices (around 1 second for 39,200 innermost operations).
-  
-  
-  
 
 ### 3. Matrix Multiplication with a CUDA Kernel
 
@@ -1098,7 +1065,6 @@ open-graph:
   ```text
   tensor(True)
   ```
-  
 
 ### 4. Matrix Multiplication in CUDA
 
@@ -1286,8 +1252,6 @@ open-graph:
     torch.Size([50000, 10])
     ```
 
-    
-
 ### 5. Comparison with PyTorch's `@` Operator
 
 - **PyTorch's Matrix Multiplication:** PyTorch provides the `@` operator for efficient matrix multiplication.
@@ -1311,8 +1275,6 @@ open-graph:
   ```text
   636 μs ± 62.7 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
   ```
-
-  
 
 ### 6. Optimizing CUDA Kernels with Shared Memory
 
@@ -1415,10 +1377,6 @@ open-graph:
 
   ![](./images/output_89_0.png){fig-align="center"}
 
-
-
-
-
 ## Conclusion and Next Steps
 
 - **CUDA Accessibility:** CUDA programming is becoming increasingly important for implementing advanced deep learning techniques.
@@ -1431,11 +1389,5 @@ open-graph:
   - Explore other CUDA mode lectures.
   - Try implementing projects like 4-bit quantization, flash attention, etc.
   - Read and understand other people's CUDA code (e.g., flash attention, bits and bytes, GPTQ).
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

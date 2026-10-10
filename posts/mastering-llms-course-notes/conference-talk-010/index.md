@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [The RAG Playbook](#the-rag-playbook)
 * [Identifying and Addressing Issues](#identifying-and-addressing-issues)
@@ -33,12 +27,6 @@ open-graph:
 * [Importance of Full Text Search and Metadata](#importance-of-full-text-search-and-metadata)
 * [Conclusion](#conclusion)
 * [Q&A Session](#qa-session)
-
-
-
-
-
-
 
 ## The RAG Playbook
 
@@ -62,7 +50,6 @@ open-graph:
 *  **reranker:** A type of model that, given a query and document pair, will output a similarity score.
 *  **Tool:**
    *  **[rerankers](https://github.com/AnswerDotAI/rerankers):** A lightweight unified API for various reranking models.
-
 
 ### Unsupervised Learning for Topic Clustering
 
@@ -88,8 +75,6 @@ open-graph:
 *  Consider deprioritizing or explicitly excluding topics with low volume, low relevancy, and low satisfaction.
 *  Different combinations of volume, relevancy, and satisfaction provide insights into different types of issues requiring specific solutions.
 
-
-
 ## Identifying and Addressing Issues
 
 ### Content vs. Capability Topics
@@ -114,8 +99,6 @@ open-graph:
    *  Alert content management teams when questions frequently lack relevant documents.
    *  Inform users when insufficient data is available to answer their query.
 
-
-
 ## Real-Time Monitoring and Classifiers
 
 ### Building Classifiers for Real-Time Question Categorization
@@ -131,8 +114,6 @@ open-graph:
 *  Identify shifts in user needs and adjust prioritization accordingly.
 *  **Example:** Onboarding a new client significantly increases the volume of "comparing and contrasting" questions, highlighting the need to prioritize that capability.
 
-
-
 ## Low-Hanging Fruit and Synthetic Data Generation
 
 ### Focusing on Specific Improvements
@@ -145,8 +126,6 @@ open-graph:
 *  Generate synthetic data for specific topics to:
    *  Establish baselines for evaluating the impact of system changes.
    *  Test the effectiveness of new datasets or models.
-
-
 
 ## Importance of Full Text Search and Metadata
 
@@ -164,23 +143,13 @@ open-graph:
 
 *  Track relevant metrics (e.g., character length, latency) and correlate them with business outcomes (e.g., user conversion, engagement).
 
-
-
 ## Conclusion
 
 * The key to improving RAG applications is to adopt a systematic, data-driven approach.
 * By analyzing user feedback, clustering queries, and monitoring question distribution, developers can identify and prioritize areas for improvement.
 * Focusing on specific, measurable goals and utilizing synthetic data generation enables efficient testing and iteration.
 
-
-
-
-
-
-
-## Q&A Session 
-
-
+## Q&A Session
 
 ### How much data is needed for these techniques to be worthwhile?
 
@@ -318,8 +287,5 @@ open-graph:
 
 * **Leverage experience from recommendation systems:** Position RAG expertise by drawing parallels to recommendation systems, highlighting transferable skills in data analysis, model development, and system optimization.
 * **Target businesses with similar workflows:** Focus on businesses where users interact with information similarly to recommendation systems, such as those requiring information retrieval and synthesis based on user requests.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

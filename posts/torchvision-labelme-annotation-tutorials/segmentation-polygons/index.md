@@ -15,14 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Torchvision Annotation Tutorials**](/series/tutorials/torchvision-annotation-tutorials-series.html)
 :::
-
-
 
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
@@ -31,10 +27,6 @@ open-graph:
 * [Loading and Exploring the Dataset](#loading-and-exploring-the-dataset)
 * [Preparing the Data](#preparing-the-data)
 * [Conclusion](#conclusion)
-
-
-
-
 
 ## Introduction
 
@@ -45,8 +37,6 @@ Welcome to this hands-on guide for working with segmentation annotations created
 The tutorial walks through setting up a Python environment, loading the raw annotations into a [Pandas DataFrame](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html), annotating and augmenting images using torchvision's [Transforms V2 API](https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_getting_started.html#sphx-glr-auto-examples-transforms-plot-transforms-getting-started-py), and creating a custom [Dataset](https://pytorch.org/tutorials/beginner/basics/data_tutorial.html) class to feed samples to a model.
 
 This guide is suitable for beginners and experienced practitioners, providing the code, explanations, and resources needed to understand and implement each step. By the end, you will have a solid foundation for working with bounding box annotations made with LabelMe for instance segmentation tasks.
-
-
 
 ## Getting Started with the Code
 
@@ -70,13 +60,9 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 :::
 
-
-
 ## Setting Up Your Python Environment
 
 Before diving into the code, we'll cover the steps to create a local Python environment and install the necessary dependencies.
-
-
 
 ### Creating a Python Environment
 
@@ -104,10 +90,6 @@ mamba activate pytorch-env
 ```
 
 :::
-
-
-
-
 
 ### Installing PyTorch
 
@@ -144,8 +126,6 @@ pip install torch torchvision torchaudio
 
 :::
 
-
-
 ### Installing Additional Libraries
 
 We also need to install some additional libraries for our project.
@@ -172,10 +152,6 @@ Run the following commands to install these additional libraries:
 pip install distinctipy jupyter matplotlib pandas pillow tqdm
 ```
 
-
-
-
-
 ### Installing Utility Packages
 
 We will also install some utility packages I made, which provide shortcuts for routine tasks.
@@ -201,8 +177,6 @@ pip install cjm_pil_utils cjm_psl_utils cjm_pytorch_utils cjm_torchvision_tfms
 ```
 
 With our environment set up, we can open our Jupyter Notebook and dive into the code. 
-
-
 
 ## Importing the Required Dependencies
 
@@ -255,15 +229,11 @@ from tqdm.auto import tqdm
 
 Torchvision provides dedicated [`torch.Tensor`](https://pytorch.org/docs/stable/tensors.html) subclasses for different annotation types called [`TVTensors`](https://pytorch.org/vision/stable/tv_tensors.html). Torchvision's V2 transforms use these subclasses to update the annotations based on the applied image augmentations. The TVTensor class for segmentation annotations is called [Mask](https://pytorch.org/vision/stable/generated/torchvision.tv_tensors.Mask.html). Torchvision also includes a [draw_segmentation_masks](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_segmentation_masks.html) function to annotate images.
 
-
-
 ## Loading and Exploring the Dataset
 
 After importing the dependencies, we can start working with our data. I annotated a toy dataset with segmentation masks for this tutorial using images from the free stock photo site [Pexels](https://www.pexels.com/). The dataset is available on [HuggingFace Hub](https://huggingface.co/) at the link below:
 
 - **Dataset Repository:** [labelme-instance-segmentation-toy-dataset](https://huggingface.co/datasets/cj-mills/labelme-instance-segmentation-toy-dataset/tree/main)
-
-
 
 ### Setting the Directory Paths
 
@@ -304,9 +274,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
-
-
 
 ### Setting the Dataset Path
 
@@ -355,9 +322,6 @@ pd.Series({
 </table>
 </div>
 
-
-
-
 ### Downloading the Dataset
 
 We can now download the archive file and extract the dataset using the [`download_file`](https://cj-mills.github.io/cjm-psl-utils/core.html#download_file) and [`file_extract`](https://cj-mills.github.io/cjm-psl-utils/core.html#file_extract) functions from the `cjm_psl_utils` package. We can delete the archive afterward to save space.
@@ -384,8 +348,6 @@ else:
     # Delete the archive if specified
     if delete_archive: archive_path.unlink()
 ```
-
-
 
 ### Getting the Image and Annotation Files
 
@@ -443,7 +405,6 @@ pd.DataFrame({"Image File": [file.name for file in img_file_paths],
 </table>
 </div>
 
-
 ### Get Image File Paths
 
 Each image file has a unique name that we can use to locate the corresponding annotation data. We can make a dictionary that maps image names to file paths. The dictionary will allow us to retrieve the file path for a given image more efficiently.
@@ -494,7 +455,6 @@ pd.DataFrame.from_dict(img_dict, orient='index').head()
   </tbody>
 </table>
 </div>
-
 
 ### Get Image Annotations
 
@@ -906,14 +866,11 @@ The segmentation polygon annotation are in `[[x1,y1], [x2,y2], ..., [xn,yn]]` fo
 
 With the annotations loaded, we can start inspecting our dataset.
 
-
-
 ### Inspecting the Class Distribution
 
 First, we get the names of all the classes in our dataset and inspect the distribution of samples among these classes. This step is not strictly necessary for the toy dataset but is worth doing for real-world projects. A balanced dataset (where each class has approximately the same number of instances) is ideal for training a machine-learning model.
 
 #### Get image classes
-
 
 ```python
 # Explode the 'shapes' column in the annotation_df dataframe
@@ -949,10 +906,7 @@ pd.DataFrame(class_names)
 </table>
 </div>
 
-
-
 #### Visualize the class distribution
-
 
 ```python
 # Get the number of samples for each object class
@@ -970,8 +924,6 @@ plt.show()
 ![](./images/output_21_0.png){fig-align="center"}
 
 Note the class distribution is quite imbalanced between the `person` and `car` classes. For a real dataset, you would want these to be much closer.
-
-
 
 ### Visualizing Image Annotations
 
@@ -996,8 +948,6 @@ distinctipy.color_swatch(colors)
 
 
 ![](./images/output_24_0.png){fig-align="center"}
-
-
 
 #### Download a font file
 
@@ -1029,7 +979,6 @@ We can use the unique ID for an image in the image dictionary to get the image f
 
 #### Load the sample image
 
-
 ```python
 # Get the file ID of the first image file
 file_id = list(img_dict.keys())[0]
@@ -1048,12 +997,8 @@ sample_img
 
 
 ![](./images/output_31_1.png){fig-align="center"}
-    
-
-
 
 #### Inspect the corresponding annotation data
-
 
 ```python
 # Get the row from the 'annotation_df' DataFrame corresponding to the 'file_id'
@@ -1104,11 +1049,7 @@ annotation_df.loc[file_id].to_frame()
 
 The lists of point coordinates in the segmentation annotations are the vertices of a polygon for the individual segmentation masks. We can use these to generate images for each segmentation mask.
 
-
-
-
 #### Define a function to convert segmentation polygons to images
-
 
 ```python
 def create_polygon_mask(image_size, vertices):
@@ -1179,10 +1120,6 @@ tensor_to_pil(annotated_tensor)
 ![](./images/output_37_0.png){fig-align="center"}
 
 We have loaded the dataset, inspected its class distribution, and visualized the annotations for a sample image. In the final section, we will cover how to augment images using torchvision's Transforms V2 API and create a custom Dataset class for training.
-
-
-
-
 
 ## Preparing the Data
 
@@ -1338,8 +1275,6 @@ pd.Series({
 
 Now that we know how to apply data augmentations, we can put all the steps we've covered into a custom Dataset class.
 
-
-
 ### Training Dataset Class
 
 The following custom Dataset class is responsible for loading a single image, preparing the associated annotations, applying any image transforms, and returning the final `image` tensor and its `target` dictionary during training.
@@ -1481,8 +1416,6 @@ train_tfms = transforms.Compose([
 Always use the [`SanitizeBoundingBoxes`](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.SanitizeBoundingBoxes.html#torchvision.transforms.v2.SanitizeBoundingBoxes) transform to clean up annotations after using data augmentations that alter bounding boxes (e.g., cropping, warping, etc.).
 :::
 
-
-
 ### Initialize Dataset
 
 Now, we can create the dataset object using the image dictionary, the annotation DataFrame, and the image transforms.
@@ -1514,13 +1447,11 @@ pd.Series({
 </table>
 </div>
 
-
 ### Inspect Samples
 
 To close out, we should verify the dataset object works as intended by inspecting the first sample.
 
 #### Inspect training set sample
-
 
 ```python
 dataset_sample = train_dataset[0]
@@ -1550,12 +1481,6 @@ tensor_to_pil(annotated_tensor)
 
 ![](./images/output_54_0.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Conclusion
 
 In this tutorial, we covered how to load custom segmentation annotations made with the LabelMe annotation tool and work with them using torchvision's Transforms V2 API. The skills and knowledge you acquired here provide a solid foundation for future instance segmentation projects.
@@ -1564,19 +1489,12 @@ As a next step, perhaps try annotating a custom instance segmentation dataset wi
 
 - [Training Mask R-CNN Models with PyTorch](/posts/pytorch-train-mask-rcnn-tutorial/)
 
-
-
 ## Recommended Tutorials
 
 - [**Working with LabelMe Bounding Box Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/bounding-boxes/)**:** Learn how to work with LabelMe bounding box annotations in torchvision for object detection tasks.
 - [**Working with LabelMe Keypoint Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/keypoints/)**:** Learn how to work with LabelMe keypoint annotations in torchvision for keypoint estimation tasks.
 - [**Training Mask R-CNN Models with PyTorch**](/posts/pytorch-train-mask-rcnn-tutorial/)**:** Learn how to train Mask R-CNN models on custom datasets with PyTorch.
 
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

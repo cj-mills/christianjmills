@@ -20,7 +20,6 @@ open-graph:
 * [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
 
-
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
 * [Setting Up Your Python Environment](#setting-up-your-python-environment)
@@ -30,7 +29,6 @@ open-graph:
 * [Defining Utility Functions](#defining-utility-functions)
 * [Tracking Objects in Videos](#tracking-objects-in-videos)
 * [Conclusion](#conclusion)
-
 
 ## Introduction
 
@@ -46,10 +44,6 @@ By the end of this tutorial, you will understand how to combine a YOLOX object d
 * [Exporting YOLOX Models from PyTorch to ONNX](../onnx-export/)
 :::
 
-
-
-
-
 ## Getting Started with the Code
 
 As with the previous tutorial, the code is available as a Jupyter Notebook.
@@ -57,10 +51,6 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 | Jupyter Notebook                                             | Google Colab                                                 |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [GitHub Repository](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-tracking-onnx-byte-track.ipynb) | [Open In Colab](https://colab.research.google.com/github/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-tracking-onnx-byte-track-colab.ipynb) |
-
-
-
-
 
 ## Setting Up Your Python Environment
 
@@ -85,10 +75,6 @@ Run the following command to install these additional libraries:
 # Install packages
 pip install onnx onnxruntime opencv-python cjm_byte_track
 ```
-
-
-
-
 
 ## Importing the Required Dependencies
 
@@ -132,14 +118,11 @@ import onnxruntime as ort # Import the ONNX Runtime
 from tqdm.auto import tqdm
 ```
 
-
-
 ## Setting Up the Project
 
 In this section, we will set the folder locations for our project and the directory with the ONNX model and JSON colormap file. We should also ensure we have a font file for annotating images.
 
 ### Set the Directory Paths
-
 
 ```python
 # The name for the project
@@ -188,9 +171,7 @@ pd.Series({
 ::: {.callout-tip title="Those following along on Google Colab can drag the contents of their checkpoint folder into Colab's file browser. "}
 :::
 
-
 ### Download a Font File
-
 
 ```python
 # Set the name of the font file
@@ -200,16 +181,11 @@ font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
-
-
 ## Loading the Checkpoint Data
 
 Now, we can load the colormap and set the max stride value and input dimension slice.
 
 ### Load the Colormap
-
 
 ```python
 # The colormap path
@@ -229,17 +205,12 @@ class_names = list(colormap_dict.keys())
 int_colors = [tuple(int(c*255) for c in color) for color in colormap_dict.values()]
 ```
 
-
-
 ### Set the Preprocessing and Post-Processing Parameters
-
 
 ```python
 max_stride = 32
 input_dim_slice = slice(2, 4, None)
 ```
-
-
 
 ## Defining Utility Functions
 
@@ -302,7 +273,6 @@ We can use the same [utility functions](../onnx-export/#define-utility-functions
 
 #### Define a function to generate the output grids
 
-
 ```python
 def generate_output_grids_np(height, width, strides=[8,16,32]):
     """
@@ -343,7 +313,6 @@ def generate_output_grids_np(height, width, strides=[8,16,32]):
 
 #### Define a function to calculate bounding boxes and probabilities
 
-
 ```python
 def calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) -> np.ndarray:
     """
@@ -377,7 +346,6 @@ def calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) 
 
 #### Define a function to extract object proposals from the raw model output
 
-
 ```python
 def process_outputs(outputs:np.ndarray, input_dims:tuple, bbox_conf_thresh:float):
 
@@ -407,7 +375,6 @@ def process_outputs(outputs:np.ndarray, input_dims:tuple, bbox_conf_thresh:float
 ```
 
 #### Define a function to calculate the intersection-over-union
-
 
 ```python
 def calc_iou(proposals:np.ndarray) -> np.ndarray:
@@ -445,7 +412,6 @@ def calc_iou(proposals:np.ndarray) -> np.ndarray:
 ```
 
 #### Define a function to filter bounding box proposals using Non-Maximum Suppression
-
 
 ```python
 def nms_sorted_boxes(iou:np.ndarray, iou_thresh:float=0.45) -> np.ndarray:
@@ -542,14 +508,11 @@ def draw_bboxes_pil(image, boxes, labels, colors, font, width=2, font_size=18, p
 
 That takes care of the required utility functions. In the next section, we will use our ONNX model with ByteTrack to track objects in a video.
 
-
-
 ## Tracking Objects in Videos
 
 We will first initialize an inference session with our ONNX model.
 
 ### Create an Inference Session
-
 
 ```python
 # Get a filename for the ONNX model
@@ -566,8 +529,6 @@ providers = [
 sess_options = ort.SessionOptions()
 session = ort.InferenceSession(onnx_file_path, sess_options=sess_options, providers=providers)
 ```
-
-
 
 ### Select a Test Video
 
@@ -595,8 +556,6 @@ Video(video_path)
 ```
 
 ![](./video/pexels-rodnae-productions-10373924.mp4){fig-align="center"}
-
-
 
 ### Initialize a `VideoCapture` Object
 
@@ -650,8 +609,6 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Initialize a `VideoWriter` Object
 
 We will use OpenCV's [`VideoWriter`](https://docs.opencv.org/3.4/dd/d9e/classcv_1_1VideoWriter.html) class to save the annotated version of our test video.
@@ -669,18 +626,13 @@ video_out_path = f"{(video_dir)}{Path(video_path).stem}-byte-track.mp4"
 video_writer = cv2.VideoWriter(video_out_path, cv2.VideoWriter_fourcc(*'mp4v'), frame_fps, (frame_width, frame_height))
 ```
 
-
-
 ### Define Inference Parameters
-
 
 ```python
 test_sz = 288
 bbox_conf_thresh = 0.1
 iou_thresh = 0.45
 ```
-
-
 
 ### Detect, Track, and Annotate Objects in Video Frames
 
@@ -788,13 +740,6 @@ The ByteTracker had no issue tracking the two hands throughout the video, as the
 1. Don't forget to download the the annotated video from the Colab Environment's file browser. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data)) 
 :::
 
-
-
-
-
-
-
-
 ## Conclusion
 
 Congratulations on reaching the end of this tutorial on object tracking with YOLOX and ByteTrack! With this knowledge, we have unlocked a new realm of potential applications for our YOLOX model.
@@ -803,13 +748,6 @@ Combining YOLOX's robust detection capabilities with ByteTrack's tracking effici
 
 As a follow-up project, consider integrating our hand sign detector with ByteTrack in an application for gesture-based controls or training a new YOLOX model for other domains. The potential applications of this powerful combination are vast, limited only by your imagination.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

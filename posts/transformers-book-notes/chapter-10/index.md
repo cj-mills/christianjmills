@@ -26,7 +26,6 @@ open-graph:
 * [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
 :::
 
-
 * [Training Transformers from Scratch](#training-transformers-from-scratch)
 * [Project: Python Source Code Generator](#project-python-source-code-generator)
 * [Large Datasets and Where to Find Them](#large-datasets-and-where-to-find-them)
@@ -39,7 +38,6 @@ open-graph:
 
 
 ------
-
 
 ```python
 import transformers
@@ -85,28 +83,24 @@ def print_source(obj, exclude_doc=True):
 
 ------
 
-
-
 ## Training Transformers from Scratch
 
 * Efficiently training large models from scratch requires special tools for distributed training.
-
-
 
 ## Project: Python Source Code Generator
 
 * The goal is to train a GPT-like model to generate Python source code.
 
 ### Existing AI Code Completion Products
+
 * [GitHub Copilot](https://copilot.github.com/)
 * [TabNine](https://www.tabnine.com/)
 * [Kite](https://www.kite.com/)
 
 ### CodeParrot
+
 * [GitHub Repository](https://github.com/huggingface/transformers/tree/main/examples/research_projects/codeparrot)
 * CodeParrot is a GPT-2 model trained from scratch on Python code.
-
-
 
 ## Large Datasets and Where to Find Them
 
@@ -117,6 +111,7 @@ def print_source(obj, exclude_doc=True):
 * Using a tokenizer trained on a corpus from a different domain is typically suboptimal.
 
 ### Challenges of Building a Large-Scale Corpus
+
 * The model will inherit any defects in the pretraining corpus.
 * It becomes more difficult to control or fully understand the contents of a dataset the larger it gets.
 * Most exceedingly large datasets are not handcrafted.
@@ -132,9 +127,8 @@ def print_source(obj, exclude_doc=True):
 * [Aligning Books and Movies: Towards Story-like Visual Explanations by Watching Movies and Reading Books](https://arxiv.org/abs/1506.06724)
 * [Addressing "Documentation Debt" in Machine Learning Research: A Retrospective Datasheet for BookCorpus](https://arxiv.org/abs/2105.05241)
 
-
-
 ### Compare text generations from GPT and GPT-2
+
 * The original GPT model trained predominately on BookCorpus.
 * GPT-2 trained on web pages, blogs, and news articles linked from Reddit.
 
@@ -252,15 +246,17 @@ print("GPT-2 completions:\n" + enum_pipeline_ouputs(generation_gpt2, prompt, 3))
 * The [Libraries.io](https://libraries.io/) service monitors open source packages.
 
 #### `bigquery-public-data.github_repos.contents` table
+
 * The [`bigquery-public-data.github_repos.contents` table](https://console.cloud.google.com/bigquery?project=bigquery-public-data&page=table&t=contents&d=github_repos&p=bigquery-public-data&redirect_from_classic=true&ws=!1m5!1m4!4m3!1sbigquery-public-data!2sgithub_repos!3scontents) contains copies of all ASCII files less than 10MB in size.
 
-
 #### CodeSearchNet corpus
+
 * The CodeSearchNet corpus contains 2 million comment-code pairs from open-source libraries hosted on GitHub.
 * It contains code and documentation for several programming languages.
 * [Hugging Face Dataset Card](https://huggingface.co/datasets/code_search_net)
 
 #### Creating a dataset with Google BigQuery
+
 * [Unsupervised Translation of Programming Languages](https://arxiv.org/abs/2006.03511)
 
 **Steps to export Python files**
@@ -326,12 +322,14 @@ git clone https://huggingface.co/datasets/transformersbook/codeparrot
 ```
 
 ### To Filter the Noise or Not?
+
 * Data preparation is crucial, and we should clean the dataset as much as possible. 
 * The quality of code in GitHub repositories varies greatly.
 * Having some noise in the training dataset makes our code generation system robust to noisy inputs at inference time but also makes predictions more random.
 * The intended use case and whole-system integration determine whether you want more or less noisy data and add pre and post-filtering operations.
 
 #### Potential steps to clean dataset
+
 * Filter code based on stars or usage information.
 * Code with more stars or higher usage is more likely to be higher quality.
 * Remove duplicated code samples.
@@ -340,11 +338,13 @@ git clone https://huggingface.co/datasets/transformersbook/codeparrot
 * Remove personal identifying information such as passwords or keys.
 
 ### Working with Large Datasets
+
 * Working with large datasets requires additional considerations regarding disk space and RAM usage.
 * It is common for datasets to be larger than the available RAM.
 * The Hugging Face Datasets library provides memory mapping and streaming functionality to address RAM and disk space limitations.
 
 #### Memory mapping
+
 * Hugging Face Datasets uses a mechanism for zero-copy and zero-overhead memory mapping.
 * The mechanism caches each dataset in a file that directly reflects the content in RAM.
 * Hugging Face Datasets opens a read-only pointer to this file and uses it as a substitute for RAM.
@@ -468,6 +468,7 @@ remote_dataset = load_dataset('transformersbook/codeparrot', split="train",
 * Pushing our dataset to the Hugging Face Hub allows us to access it from a training server and share it with the community.
 
 #### Command Line Steps
+
 1. Log into Hugging Face account
 ```bash
 huggingface-cli login
@@ -512,8 +513,6 @@ git push
 * It is good practice to add README cards that explain how the datasets were created and provide as much helpful information as possible.
 * A well-documented dataset is more likely to be valuable to other people, including the future you.
 * [Hugging Face Dataset Card Creation Guide](https://github.com/huggingface/datasets/blob/master/templates/README_guide.md)
-
-
 
 ## Building a Tokenizer
 
@@ -584,6 +583,7 @@ print(f'CamemBERT tokens for "being": {tok_list(tokenizer_camembert,"being")}')
 * Both BPE and Unigram perform reasonably well in most cases.
 
 ### Measuring Tokenizer Performance
+
 * It is challenging to measure a tokenizer's optimality and performance in practice.
 * Subword fertility calculates the average number of subwords produced per tokenized word.
 * The proportion of continued words refers to the amount of tokenized words in a corpus split into at least two subtokens.
@@ -593,7 +593,8 @@ print(f'CamemBERT tokens for "being": {tok_list(tokenizer_camembert,"being")}')
 * However, they tend to ignore the interaction of the tokenizer with the model.
 * The best way to evaluate tokenizers is using the downstream performance of the model.
 
-### A Tokenizer for Python 
+### A Tokenizer for Python
+
 * Using a natural language pre-tokenizer for Python code might be suboptimal.
 * Indentation has semantic meaning in Python code.
 * Splitting on all whitespaces and removing them would remove valuable indentation information.
@@ -1914,23 +1915,24 @@ new_tokenizer.push_to_hub(model_ckpt+ "-small-vocabulary")
 
 ------
 
-
-
 ## Training a Model from Scratch
 
 * [CodeParrot Trainng Script and Instructions](https://github.com/huggingface/transformers/tree/main/examples/research_projects/codeparrot)
 
 ### A Tale of Pretraining Objectives
+
 * The large-scale pretraining corpus allows us to tackle several downstream tasks.
 * The selected task will influence which pretraining objective we choose.
 
 #### Causal language modeling
+
 * Causal language modeling is a self-supervised approach that does not require annotations.
 * Code autocompletion is a directly related downstream task.
 * We can provide a model with the beginning of a code sample and have it generate possible completions.
 * A decoder-only architecture like the GPT family is usually best suited for this task.
 
 #### Masked language modeling
+
 * Masked language modeling (also called denoising) is a self-supervised training objective.
 * We can provide a model with a noisy code sample (e.g., by replacing a code instruction with a random or masked word) and have it reconstruct the original clean sequence.
 * Masked language modeling is not directly related to a downstream task like autocompletion, but it is a practical pretraining objective for learning general representations.
@@ -1938,6 +1940,7 @@ new_tokenizer.push_to_hub(model_ckpt+ "-small-vocabulary")
 * Encoder architectures are best suited to this pretraining objective.
 
 #### Sequence-to-sequence training
+
 * Sequence-to-sequence training is a supervised learning objective where one category serves as input while another serves as labels.
 * We can use a heuristic like regular expressions to separate comments or docstrings from code and build a large-scale annotated dataset of code-comment pairs.
 * We can then use this dataset to train a model to transcript comments in code or vice versa.
@@ -2308,10 +2311,12 @@ import wandb
 * Create a [Logger object](https://docs.python.org/3/library/logging.html#logger-objects).
 
 #### `torch.utils.tensorboard.writer.SummaryWriter`
+
 * [Documentation](https://pytorch.org/docs/stable/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter)
 * Write entries directly to event files for [TensorBoard](https://github.com/tensorflow/tensorboard)
 
 #### `wandb`
+
 * [GitHub Repository](https://github.com/wandb/client)
 * [Documentation](https://docs.wandb.ai/)
 * A tool for visualizing and tracking machine learning experiements.
@@ -2585,8 +2590,6 @@ git checkout main
 git merge <RUN_NAME>
 git push
 ```
-
-
 
 ## Results and Analysis
 
@@ -2878,8 +2881,6 @@ complete_code(generation, prompt, max_length=96)
 
 ------
 
-
-
 ## References
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
@@ -2890,9 +2891,5 @@ complete_code(generation, prompt, max_length=96)
 **Previous:** [Notes on Transformers Book Ch. 9](../chapter-9/)
 
 **Next:** [Notes on Transformers Book Ch. 11](../chapter-11/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

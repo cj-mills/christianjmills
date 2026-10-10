@@ -16,16 +16,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Training Keypoint R-CNN Models with PyTorch**](/series/tutorials/pytorch-train-keypoint-rcnn-series.html)
 :::
-
-
 
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
@@ -38,10 +32,6 @@ open-graph:
 * [Fine-tuning the Model](#fine-tuning-the-model)
 * [Making Predictions with the Model](#making-predictions-with-the-model)
 * [Conclusion](#conclusion)
-
-
-
-
 
 ## Introduction
 
@@ -82,15 +72,9 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 {{< include /_python-multiprocessing-warning.qmd >}}
 
-
-
-
-
 ## Setting Up Your Python Environment
 
 Before diving into the code, we'll cover the steps to create a local Python environment and install the necessary dependencies.
-
-
 
 ### Creating a Python Environment
 
@@ -118,10 +102,6 @@ mamba activate pytorch-env
 ```
 
 :::
-
-
-
-
 
 ### Installing PyTorch
 
@@ -158,8 +138,6 @@ pip install torch torchvision torchaudio
 
 :::
 
-
-
 ### Installing Additional Libraries
 
 We also need to install some additional libraries for our project.
@@ -186,10 +164,6 @@ Run the following command to install these additional libraries:
 pip install distinctipy jupyter matplotlib pandas pillow torchtnt==0.2.0 tabulate tqdm
 ```
 
-
-
-
-
 ### Installing Utility Packages
 
 We will also install some utility packages I made, which provide shortcuts for routine tasks.
@@ -214,8 +188,6 @@ pip install cjm_pandas_utils cjm_pil_utils cjm_psl_utils cjm_pytorch_utils cjm_t
 ```
 
 With our environment set up, we can open our Jupyter Notebook and dive into the code. 
-
-
 
 ## Importing the Required Dependencies
 
@@ -287,8 +259,6 @@ from tqdm.auto import tqdm
 
 Torchvision provides dedicated [`torch.Tensor`](https://pytorch.org/docs/stable/tensors.html) subclasses for different annotation types called [`TVTensors`](https://pytorch.org/vision/stable/tv_tensors.html). Torchvision’s V2 transforms use these subclasses to update the  annotations based on the applied image augmentations. While there is  currently no dedicated TVTensor class for keypoint annotations, we can  use the one for [bounding boxes](https://pytorch.org/vision/stable/generated/torchvision.tv_tensors.BoundingBoxes.html) instead. Torchvision does include a [`draw_keypoints`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_keypoints.html) function, but we might as well stick with the [`draw_bounding_boxes`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html) function to annotate images.
 
-
-
 ## Setting Up the Project
 
 In this section, we set up some basics for our project, such as initializing random number generators, setting the PyTorch device to run the model, and preparing the folders for our project and datasets.
@@ -319,8 +289,6 @@ device, dtype
 ```text
 ('cuda', torch.float32)
 ```
-
-
 
 ### Setting the Directory Paths
 
@@ -377,8 +345,6 @@ pd.Series({
 </div>
 
 Double-check the project and dataset directories exist in the specified paths and that you can add files to them before continuing. At this point, our project is set up and ready to go. In the next section, we will download and explore the dataset.
-
-
 
 ## Loading and Exploring the Dataset
 
@@ -446,9 +412,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
-
-
 
 ### Downloading the Dataset
 
@@ -532,7 +495,6 @@ Number of Images: 200
   </tbody>
 </table>
 </div>
-
 
 ### Get Image Annotations
 
@@ -639,13 +601,11 @@ annotation_df.head()
 </table>
 </div>
 
-
 ### Inspecting the Class Distribution
 
 Now that we have the annotation data, we can extract the unique class names and inspect the class distribution. A balanced dataset (where each class has approximately the same number of instances) is ideal for training a machine-learning model.
 
 #### Get image classes
-
 
 ```python
 # Explode the 'shapes' column in the annotation_df dataframe
@@ -685,10 +645,7 @@ pd.DataFrame(class_names)
 </table>
 </div>
 
-
-
 #### Visualize the class distribution
-
 
 ```python
 # Get the number of samples for each object class
@@ -704,8 +661,6 @@ plt.show()
 ```
 
 ![](./images/output_26_0.png){fig-align="center"}
-
-
 
 ### Visualizing Image Annotations
 
@@ -728,8 +683,6 @@ distinctipy.color_swatch(colors)
 ```
 
 ![](./images/output_30_0.png){fig-align="center"}
-
-
 
 #### Download a font file
 
@@ -783,8 +736,6 @@ tensor_to_pil(annotated_tensor)
 ```
 
 ![](./images/output_36_0.png){fig-align="center"}
-
-
 
 ## Loading the Keypoint R-CNN Model
 
@@ -856,10 +807,6 @@ The above table shows the model has approximately `58.8` million trainable param
 
 That completes the model setup. In the next section, we will prepare our dataset for training.
 
-
-
-
-
 ## Preparing the Data
 
 The data preparation involves several steps, such as applying data  augmentation techniques, setting up the train-validation split for the  dataset, resizing and padding the images, defining the training dataset  class, and initializing DataLoaders to feed data to the model.
@@ -911,7 +858,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
 
 ### Data Augmentation
 
@@ -1209,8 +1155,6 @@ class LabelMeKeypointDataset(Dataset):
         return target
 ```
 
-
-
 ### Image Transforms
 
 Here, we will specify and organize all the image transforms to apply during training.
@@ -1295,7 +1239,6 @@ pd.Series({
 </table>
 </div>
 
-
 ### Inspect Samples
 
 Let’s verify the dataset objects work correctly by inspecting the first samples from the training and validation sets.
@@ -1327,11 +1270,7 @@ tensor_to_pil(annotated_tensor)
 
 ![](./images/output_62_0.png){fig-align="center"}
 
-
-
-
 #### Inspect validation set sample
-
 
 ```python
 dataset_sample = valid_dataset[0]
@@ -1347,8 +1286,6 @@ tensor_to_pil(annotated_tensor)
 ```
 
 ![](./images/output_64_0.png){fig-align="center"}
-
-
 
 ### Initialize DataLoaders
 
@@ -1385,8 +1322,6 @@ print(f'Number of batches in validation DataLoader: {len(valid_dataloader)}')
 
     Number of batches in train DataLoader: 45
     Number of batches in validation DataLoader: 5
-
-
 
 ## Fine-tuning the Model
 
@@ -1460,8 +1395,6 @@ def conditional_autocast(device):
         # This yields control back to the with-block with no changes.
         yield
 ```
-
-
 
 ### Define the Training Loop
 
@@ -1673,7 +1606,6 @@ print(checkpoint_path)
 Let’s also save a copy of the colormap for the current dataset in the training folder for future use.
 
 ### Save the Color Map
-
 
 ```python
 # Create a color map and write it to a JSON file
@@ -1891,10 +1823,6 @@ Eval: 100% |██████████| 5/5 [00:00<00:00, 14.32it/s, avg_los
 
 At last, we have our fine-tuned Keypoint R-CNN model. To wrap up the tutorial, we can test our model by performing inference on individual  images.
 
-
-
-
-
 ## Making Predictions with the Model
 
 In this final part of the tutorial, we will cover how to perform  inference on individual images with our Mask R-CNN model and filter the  predictions.
@@ -1957,10 +1885,7 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Get Target Annotation Data
-
 
 ```python
 # Extract the source annotations for the test image
@@ -2039,28 +1964,17 @@ stack_imgs([tensor_to_pil(gt_annotated_tensor), tensor_to_pil(annotated_tensor)]
 
 The model appears to have learned to detect eyes and noses as desired.
 
-
-
-
-
 ## Conclusion
 
 Congratulations on completing this tutorial for training Keypoint R-CNN models in PyTorch! The skills and knowledge you acquired here provide a solid foundation for future projects.
 
 As a next step, perhaps try annotating a keypoint dataset with [LabelMe](https://github.com/labelmeai/labelme) for your own Keypoint R-CNN model or experiment with the data augmentations to see how they impact model accuracy.
 
-
-
 ## Recommended Tutorials
 
 - [**Exporting Keypoint R-CNN Models from PyTorch to ONNX**](/posts/pytorch-train-keypoint-rcnn-tutorial/onnx-export/)**:** Learn how to export Keypoint R-CNN models from PyTorch to ONNX and perform inference using ONNX Runtime.
 - [**Training Mask R-CNN Models with PyTorch**](/posts/pytorch-train-mask-rcnn-tutorial/)**:** Learn how to train Mask R-CNN models on custom datasets with PyTorch.
 
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

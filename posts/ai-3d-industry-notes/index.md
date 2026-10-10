@@ -23,9 +23,6 @@ aliases:
 - /Notes-on-How-AI-Will-Change-The-3D-Industry/
 ---
 
-
-
-
 * [Introduction](#introduction)
 * [Jeff Bezos’ Principle of Change](#jeff-bezos-principle-of-change)
 * [The Rising Costs of Game Development](#the-rising-costs-of-game-development)
@@ -40,20 +37,12 @@ aliases:
 * [Closing Remarks](#closing-remarks)
 * [Not in Presentation](#not-in-presentation)
 
-
-
-
-
 ::: {.callout-tip title="Presentation Materials"}
 
 * **Video:** [The Next Leap: How A.I. will change the 3D industry - Andrew Price](https://www.youtube.com/watch?v=FlgLxSLsYWQ)
 * **Slides:** [Google Slides](https://docs.google.com/presentation/d/1nXwBdUEIbwtPyyMEu5nwJugd42sgU4YhunaUOSl2_tc/edit#slide=id.g44af636ac2_0_502)
 
 :::
-
-
-
-
 
 ## Introduction
 
@@ -67,16 +56,12 @@ aliases:
 - **Presentation focus:** How AI and automation might change the 3D industry.
 - **Clarification:**  Using terms like AI and machine learning broadly, regardless of technical distinctions, as the end result is software doing artistic tasks.
 
-
-
-## Jeff Bezos' Principle of Change 
+## Jeff Bezos' Principle of Change
 
 - **Jeff Bezos' insight:** Focus on what won't change in the future, as these are the core desirables.
     - Example: Amazon customers will always want lower prices and faster delivery.
 - **Application to 3D:** Any technology making things **better, faster, or cheaper** will inevitably become standard in the 3D industry.
     - Studio executives will adopt cost-saving technologies.
-
-
 
 ## The Rising Costs of Game Development
 
@@ -86,8 +71,6 @@ aliases:
 - **Projected costs:** Average AAA game might cost $200 million by 2020, exceeding feature film budgets.
 - **Mobile gaming:** Initially cheap, but costs are rising due to market saturation.
 - **Key takeaway:** Game development costs are unsustainable and need to be reduced.
-
-
 
 ## Asset Creation as a Major Cost Driver
 
@@ -100,8 +83,6 @@ aliases:
     - Cost at $60/hour: $3,900 per building.
 - **Games like The Division:**  Illustrate the cumulative cost of numerous detailed assets.
 - **Inefficiency of current workflow:** Static, one-to-one input-output ratio leads to repeated work.
-
-
 
 ## Leap 1: Procedural Workflows
 
@@ -152,8 +133,6 @@ aliases:
 - **Houdini:** Currently a strong tool for procedural workflows.
 - **Hope for Blender:** Andrew expresses desire for Blender to incorporate more procedural capabilities.
 
-
-
 ## Leap 2: Machine Learning Creep
 
 - **Traditional software:**  Linear input-action-output workflow, predictable but labor-intensive.
@@ -198,8 +177,6 @@ aliases:
 - **Examples:**  Photoshop, Premiere, Autodesk products, and potentially Blender.
 - **Industry perspective:**  Silicon Valley companies are actively investing in machine learning.
 - **Quote from Thanos facial animation team:**  "If you're not using machine learning in your software, you're doing it wrong."
-
-
 
 ## Leap 3: Machine-Assisted Creativity
 
@@ -251,7 +228,6 @@ aliases:
         - [TediGAN](https://github.com/IIGROUP/TediGAN) (March 2021)
         - [DF-GAN](https://github.com/tobran/DF-GAN)
 
-
 ### Examples of Machine-Assisted Creativity
 
 - **Generating building facades and shoe designs:**  Paper demonstrating the ability to generate diverse design ideas based on simple outlines.
@@ -284,15 +260,11 @@ aliases:
 - **Effectiveness:**  Foolability: 39% of art historians thought that style transfer outputs were real paintings. 
 - **Prediction:**  Artists will increasingly use machine learning to explore new ideas and styles.
 
-
-
 ## Expected Changes in the Next 5 Years
 
 - **Procedural workflows:**  Becoming standard across modeling, materials, texturing, and level design.
 - **Machine learning integration:**  Gradually incorporated into existing software to automate technical tasks.
 - **Creative assistance:**  Machines will play a larger role in generating ideas and exploring variations.
-
-
 
 ## Addressing Concerns about Job Displacement
 
@@ -307,8 +279,6 @@ aliases:
     - AI and automation are likely to enhance artists' capabilities rather than replace them entirely.
     - Human intent and artistic vision remain crucial.
 
-
-
 ## Identifying At-Risk and Safe Jobs
 
 - **At-risk jobs:**  Labor-intensive, narrow-skilled, and repetitive tasks.
@@ -317,8 +287,6 @@ aliases:
 - **Safe jobs:**  Involve critical thinking, wide-ranging skills, and niche expertise.
     - Examples: Art direction, project management, generalists, programmers, freelancers.
 - **Key takeaway:**  Undesirable, grunt work is most likely to be automated, while jobs requiring creativity and adaptability are more secure.
-
-
 
 ## The Future of the 3D Industry
 
@@ -331,15 +299,11 @@ aliases:
     - While some job displacement may occur, the overall industry is expanding, creating new opportunities.
     - AI and automation are likely to lead to a net increase in the number of 3D-related jobs.
 
-
-
 ## Closing Remarks
 
 - **Andrew acknowledges the audience's concerns.**
 - **Reiterates that AI and automation are tools to enhance creativity, not eliminate artists.**
 - **Expresses enthusiasm for the future of the 3D industry.** 
-
-
 
 ## Not in Presentation
 
@@ -408,14 +372,5 @@ This will reduce the cost of production, enabling more productions overall
   - NVIDIA Canvas
     [NVIDIA Canvas : Harness The Power Of AI](https://www.nvidia.com/en-us/studio/canvas/)
 - Facial animations
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

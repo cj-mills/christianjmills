@@ -15,25 +15,15 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
-
-
-
-
 * [Lecture Information](#lecture-information)
 * [Ch.1: Introduction](#introduction)
 * [Ch.2: Heterogeneous Data Parallel Computing](#heterogeneous-data-parallel-computing)
 * [Ch.3: Multidimensional Grids and Data](#multidimensional-grids-and-data)
-
-
-
-
 
 ## Lecture Information
 
@@ -51,15 +41,11 @@ open-graph:
 
   - **YouTube Channel:** [GPU MODE](https://www.youtube.com/@CUDAMODE)
 
-
-
-
 ## Introduction
 
 * Timestamp: [1:00](https://youtu.be/NQ-0D5Ti2dc?si=59R0B3U5I8SLKY8K&t=60)
 
-
-### Motivation 
+### Motivation
 
 * Optimize GPU performance as much as possible
 * Applications:
@@ -149,16 +135,11 @@ open-graph:
    * Regularize and localize memory access
    * How to organize memory
 
-
-
-
-
 ## Heterogeneous Data Parallel Computing
 
 * Timestamp: [8:31](https://youtu.be/NQ-0D5Ti2dc?si=ZeFGj3WVYDF_TI96&t=511)
 * heterogeneous: CPU + GPU
 * data parallelism: break work down into computations that can be executed independently
-
 
 ### CUDA C
 
@@ -175,9 +156,6 @@ open-graph:
   * Need to wait for the kernels to finish before copying data back to CPU
 * Don't be afraid to launch many threads on GPU
   * One thread per output tensor is fine
-
-
-
 
 ### CUDA Essentials: Memory Allocation
 
@@ -257,9 +235,6 @@ open-graph:
   * Only accessible from within kernels
 * If both `__host__` and `__device__` are used in a function declaration
   * CPU and GPU versions will be compiled
-
-  
-
 
 ### Calling Kernels
 
@@ -348,14 +323,9 @@ open-graph:
 
 ![Programming Massively Parallel Processors - Figure 2.2](./images/book-figure-2-2.png){fig-align="center"}
 
-
-
-
-
 ## Multidimensional Grids and Data
 
 * Timestamp: [24:55](https://youtu.be/NQ-0D5Ti2dc?si=k2a0vvryolFT8AsZ&t=1495)
-
 
 ### CUDA Grid
 
@@ -736,11 +706,6 @@ output_img
 
 ![](./images/output_8_0.png){fig-align="center"}
 
-
-
-
-
-
 ### Matrix Multiplication
 
 * Staple of science, engineering, and deep learning
@@ -781,19 +746,5 @@ output_img
 * Matrix multiplication using multiple blocks by tiling P:
 
 ![Programming Massively Parallel Processors - Figure 3.10](./images/book-figure-3-10.png){width=85% fig-align="center"} 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

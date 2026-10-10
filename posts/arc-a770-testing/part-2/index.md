@@ -15,12 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Testing Intel's Arc A770 GPU for Deep Learning**](/series/notes/arc-a770-testing.html)
 :::
-
 
 * [Introduction](#introduction)
 * [Initial Headaches](#initial-headaches)
@@ -28,13 +26,10 @@ open-graph:
 * [Training Performance on WSL](#training-performance-on-wsl)
 * [Closing Thoughts](#closing-thoughts)
 
-
 ## Tutorial Links
 
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu](../../intel-pytorch-extension-tutorial/native-ubuntu/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows](../../intel-pytorch-extension-tutorial/native-windows/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
-
-
 
 ## Introduction
 
@@ -53,8 +48,6 @@ Since then, Intel has released a couple of updates for the extension, the most [
 In this post, I discuss my experience getting Intel's PyTorch extension running on Ubuntu and Windows Subsystem for Linux (WSL). I also cover my initial findings from training models. I'll provide a tutorial for setting up and using the extension in a dedicated post.
 
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu](../../intel-pytorch-extension-tutorial/native-ubuntu/)
-
-
 
 ## Initial Headaches
 
@@ -101,10 +94,6 @@ I ended up needing Linux kernel `6.2` or newer. That kernel version [supports th
 
 
 As mentioned earlier, I'll provide detailed instructions for the setup process in a dedicated post.
-
-
-
-
 
 ## Training Performance on Native Ubuntu
 
@@ -201,10 +190,6 @@ Since Intel's extension only recently added support for Arc cards, more performa
 
 I decided to move on and see how the extension performed in WSL.
 
-
-
-
-
 ## Training Performance on WSL
 
 Now that I had a streamlined process for setting everything up on Ubuntu, getting WSL up and running was easy. It only required a subset of the steps compared to a bare-metal Ubuntu installation. I used the default [Ubuntu terminal environment](https://apps.microsoft.com/store/detail/ubuntu/9PDXGNCFSCZV) and stuck with the included kernel.
@@ -249,8 +234,6 @@ The performance hit makes it hard to recommend WSL for deep learning tasks. On t
 
 Therefore, I recommend using a bare-metal installation to get the most out of your hardware. The Ubuntu website provides [a step-by-step guide](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview) to installing Ubuntu on your PC, and you can install it alongside an existing operating system.
 
-
-
 ## Closing Thoughts
 
 My experience with the PyTorch-DirectML package and the first version of Intel's extension left me thinking it would be a while before the Arc GPUs became viable options for deep learning. 
@@ -266,8 +249,5 @@ While there is much more testing to do, I believe the Arc GPUs are now credible 
 
 
 There are likely still edge cases or certain operations that cause problems, and I'll make updates to this post if I encounter any. I'll also try to keep the [setup tutorial](../../intel-pytorch-extension-tutorial/native-ubuntu/) updated as new versions of Intel's PyTorch extension come out.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

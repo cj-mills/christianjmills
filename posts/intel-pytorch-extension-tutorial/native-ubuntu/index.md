@@ -15,8 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 * [Introduction](#introduction)
 * [Enable Resizable BAR in BIOS](#enable-resizable-bar-in-bios)
 * [Install Ubuntu](#install-ubuntu)
@@ -26,10 +24,6 @@ open-graph:
 * [Modify PyTorch Code](#modify-pytorch-code)  
 * [Local LLM Inference with `IPEX-LLM`](#local-llm-inference-with-ipex-llm)  
 * [Conclusion](#conclusion)
-
-
-
-
 
 ## Introduction
 
@@ -65,8 +59,6 @@ Follow the steps in the linked section below to deactivate the Integrated Graphi
 
 :::
 
-
-
 ## Enable Resizable BAR in BIOS
 
 If you have an Arc GPU, one of the first things you should do is enable Resizable BAR. Resizable BAR allows a computer's processor to access the graphics card's entire memory instead of in small chunks. The Arc GPUs currently require this feature to perform as intended. You can enable the feature in your motherboard's BIOS.
@@ -79,8 +71,6 @@ Here are links on how to do this for some of the popular motherboard manufacture
 - [Gigabyte](https://www.gigabyte.com/WebPage/785/NVIDIA_resizable_bar.html)
 - [MSI](https://www.msi.com/blog/unlock-system-performance-to-extreme-resizable-bar)
 
-
-
 ## Install Ubuntu
 
 Intel's [documentation](https://dgpu-docs.intel.com/driver/client/overview.html#client-install-options) recommends Ubuntu 22.04 LTS or newer. I verified the following steps in both Ubuntu 22.04 and 24.04. If you already have Ubuntu 22.04 LTS or newer installed, ensure it's fully updated.
@@ -92,10 +82,6 @@ The Ubuntu website provides [a step-by-step guide](https://ubuntu.com/tutorials/
 - **Tutorial:** [Install Ubuntu with a Bootable USB Stick](https://ubuntu.com/tutorials/install-ubuntu-desktop#1-overview)
 
 That tutorial calls for at least 25GB of free storage space, but I recommend at least 80 GB for our case.
-
-
-
-
 
 ## Verify Resizable BAR
 
@@ -138,15 +124,12 @@ $ lspci -v |grep -A8 VGA
 
 Note that the `[size=16G]` matches the total memory for the GPU. If you have the A750 8GB variant, it should read `[size=8G]` for your GPU.
 
-
-
-
-
 ## Install Drivers
 
 Next, we will install the compute, media, and display runtimes.
 
 ### Add Intel Graphics drivers Repository
+
 Run the following bash commands to add the Intel Graphics drivers repository:
 
 ```bash
@@ -164,9 +147,8 @@ The above bash commands perform the following steps:
 4. Add the Intel graphics repository to the APT's list of package sources.
 5. Update the package list from all configured repositories, including the newly added Intel repository.
 
-
-
 ### Install packages
+
 Now we can install the required packages.
 
 ```bash
@@ -178,14 +160,7 @@ sudo apt install -y \
     mesa-vdpau-drivers mesa-vulkan-drivers va-driver-all vainfo hwinfo clinfo
 ```
 
-
-
-
-
-
-
-
-## Set Up a Python Environment 
+## Set Up a Python Environment
 
 Next, we can create a Python environment to run the training code. We'll install a patched version of PyTorch needed for Intel's extension, the extension itself, and the other dependencies for the training code.
 
@@ -209,10 +184,6 @@ bash Miniforge3-$(uname)-$(uname -m).sh -b
 bash
 ```
 
-
-
-
-
 ### Create a Python Environment
 
 Next, we'll create a Python environment and activate it. The current version of the extension supports Python 3.11, so we'll use that.
@@ -222,8 +193,6 @@ mamba create --name pytorch-arc python=3.11 -y
 mamba activate pytorch-arc
 ```
 
-
-
 ### Install PyTorch and Intel’s PyTorch extension
 
 The following command will install the required versions of PyTorch and torchvision, along with the extension itself:
@@ -231,8 +200,6 @@ The following command will install the required versions of PyTorch and torchvis
 ```bash
 pip install torch==2.3.1+cxx11.abi torchvision==0.18.1+cxx11.abi torchaudio==2.3.1+cxx11.abi intel-extension-for-pytorch==2.3.110+xpu oneccl_bind_pt==2.3.100+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
 ```
-
-
 
 ### Install additional dependencies
 
@@ -265,12 +232,6 @@ sed -i '/export IPEX_XPU_ONEDNN_LAYOUT=1/d' ~/.bashrc && source ~/.bashrc
 
 :::
 
-
-
-
-
-
-
 ## Modify PyTorch Code
 
 It's finally time to train a model. The Jupyter Notebooks with the original and modified training code are available on GitHub at the links below.
@@ -293,10 +254,6 @@ Once downloaded, run the following command to launch the Jupyter Notebook Enviro
 jupyter notebook
 ```
 
-
-
-
-
 ### Set Environment Variables
 
 First, we need to set the following environment variables:
@@ -306,8 +263,6 @@ import os
 os.environ['OCL_ICD_VENDORS'] = '/etc/OpenCL/vendors'
 os.environ['CCL_ROOT'] = os.environ.get('CONDA_PREFIX', '')
 ```
-
-
 
 ### Import PyTorch Extension
 
@@ -332,8 +287,6 @@ Intel PyTorch Extension Version: 2.3.110+xpu
 ```
 
 ---
-
-
 
 ### Update PyTorch Imports
 
@@ -366,8 +319,6 @@ from torch.utils.data import Dataset, DataLoader
 ```
 
 :::
-
-
 
 ### Verify Arc GPU Availability
 
@@ -475,10 +426,6 @@ pd.DataFrame(dict_properties_list)
 
 In this case, the A770 is the default device, and the integrated graphics on the CPU is available as the second device. The `total_memory` value for the integrated graphics is higher because it uses system memory.
 
-
-
-
-
 ### Update the Device Name
 
 Next, we'll manually set the device name to `xpu`.
@@ -507,13 +454,8 @@ device, dtype
 
 ::: 
 
-
-
-
-
-
-
 ### Optimize the `model` and `optimizer` Objects
+
 Before we run the `train_loop` function, we'll use Intel's PyTorch extension to apply optimizations to the model and optimizer objects. We'll also cast the model to the `bfloat16` data type, so we can train using mixed precision.
 
 
@@ -573,15 +515,8 @@ metric = MulticlassAccuracy()
 
 ::: 
 
-
-
-
-
-
-
-
-
 ### Train the Model
+
 That's it for the required changes to the training code. We can now run the `train_loop` function. 
 
 
@@ -614,9 +549,8 @@ Eval: 100% |█████████| 481/481 [00:13<00:00, 43.28it/s,�
 
 In my testing, the training speed is significantly slower with this extension than the one used for the previous version of this tutorial, with the total run taking 18 minutes 31 seconds versus 12 minutes 46 seconds.
 
-
-
 ### Update the Inference Code
+
 Since we cast the model to `bloat16`, we must ensure input data use the same type. We can update the inference  code using the auto-cast context manager as shown below:
 
 ::: {.panel-tabset}
@@ -639,21 +573,12 @@ with torch.no_grad():
 
 :::
 
-
-
-
-
-
-
 ## Local LLM Inference with `IPEX-LLM`
 
 To close out this tutorial, we will cover how to perform local LLM inference using Intel's [`ipex-llm`](https://github.com/intel-analytics/ipex-llm) library. This library allows us to run many popular LLMs in INT4 precision on our Arc GPU.
 
-
-
-
-
 ### Install oneAPI Packages
+
 The `ipex-llm` library requires packages from the oneAPI toolkit. Run the following commands to install them:
 
 ```bash
@@ -693,8 +618,6 @@ sudo apt install intel-oneapi-common-vars=2024.0.0-49406 \
   intel-oneapi-tcm-1.0=1.0.0-435
 ```
 
-
-
 #### Set the oneAPI Environment Variables
 
 You will need to run the following command to activate the oneAPI environment variables after starting a new shell:
@@ -710,11 +633,8 @@ Alternatively, you can run the following command to add it to the `.bashrc` file
 echo 'source /opt/intel/oneapi/setvars.sh > /dev/null 2>&1' >> ~/.bashrc
 ```
 
-
-
-
-
 ### Create a New Python Environment
+
 Each library version depends on specific versions of Intel's PyTorch extension. The most recent release of `ipex-llm` still depends on version `2.1.10+xpu` of the extension.
 
 We can create a dedicated mamba environment for this library to avoid dependency conflicts:
@@ -724,9 +644,8 @@ mamba create --name ipex-llm-env python=3.11 -y
 mamba activate ipex-llm-env
 ```
 
-
-
 ### Install PIP Packages
+
 We will use the LLaMA 3.1 8B Instruct model for demonstration purposes, which requires [`transformers`](https://github.com/huggingface/transformers) `4.43.1` or newer. We also need the [`trl`](https://huggingface.co/docs/trl/en/index) (Transformer Reinforcement Learning) package.
 
 ```bash
@@ -743,9 +662,8 @@ We can launch a new Jupyter Notebook environment once the dependencies finish in
 jupyter notebook
 ```
 
-
-
 ### Set Environment Variables
+
 With our environment set up, we can dive into the code. First, we need to set the following environment variables:
 
 ```python
@@ -757,11 +675,8 @@ os.environ['SYCL_CACHE_PERSISTENT'] = '1'
 os.environ['SYCL_PI_LEVEL_ZERO_USE_IMMEDIATE_COMMANDLISTS'] = '1'
 ```
 
-
-
-
-
 ### Import the Required Dependencies
+
 Next, we will import the necessary Python packages into our Jupyter Notebook.
 
 ```python
@@ -777,9 +692,8 @@ from IPython.display import Markdown
 
 We can use the `Markdown` class from IPython to render Markdown output from the model inside the notebook.
 
-
-
 ### Define a Function to Prepare the Prompt
+
 We can use the following function from this [example script](https://github.com/intel-analytics/ipex-llm/blob/main/python/llm/example/GPU/HuggingFace/LLM/llama3.1/generate.py) to prepare prompts for the LLama 3.1 model:
 
 ```python
@@ -819,8 +733,6 @@ def get_prompt(user_input: str, chat_history: list[tuple[str, str]], system_prom
     return ''.join(prompt_texts)
 ```
 
-
-
 ### Load the Model in INT4
 
 Next, we can load the LLaMA 3.1 8B Instruct model in 4-bit precision. 
@@ -850,11 +762,8 @@ model = model.half().to('xpu')
 tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 ```
 
-
-
-
-
 ### Define Inference Parameters
+
 Before running the model, we must define our prompts and the maximum number of tokens the model should generate.
 
 ```python
@@ -865,9 +774,8 @@ prompt_str = "Provide a clear, concise, and intuitive description of AI for begi
 max_new_tokens = 512
 ```
 
-
-
 ### Perform Inference
+
 Finally, we can run the model.
 
 ```python
@@ -981,18 +889,10 @@ That's a basic introduction to AI for beginners! I hope this helps  you understa
 
 :::
 
-
-
-
 ## Conclusion
 
 In this tutorial, we set up Intel's PyTorch extension on Ubuntu to train an image classification model and run a local Large Language Model using an Arc GPU. The exact setup steps may change with new versions, so check the [documentation](https://intel.github.io/intel-extension-for-pytorch/index.html#installation?platform=gpu&version=v2.3.110%2bxpu&os=linux%2fwsl2&package=pip) for the latest version to see if there are any changes. I'll try to keep this tutorial updated with any significant changes to the process.
 
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

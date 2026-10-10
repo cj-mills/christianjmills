@@ -16,12 +16,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Fine-Tuning Image Classifiers with PyTorch and the timm library for Beginners**](/series/tutorials/pytorch-train-image-classifier-series.html)
 :::
-
 
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
@@ -36,8 +34,6 @@ open-graph:
 * [Exploring the In-Browser Demo](#exploring-the-in-browser-demo)
 * [Conclusion](#conclusion)
 
-
-
 ## Introduction
 
 Welcome to this hands-on guide to fine-tuning image classifiers with [PyTorch](https://pytorch.org/) and the [timm library](https://github.com/huggingface/pytorch-image-models). Fine-tuning refers to taking a pre-trained model and adjusting its parameters using a new dataset to enhance its performance on a specific task. We can leverage pre-trained models to achieve high performance even when working with limited data and computational resources. The timm library further aids our goal with its wide range of pre-trained models, catering to diverse needs and use cases.
@@ -49,8 +45,6 @@ In this tutorial, we develop a hand gesture recognizer. Hand gesture recognition
 This guide is structured so that you don't need a deep understanding of deep learning to complete it. If you follow the instructions, you can make it through. Yet, if you are eager to delve deeper into machine learning and deep learning, I recommend fast.ai's [Practical Deep Learning for Coders](https://course.fast.ai/) course. The course employs a hands-on approach that starts you off training models from the get-go and gradually digs deeper into the foundational concepts. 
 
 Let's dive in and start training our hand gesture classifier!
-
-
 
 ## Getting Started with the Code
 
@@ -86,12 +80,6 @@ No matter your choice of environment, you'll be well-prepared to follow along wi
 
 
 {{< include /_python-multiprocessing-warning.qmd >}}
-
-
-
-
-
-
 
 ## Setting Up Your Python Environment
 
@@ -166,8 +154,6 @@ Installation instructions for specific hardware and operating systems are availa
 
 - [PyTorch: Get Started](https://pytorch.org/get-started/locally/)
 
-
-
 ### Installing Additional Libraries
 
 We also need to install some additional libraries for our project. If you're new to Python or haven't used some of these packages before, don't worry. 
@@ -194,8 +180,6 @@ To install these additional libraries, we'll use the following command:
 pip install jupyter matplotlib pandas pillow timm torcheval torchtnt==0.2.0 tqdm
 ```
 
-
-
 ### Installing Utility Packages
 
 Finally, we will install some utility packages I made to help us handle images ([`cjm_pil_utils`](https://cj-mills.github.io/cjm-pil-utils/)), interact with PyTorch ([`cjm_pytorch_utils`](https://cj-mills.github.io/cjm-pytorch-utils/)), work with pandas DataFrames ([`cjm_pandas_utils`](https://cj-mills.github.io/cjm-pandas-utils/)), and apply image transforms ([`cjm_torchvision_tfms`](https://cj-mills.github.io/cjm-torchvision-tfms/)):
@@ -206,8 +190,6 @@ pip install cjm_pandas_utils cjm_psl_utils cjm_pil_utils cjm_pytorch_utils cjm_t
 ```
 
 Now, our environment is all setup and ready to go! Remember, these libraries are just tools. If you don't fully understand them yet, don't worry. As we go through the tutorial, we'll learn more about these tools and see them in action.
-
-
 
 ### Launching Jupyter Notebook
 
@@ -226,10 +208,6 @@ This command will open a new tab in your default web browser, showing the Jupyte
 ::: {.callout-important}
 If you close your terminal, the Jupyter Notebook server will stop. So, keep your terminal running while you're working on the tutorial.
 :::
-
-
-
-
 
 ## Importing the Required Dependencies
 
@@ -251,11 +229,7 @@ With our environment set up, it's time to start the coding part of this tutorial
 
 :::
 
-
-
-
 ## Importing the Required Dependencies
-
 
 ```python
 # Import Python Standard Library dependencies
@@ -316,8 +290,6 @@ from tqdm.auto import tqdm
 
 Having successfully imported the dependencies, we are ready to move to the next step.
 
-
-
 ## Setting Up the Project
 
 In this section, we set up some basics for our project. First, we set a seed for generating random numbers using the [`set_seed`](https://cj-mills.github.io/cjm-pytorch-utils/core.html#set_seed) function from the `cjm_pytorch_utils` package.
@@ -350,8 +322,6 @@ device, dtype
 ```text
 ('cuda', torch.float32)
 ```
-
-
 
 ### Setting the Directory Paths
 
@@ -413,8 +383,6 @@ Double-check the project and dataset directories exist in the  specified paths a
 
 At this point, our environment is set up and ready to go. We’ve set  our random seed, determined our computation device, and set up  directories for our project and dataset. In the next section, we will  download and explore the dataset.
 
-
-
 ## Loading and Exploring the Dataset
 
 Now that we set up our project, we can start working with our dataset. The dataset we’ll use is a downscaled subset of [HaGRID](https://github.com/hukenovs/hagrid) (HAnd Gesture Recognition Image Dataset) that I modified for image classification tasks. The dataset contains images for `18` distinct hand gestures and an additional `no_gesture` class for idle hands. The dataset is approximately `3.8 GB`, but you will need about `7.6 GB` to store the archive file and extracted dataset.
@@ -470,8 +438,6 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Downloading the Dataset
 
 We can now download the archive file and extract the dataset using the [`download_file`](https://cj-mills.github.io/cjm-psl-utils/core.html#download_file) and [`file_extract`](https://cj-mills.github.io/cjm-psl-utils/core.html#file_extract) functions from the `cjm_psl_utils` package. We can delete the archive afterward to save space.
@@ -499,10 +465,8 @@ else:
     if delete_archive: archive_path.unlink()
 ```
 
-
-
-
 ### Get Image Folders
+
 The dataset organizes samples for each gesture class into separate sub-folders.
 
 ```python
@@ -600,11 +564,6 @@ pd.DataFrame({"Image Folder": [folder.name for folder in img_folder_paths]})
 </table>
 </div>
 
-
-
-
-
-
 ### Get Image File Paths
 
 Now that we have the image image folder paths, we can get the file paths for all the images in the dataset.
@@ -665,15 +624,11 @@ Number of Images: 153735
 </table>
 </div>
 
-
-
-
 ### Inspecting the Class Distribution
 
 Next, we get the names of all the classes in our dataset and inspect  the distribution of images among these classes. A balanced dataset  (where each class has approximately the same number of instances) is  ideal for training a machine-learning model.
 
 #### Get image classes
-
 
 ```python
 # Get the number of samples for each image class
@@ -777,10 +732,7 @@ class_counts
 </table>
 </div>
 
-
-
 #### Visualize the class distribution
-
 
 ```python
 # Plot the distribution
@@ -801,8 +753,6 @@ plt.show()
 
 
 Each class, excluding the `no_gesture` class, has roughly the same number of samples. The `no_gesture` class contains approximately four times as many images because of the immense variety of non-matching hand positions.
-
-
 
 ### Visualizing Sample Images
 
@@ -847,8 +797,6 @@ plt.show()
 
 
 We have loaded the dataset, inspected its class distribution, and  visualized some sample images. In the next section, we will select and  load our model.
-
-
 
 ## Selecting a Model
 
@@ -909,12 +857,9 @@ pd.DataFrame(timm.list_models('resnet18*', pretrained=True))
 </table>
 </div>
 
-
 ### Choosing the ResNet18-D Model
 
 For this tutorial, I went with the pretrained [ResNet 18-D](https://github.com/huggingface/pytorch-image-models/blob/4b8cfa6c0a355a9b3cb2a77298b240213fb3b921/timm/models/resnet.py#L869) model. This model’s balance of accuracy and speed makes it suitable for real-time applications, such as hand gesture recognition. While this  model is a good all-rounder, others may work better for specific  applications. For example, some models are designed to run on mobile  devices and may sacrifice some accuracy for improved performance.  Whatever your requirements are, the timm library likely has a suitable  model for your needs. Feel free to try different models and see how they compare.
-
-
 
 ### Inspecting the Model Configuration
 
@@ -1018,7 +963,6 @@ pd.DataFrame.from_dict(model_cfg, orient='index')
 </table>
 </div>
 
-
 ### Retrieving Normalization Statistics
 
 Before we can use the ResNet18-D model, we need to normalize our  dataset. Normalization is a process that changes the range of pixel  intensity values to make the neural network converge faster during  training. It is performed by subtracting the mean from the pixel values  and dividing by the standard deviation of the dataset. The mean and  standard deviation values specific to the dataset used in the  pretraining process of our model are called normalization statistics. To do this, we will retrieve the normalization statistics (mean and std)  specific to our pretrained model.
@@ -1035,8 +979,6 @@ norm_stats
 ```text
 ((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 ```
-
-
 
 ### Loading the Model
 
@@ -1358,8 +1300,6 @@ The model architecture also influences inference speed beyond the raw number of 
 
 That completes the model selection and setup. In the next section, we will prepare our dataset for training.
 
-
-
 ## Preparing the Data
 
 Next, we will prepare our data for the model training process. The data preparation involves several steps, such as applying data  augmentation techniques, setting up the train-validation split for the  dataset, resizing and padding the images, defining the training dataset  class, and initializing DataLoaders to feed data to the model.
@@ -1409,10 +1349,6 @@ pd.Series({
 </table>
 </div>
 
-
-
-
-
 ### Data Augmentation
 
 Next, we’ll define what data augmentations to apply to images during  training. Data augmentation is a technique that effectively expands the  size and diversity of a dataset by creating variations of existing  samples. It helps the model learn general features instead of memorizing specific examples.
@@ -1425,13 +1361,11 @@ The [first](https://cj-mills.github.io/cjm-torchvision-tfms/core.html#resizemax)
 
 #### Set training image size
 
-
 ```python
 train_sz = 288
 ```
 
 #### Initialize image transforms
-
 
 ```python
 # Set the fill color for padding images
@@ -1450,7 +1384,6 @@ trivial_aug = transforms.TrivialAugmentWide(fill=fill)
 You can test the augmentations by applying them to a sample image and displaying the result. Remember, the augmentations should be different each time.
 
 #### Test the transforms
-
 
 ```python
 sample_img = Image.open(img_paths[11])
@@ -1510,8 +1443,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
-
 
 ### Training Dataset Class
 
@@ -1620,8 +1551,6 @@ train_tfms = transforms.Compose([
 valid_tfms = transforms.Compose([resize_pad_tfm, final_tfms])
 ```
 
-
-
 ### Initialize Datasets
 
 We instantiate the PyTorch datasets using the dataset splits, class names, and defined transformations.
@@ -1658,9 +1587,6 @@ pd.Series({
   </tbody>
 </table>
 </div>
-
-
-
 
 ### Inspect Samples
 
@@ -1749,8 +1675,6 @@ Number of batches in validation DataLoader: 481
 ```
 
 That completes the data preparation. Now we can finally train our hand gesture recognizer.
-
-
 
 ## Fine-tuning the Model
 
@@ -1870,8 +1794,6 @@ def train_loop(model, train_dataloader, valid_dataloader, optimizer, metric, lr_
 
 This function coordinates the training process. It runs the previously defined `run_epoch` function for each epoch in the training process, calculating the  training and validation losses. It saves the model state as a checkpoint when the model achieves a lower validation loss. It will also save data such as the current epoch, loss values, metric value, learning rate,  and model name to a JSON file.
 
-
-
 ### Set the Model Checkpoint Path
 
 Before we proceed with training, let’s generate a timestamp for the  training session and create a directory to store the checkpoints. These  checkpoints will allow us to save the model state periodically. That  enables us to load the model checkpoint later to resume training, export the model to a different format or perform inference directly.
@@ -1985,10 +1907,6 @@ Eval: 100% 481/481 [00:14<00:00, 65.80it/s, accuracy=0.995, avg_loss=0.0172, los
 ```
 
 At last, we have our hand gesture recognizer. The readout for the  final validation run indicates the model achieved an approximate `99.5%` accuracy, meaning it missed less than `100` of the `15,374` samples in the validation set. To wrap up the tutorial, we’ll test our  fine-tuned model by performing inference on individual images.
-
-
-
-
 
 ## Making Predictions with the Model
 
@@ -2158,14 +2076,6 @@ Predicted Class: stop_inverted
 ---
 
 For this sample, the model was 100% confident in its prediction. The  model will likely be less sure about images it has not seen before.
-
-
-
-
-
-
-
-
 
 ### Testing the Model on New Data
 
@@ -2568,9 +2478,6 @@ We now have a functioning hand-gesture recognizer and know how to make predictio
 2. Once you finish training and download the files, turn off hardware acceleration for the Colab Notebook to save GPU time. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#using-hardware-acceleration))
 :::
 
-
-
-
 ## Exploring the In-Browser Demo
 
 You've gotten your hands dirty with the code. Now let's see our fine-tuned model in action! I've set up an online demo that allows you to interact with a hand gesture recognizer trained with this tutorial's code in your web browser. No downloads or installations are required.
@@ -2584,10 +2491,6 @@ I invite you to share any interesting results or experiences with the demo in th
 Check out the demo below, and have fun exploring!
 
 - [In-Browser Hand Gesture Recognition Demo](https://cj-mills.github.io/pytorch-timm-gesture-recognition-tutorial-code/)
-
-
-
-
 
 ## Conclusion
 
@@ -2603,18 +2506,11 @@ While our tutorial concludes here, your journey in deep learning is far from ove
 
 Once again, congratulations on your achievement, and keep learning!
 
-
-
 ## Recommended Tutorials
 
 * [**Exporting timm Image Classifiers from Pytorch to ONNX**](./onnx-export/)**:** Learn how to export timm image classification models from PyTorch to ONNX and perform inference using ONNX Runtime.
 * [**Training YOLOX Models for Real-Time Object Detection in Pytorch**](../pytorch-train-object-detector-yolox-tutorial/): Learn how to train YOLOX models for real-time object detection in PyTorch by creating a hand gesture detection model.
 
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

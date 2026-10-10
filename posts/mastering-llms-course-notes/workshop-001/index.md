@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Key Takeaways](#key-takeaways)
 * [Course Overview](#course-overview)
@@ -38,8 +32,6 @@ open-graph:
 * [Evaluating Use Cases for Fine-Tuning](#evaluating-use-cases-for-fine-tuning)
 * [Q&A Session #2](#qa-session-2)
 
-
-
 ## Key Takeaways
 
 * **Start simple:** Focus on prompt engineering and using pre-trained models like those from OpenAI before jumping into the complexity of fine-tuning.
@@ -48,9 +40,7 @@ open-graph:
 * **Evaluate rigorously:** Use domain-specific evaluations and metrics to measure model performance and guide fine-tuning decisions.
 * **Preference optimization shows promise:** Techniques like Direct Preference Optimization (DPO) can train models to outperform even human experts by learning from comparative feedback.
 
-
-
-## Course Overview 
+## Course Overview
 
 - **Focus:** Actionable insights and practical guidance from real-world experience in deploying LLMs for various business needs.
 - **Philosophy:** 
@@ -68,9 +58,7 @@ open-graph:
   - Incorporate evaluations (Evals) to measure and improve model performance.
     - Blog Post: [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/)
 
-
-
-## When to Fine-Tune 
+## When to Fine-Tune
 
 - **Don't fine-tune for generic behavior:** 
   - Use existing powerful models like OpenAI's GPT or Anthropic's models via API for tasks where they excel.
@@ -85,8 +73,6 @@ open-graph:
   - When you need improved quality and lower latency compared to large pre-trained models.
   - Requires proper operational setup and significant value use cases.
 - **Iteration Speed & Complexity:** Fine-tuning involves slower iteration cycles and operational complexities compared to using pre-trained models.
-
-
 
 ## Understanding Fine-Tuning
 
@@ -108,8 +94,6 @@ open-graph:
     * There are many kinds of templates and it is easy to misinterpret them. 
     * Many tools try to abstract away and automate building templates and something often goes wrong.
     * Blog Post: [Tokenization Gotchas](https://hamel.dev/notes/llm/finetuning/05_tokenizer_gotchas.html)
-
-
 
 ## Case Study: Logistics Company Regression Problem
 
@@ -148,8 +132,6 @@ open-graph:
 - **Data Quality:** Emphasized the importance of high-quality, representative training data for desired future behavior.
 - **Raw Data Examination:** Stressed the need to carefully inspect raw data, a common yet frequently overlooked step in data science.
 - **Practicality of ML Solutions:** For this case, traditional ML and NLP techniques did not provide satisfactory results, leading to the retention of the manual workflow.
-
-
 
 ## Case Study: Honeycomb Natural Language Query Assistant
 
@@ -238,8 +220,6 @@ open-graph:
 5. **Monitor and Iterate:**
    - Continuously monitor model performance and iteratively improve based on user feedback and new data.
 
-
-
 ## Q&A Session #1
 
 This Q&A session covers various aspects of fine-tuning machine learning models, particularly focusing on fine-tuning versus retrieval-augmented generation (RAG), function calling, and synthetic data generation. It also touches upon the use of base models versus instruction-tuned models and the appropriate amount of data for fine-tuning. 
@@ -295,8 +275,6 @@ This Q&A session covers various aspects of fine-tuning machine learning models, 
 5. **Understand Model Types**: Choose between base models and instruction-tuned models based on the specific use case and desired control over fine-tuning.
 6. **Explore Multimodal Capabilities**: Consider multimodal fine-tuning for tasks that require handling both text and images, utilizing models like LLaVA.
 
-
-
 ## Chatbots
 
 ### Overview
@@ -349,8 +327,6 @@ This Q&A session covers various aspects of fine-tuning machine learning models, 
 3. **Modular Functionality**: Break down the chatbot’s functionalities into specific modules that can be fine-tuned individually.
 4. **Review Guardrails**: Regularly review and understand the prompts and guardrails to ensure they are functioning correctly.
 5. **Careful Rollout**: Test chatbots extensively before public release to avoid unexpected behaviors that could lead to negative publicity.
-
-
 
 ## Preference Optimization
 
@@ -410,8 +386,6 @@ Discusses the effectiveness of Direct Preference Optimization (DPO) in fine-tuni
 3. **Evaluate Model Performance**: Regularly compare DPO model outputs with human-generated outputs to ensure quality.
 4. **Explore Variations of DPO**: Investigate slight tweaks and alternative algorithms related to DPO to further enhance model performance.
 
-
-
 ## Evaluating Use Cases for Fine-Tuning
 
 This discussion focuses on evaluating different use cases for fine-tuning large language models (LLMs). The primary aim is to determine when fine-tuning is beneficial for the target use case compared to using a general model like ChatGPT.
@@ -466,8 +440,6 @@ This discussion focuses on evaluating different use cases for fine-tuning large 
 3. **Consider Cost-Benefit**: Weigh the benefits of improved performance against the costs of data collection and model training.
 4. **Iterate and Improve**: Continuously gather feedback to refine and improve the fine-tuned model, especially for user-preference-driven tasks.
 
-
-
 ## Q&A Session #2
 
 This Q&A session addressed various questions related to model quantization, handling hallucinations in language models, and the importance of data annotation. 
@@ -499,13 +471,5 @@ This Q&A session addressed various questions related to model quantization, hand
 
 - **Human in the Loop**: Essential for evaluating LLMs and curating data for training and fine-tuning.
 - **Tool Building**: Custom tools are often more effective than generic ones for specific domains.
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

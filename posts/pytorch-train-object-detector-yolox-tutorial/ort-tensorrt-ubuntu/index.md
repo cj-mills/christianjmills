@@ -20,7 +20,6 @@ open-graph:
 * [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
 
-
 * [Introduction](#introduction)
 * [Quantization Process](#quantization-process)
 * [Getting Started with the Code](#getting-started-with-the-code)
@@ -32,8 +31,6 @@ open-graph:
 * [Collecting Calibration Data](#collecting-calibration-data)
 * [Performing Inference with TensorRT](#performing-inference-with-tensorrt)
 * [Conclusion](#conclusion)
-
-
 
 ## Introduction
 
@@ -63,19 +60,11 @@ TensorRT requires NVIDIA hardware with CUDA [Compute Capability](https://docs.nv
 
 :::
 
-
-
-
-
 ## Quantization Process
 
 Quantizing our model involves converting the original 32-bit floating point values to 8-bit integers. float32 precision allows for a significantly greater range of possible values versus int8. To find the best way to map the float32 values to int8, we must compute the range of float32 values in the model. 
 
 The float32 values for the model weights are static, while the activation values depend on the input fed to the model. We can calculate a suitable range of activation values by feeding sample inputs through the model and recording the activations. TensorRT can then use this information when quantizing the model. We will use a subset of images from the [original training dataset](../#loading-and-exploring-the-dataset) to generate this calibration data.
-
-
-
-
 
 ## Getting Started with the Code
 
@@ -85,17 +74,9 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [GitHub Repository](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/yolox-object-detector-ort-tensorrt-int8-calibration-inference.ipynb) | [Open In Colab](https://colab.research.google.com/github/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/yolox-object-detector-ort-tensorrt-int8-calibration-inference-colab.ipynb) |
 
-
-
-
-
-
-
 ## Setting Up Your Python Environment
 
 First, we must add a few new libraries to our [Python environment](../onnx-export/#setting-up-your-python-environment). 
-
-
 
 ### Install CUDA Package
 
@@ -189,8 +170,6 @@ pip install -U 'onnxruntime-gpu==1.20.0'
 
 With our environment updated, we can dive into the code. 
 
-
-
 ## Importing the Required Dependencies
 
 First, we will import the necessary Python dependencies into our Jupyter Notebook. The ONNX Runtime package does not know where to look for the cuDNN libraries included with the `cuda` package, so we load those first using the following approach adapted from the [tensorrt package](https://github.com/NVIDIA/TensorRT/blob/release/10.6/python/packaging/libs_wheel/tensorrt_libs/__init__.py).
@@ -269,10 +248,6 @@ Make sure to import the `tensorrt_libs` module that is part of the `tensorrt` pi
 
 :::
 
-
-
-
-
 ## Setting Up the Project
 
 Next, we will set the folder locations for our project, the calibration dataset, and the directory with the ONNX model and JSON colormap file. We should also ensure we have a font file for annotating images.
@@ -348,10 +323,7 @@ pd.Series({
 ::: {.callout-tip title="Those following along on Google Colab can drag the contents of their checkpoint folder into Colab's file browser. "}
 :::
 
-
-
 ### Download a Font File
-
 
 ```python
 # Set the name of the font file
@@ -361,14 +333,11 @@ font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
 ## Loading the Checkpoint Data
 
 Now, we can load the colormap, set the path for the ONNX model, and set the max stride value.
 
 ### Load the Colormap
-
 
 ```python
 # The colormap path
@@ -390,7 +359,6 @@ int_colors = [tuple(int(c*255) for c in color) for color in colormap_dict.values
 
 ### Set Model Checkpoint Information
 
-
 ```python
 # The onnx model path
 onnx_file_path = list(checkpoint_dir.glob('*.onnx'))[0]
@@ -398,8 +366,6 @@ onnx_file_path = list(checkpoint_dir.glob('*.onnx'))[0]
 # Set max stride value for processing output
 max_stride = 32
 ```
-
-
 
 ## Loading the Dataset
 
@@ -451,8 +417,6 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Downloading the Dataset
 
 We can now download the dataset archive file and extract the dataset. We can delete the archive afterward to save space.
@@ -479,8 +443,6 @@ else:
     # Delete the archive if specified
     if delete_archive: archive_path.unlink()
 ```
-
-
 
 ### Get Image File Paths
 
@@ -535,9 +497,6 @@ Number of Images: 31833
 </table>
 </div>
 
-
-
-
 ### Select Sample Images
 
 Using every image in the dataset for the calibration process would be unnecessary and time-consuming, so we'll select a random subset.
@@ -556,8 +515,6 @@ sample_img_paths = random.sample(img_file_paths, int(len(img_file_paths)*sample_
 Try to have at least `200` samples for the calibration set if adapting this tutorial to another dataset. 
 
 :::
-
-
 
 ## Collecting Calibration Data
 
@@ -642,8 +599,6 @@ This `CalibrationDataReader` class does not normalize the input as our ONNX mode
 
 :::
 
-
-
 ### Specify a Cache Folder
 
 Next, we will create a folder to store the collected calibration data and any cache files generated by TensorRT.
@@ -659,8 +614,6 @@ trt_cache_dir
 ```text
 PosixPath('pytorch-yolox-object-detector/2024-02-17_11-08-46/trt_engine_cache')
 ```
-
-
 
 ### Collect Calibration Data
 
@@ -716,8 +669,6 @@ CPU times: user 1min 25s, sys: 794 ms, total: 1min 26s
 Wall time: 1min 25s
 ```
 
-
-
 ### Inspect TensorRT Cache Folder
 
 Looking in the cache folder, we should see three new files.
@@ -757,14 +708,11 @@ pd.DataFrame([path.name for path in trt_cache_dir.iterdir()])
 
 That takes care of the calibration process. In the next section, we will create an ONNX Runtime inference session and perform inference with TensorRT.
 
-
-
 ## Performing Inference with TensorRT
 
 To have TensorRT quantize the model for int8 inference, we need to specify the path to the cache folder and the calibration table file name and enable int8 precision when initializing the inference session.
 
 ### Create an Inference Session
-
 
 ```python
 ort.get_available_providers()
@@ -794,16 +742,11 @@ sess_opt = ort.SessionOptions()
 session = ort.InferenceSession(onnx_file_path, sess_options=sess_opt, providers=providers)
 ```
 
-
-
-
-
 ### Define Utility Functions
 
 Next, we will redefine the same utility functions from the [previous tutorial](../onnx-export/#define-utility-functions).
 
 #### Define a function to generate the output grids
-
 
 ```python
 def generate_output_grids_np(height, width, strides=[8,16,32]):
@@ -845,7 +788,6 @@ def generate_output_grids_np(height, width, strides=[8,16,32]):
 
 #### Define a function to calculate bounding boxes and probabilities
 
-
 ```python
 def calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) -> np.ndarray:
     """
@@ -878,7 +820,6 @@ def calculate_boxes_and_probs(model_output:np.ndarray, output_grids:np.ndarray) 
 ```
 
 #### Define a function to calculate the intersection-over-union
-
 
 ```python
 def calc_iou(proposals:np.ndarray) -> np.ndarray:
@@ -916,7 +857,6 @@ def calc_iou(proposals:np.ndarray) -> np.ndarray:
 ```
 
 #### Define a function to filter bounding box proposals using Non-Maximum Suppression
-
 
 ```python
 def nms_sorted_boxes(iou:np.ndarray, iou_thresh:float=0.45) -> np.ndarray:
@@ -984,10 +924,7 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Prepare the Test Image
-
 
 ```python
 # Set the input image size
@@ -1054,10 +991,7 @@ pd.Series({
 </table>
 </div>
 
-
-
 ### Prepare the Input Tensor
-
 
 ```python
 # Convert the existing input image to NumPy format
@@ -1086,8 +1020,6 @@ session.run(None, {"input": input_tensor_np});
 TensorRT needs to build separate engine files for different input dimensions.
 
 :::
-
-
 
 ### Inspect TensorRT Cache Folder
 
@@ -1132,8 +1064,6 @@ pd.DataFrame([path.name for path in trt_cache_dir.iterdir()])
 </table>
 </div>
 
-
-
 ### Benchmark Quantized Model
 
 With the TensorRT engine built, we can benchmark our quantized model to gauge the raw inference speeds.
@@ -1155,7 +1085,6 @@ In my testing for this model, TensoRT int8 inference tends to be about 2.8-3x fa
 Of course, it does not matter how much faster the quantized model is if there is a significant drop in accuracy, so let's verify the prediction results.
 
 ### Compute the Predictions
-
 
 ```python
 # Run inference
@@ -1239,32 +1168,14 @@ The probability scores will likely differ slightly from the full-precision ONNX 
 Don't forget to download the content of the `trt_engine_cache` folder from the Colab Environment's file browser. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data)) 
 :::
 
-
-
-
-
-
-
-
-
-
 ## Conclusion
 
 Congratulations on reaching the end of this tutorial. We previously trained a YOLOX model in PyTorch for hand gesture detection, and now we've quantized that model for optimized inference on NVIDIA hardware. Our model is now smaller, faster, and better suited for real-time applications and edge devices like the Jetson Orin Nano.
-
-
 
 ## Recommended Tutorials
 
 * [**Real-Time Object Tracking with YOLOX and ByteTrack**](../byte-track/): Learn how to track objects across video frames with YOLOX and ByteTrack.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

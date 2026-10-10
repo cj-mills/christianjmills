@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Google AI Landscape and Gemini](#google-ai-landscape-and-gemini)
 * [Understanding Context Windows](#understanding-context-windows)
@@ -32,10 +26,6 @@ open-graph:
 * [Prompting Strategies and Examples](#prompting-strategies-and-examples)
 * [Retrieval Augmented Generation](#retrieval-augmented-generation)
 * [Fine-tuning Considerations and Gemma](#retrieval-augmented-generation)
-
-
-
-
 
 ## Google AI Landscape and Gemini
 
@@ -56,8 +46,6 @@ open-graph:
     * Open-source versions of Gemini, available on Hugging Face, Kaggle, and Ollama, making local experimentation easy.
     * Kaggle hosts checkpoints, code samples, and runnable notebooks. 
 
-  
-
 ### Generative AI and Google
 
 * Google's history in machine learning: TensorFlow, transformer models (BERT, AlphaFold, AlphaStar, AlphaGo, T5), and now Gemini.
@@ -65,8 +53,6 @@ open-graph:
   * **[Imagen 2](https://deepmind.google/technologies/imagen-2/):** Detailed image generation.
   * **[Chirp](https://cloud.google.com/speech-to-text/v2/docs/chirp-model):** Speech-to-text with multilingual capabilities and a small model footprint.
 * **Gemini:**  Google's flagship model (currently on version 1.5) 
-
-
 
 ### Gemini Model Features
 
@@ -88,10 +74,6 @@ open-graph:
   * Fine-tuning and using code examples in the context window further enhance results.
   * Applicable to code generation, translation, debugging, code review, etc.
 
-
-
-
-
 ## Understanding Context Windows
 
 * **Importance of Context Window Size:**  
@@ -102,11 +84,7 @@ open-graph:
   * Reduces the need for fine-tuning, as more information can be provided at inference time.
   * Allows for more complex and nuanced outputs. 
 
-
-
-
-
-## Fine-tuning vs. Prompting vs. Retrieval 
+## Fine-tuning vs. Prompting vs. Retrieval
 
 ### Common Questions & Trade-offs
 
@@ -132,10 +110,6 @@ open-graph:
   * Carefully consider the relevance and limitations of evaluation metrics.
   * Prioritize custom evaluations tailored to your specific use case and business needs. 
 
-
-
-
-
 ## Prompting Strategies and Examples
 
 ### Power of Prompting & Video Understanding
@@ -152,7 +126,6 @@ open-graph:
   * Optimizes API calls for repeated analysis of the same codebase or repository.
   * Improves latency and grounds responses within a consistent context.
 
-
 ### AI Studio Overview & Examples
 
 * **Key Features:**
@@ -165,8 +138,6 @@ open-graph:
   * Converting COBOL code to Java with specific instructions and architecture preferences.
 * **Key Takeaway:**  With detailed instructions, models can achieve impressive results, much like a skilled contractor team. 
 
-
-
 ## Retrieval Augmented Generation
 
 ### Retrieval in Google Products
@@ -175,8 +146,6 @@ open-graph:
   * Example:  Querying for information about the San Francisco Ferry Building and requesting recommendations. 
   * Results are grounded in Google Search, with an option to view source citations and confidence levels.
 * **Personalized Retrieval:**  The concept can be extended to internal corporate data and codebases.
-
-
 
 ## Fine-tuning Considerations and Gemma
 
@@ -198,11 +167,5 @@ open-graph:
   * [HuggingFace Hub](https://huggingface.co/google)
 * **Deployment:** Easy one-click deployment to Google Cloud.
 * **Model Builders:**  Provides automatic comparisons and prompt management. 
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -26,7 +26,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Collaborative Filtering](#collaborative-filtering)
 * [A First Look at the Data](#a-first-look-at-the-data)
 * [Learning the Latent Factors](#learning-the-latent-factors)
@@ -36,7 +35,6 @@ open-graph:
 * [Bootstrapping a Collaborative Filtering Model](#bootstrapping-a-collaborative-filtering-model)
 * [Deep Learning for Collaborative Filtering](#deep-learning-for-collaborative-filtering)
 * [References](#references)
-
 
 ## Collaborative Filtering
 
@@ -69,11 +67,10 @@ fastbook.setup_book()
 from fastbook import *
 ```
 
-
-
 ## A First Look at the Data
 
 ### MovieLens Dataset
+
 * [https://grouplens.org/datasets/movielens/](https://grouplens.org/datasets/movielens/)
 * 25M Dataset
     * 25 million movie ratings
@@ -321,8 +318,8 @@ ratings[ratings['movie'] == 242][ratings['user'] == 305]
 </table>
 </div>
 
-
 #### pandas pivot table
+
 * [https://pandas.pydata.org/docs/reference/api/pandas.pivot_table.html](https://pandas.pydata.org/docs/reference/api/pandas.pivot_table.html)
 
 -----
@@ -498,6 +495,7 @@ pd.pivot_table(ratings.head(10), values='rating', index=['user'], columns=['movi
 **Note:** The `NaN` values indicate a given user has not provided a rating for the corresponding movie
 
 #### pandas DataFrame.pivot
+
 * [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html)
 
 -----
@@ -690,6 +688,7 @@ user1 = np.array([0.9,0.8,-0.6])
 ```
 
 #### Dot Product
+
 * the mathematical operation of multiplying the elements of two vectors together, and then summing up the results
 
 -----
@@ -720,8 +719,6 @@ casablanca = np.array([-0.99,-0.3,0.8])
 -1.611
 ```
 
-
-
 ## Learning the Latent Factors
 
 - can use gradient descent to learn the latent factors for each item and user in a dataset
@@ -738,8 +735,6 @@ casablanca = np.array([-0.99,-0.3,0.8])
     - can use any loss function, such as Mean Square Error
 4. Update the parameter values for the items and users
 
-
-
 ## Creating the DataLoaders
 
 ```python
@@ -755,8 +750,8 @@ casablanca = np.array([-0.99,-0.3,0.8])
 cat: write error: Broken pipe
 ```
 
+### pandas.read_csv
 
-#### pandas.read_csv
 * [https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html)
 * read a csv file
 * supports custom delimiters
@@ -813,8 +808,8 @@ movies.head()
 </table>
 </div>
 
+### DataFrame.merge
 
-#### DataFrame.merge
 * [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html)
 * perform a database-style join
 
@@ -882,13 +877,13 @@ ratings.head()
 </table>
 </div>
 
+### fastai CollabDataLoaders
 
-
-#### fastai CollabDataLoaders
 * [https://docs.fast.ai/collab.html#CollabDataLoaders](https://docs.fast.ai/collab.html#CollabDataLoaders)
 * Base `DataLoaders` for collaborative filtering.
 
-#### CollabDataLoaders.from_df
+### CollabDataLoaders.from_df
+
 * [https://docs.fast.ai/collab.html#CollabDataLoaders.from_df](https://docs.fast.ai/collab.html#CollabDataLoaders.from_df)
 * Create a DataLoaders suitable for collaborative filtering from a pandas DataFrame.
 
@@ -1016,12 +1011,13 @@ ReadTabBatch
 fastai.tabular.core.ReadTabBatch
 ```
 
+### fastai TabDataLoader
 
-#### fastai TabDataLoader
 * [https://docs.fast.ai/tabular.core.html#TabDataLoader](https://docs.fast.ai/tabular.core.html#TabDataLoader)
 * A transformed DataLoader for Tabular data
 
-#### fastai ReadTabBatch
+### fastai ReadTabBatch
+
 * [https://docs.fast.ai/tabular.core.html#ReadTabBatch](https://docs.fast.ai/tabular.core.html#ReadTabBatch)
 * Transform [TabularPandas](https://docs.fast.ai/tabular.core.html#TabularPandas) values into a Tensor with the ability to decode
 
@@ -1053,7 +1049,8 @@ one_hot
 <function fastai.torch_core.one_hot(x, c)>
 ```
 
-#### fastai one_hot
+### fastai one_hot
+
 * [https://docs.fast.ai/torch_core.html#one_hot](https://docs.fast.ai/torch_core.html#one_hot)
 * One-hot encode a value with a specified number of classes.
 
@@ -1089,8 +1086,6 @@ user_factors[3]
 tensor([-1.2274,  0.0769, -0.1502, -0.7066,  0.3554])
 ```
 
-
-
 ## Collaborative Filtering from Scratch
 
 ```python
@@ -1100,11 +1095,13 @@ Embedding
 fastai.layers.Embedding
 ```
 
-#### fastai Embedding
+### fastai Embedding
+
 * [https://docs.fast.ai/layers.html#Embedding](https://docs.fast.ai/layers.html#Embedding)
 * Embedding layer with truncated normal initialization
 
-#### PyTorch Embedding
+### PyTorch Embedding
+
 * [https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html](https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html)
 * A simple lookup table that stores embeddings of a fixed dictionary and size.
 
@@ -1407,6 +1404,7 @@ learn.fit_one_cycle(5, 5e-3)
 * An alternative is to use weight decay
 
 ### Weight Decay
+
 * Also called L2 regularization
 * consists of adding the sum of all the weights squared to your loss function
     * a weight decay scalar value is used to control the influence of this addition
@@ -1535,8 +1533,8 @@ type(t.a.weight)
 torch.nn.parameter.Parameter
 ```
 
-
 #### PyTorch Tensor.normal_
+
 * [https://pytorch.org/docs/stable/generated/torch.Tensor.normal_.html#torch.Tensor.normal_](https://pytorch.org/docs/stable/generated/torch.Tensor.normal_.html#torch.Tensor.normal_)
 * Fills tensor with elements sampled from the normal distribution parameterized by the specified mean and std.
 
@@ -1623,8 +1621,6 @@ learn.fit_one_cycle(5, 5e-3, wd=0.1)
 
 **Note:** Results should be nearly identical to using the provided Embedding class
 
-
-
 ## Interpreting Embeddings and Biases
 
 ```python
@@ -1658,15 +1654,17 @@ idxs = movie_bias.argsort(descending=True)[:5]
 **Note:** A high bias value for a movie indicates the even users who are poorly matched will probably give them high ratings.
 
 ### Principle Component Analysis (PCA)
+
 * A technique used to emphasize variation and bring out strong patterins in a dataset
 * Used to make data easy to explore and visualize
 * Leverages the fact the data has low intrinsic dimensionality
 
-##### [Principle Component Analysis Explained Visually](https://setosa.io/ev/principal-component-analysis/)
+#### [Principle Component Analysis Explained Visually](https://setosa.io/ev/principal-component-analysis/)
 
 #### [Computational Linear Algebra 4: Randomized SVD & Robust PCA](https://www.youtube.com/watch?v=Ys8R2nUTOAk&list=PLtmWHNX-gukIc92m1K0P6bIOnZb-mg0hY&index=5)
 
 #### fastai Tensor.pca
+
 * [https://docs.fast.ai/torch_core.html#Tensor.pca](https://docs.fast.ai/torch_core.html#Tensor.pca)
 * Compute PCA of x with k dimensions.
 
@@ -1710,10 +1708,10 @@ plt.show()
 ```
 ![](./images/output_83_0.png){fig-align="center"}
 
-
 ### Using fastai.collab
 
 #### fastai collab_learner
+
 * [https://docs.fast.ai/collab.html#collab_learner](https://docs.fast.ai/collab.html#collab_learner)
 * Create a learner for collaborative filtering
 
@@ -1803,6 +1801,7 @@ idxs = movie_bias.argsort(descending=True)[:5]
 ```
 
 ### Embedding Distance
+
 * items with similar embedding values should have similar qualities
 * We can calculate the distance between two 2D coordinates using $\sqrt{x^{2} + y^{2}}$
 
@@ -1819,15 +1818,15 @@ dls.classes['title'][idx]
 'Everest (1998)'
 ```
 
-
-
 ## Bootstrapping a Collaborative Filtering Model
 
 ### The Bootstrapping Problem
+
 * What items do you recommend your very first user?
 * What do you do when a new user signs up?
 
 #### No magic solution
+
 * need to use common sense
 * could assign new users the mean of all the embedding vectors of your other users
     * has the problem that the mean of all the embedding vectors might not be a common combination
@@ -1839,8 +1838,6 @@ dls.classes['title'][idx]
     * can trigger positive feedback loops
     
 * Try to think about all the ways in which feedback loops may be represented in your system and how you might be able to identify them in your data. 
-
-
 
 ## Deep Learning for Collaborative Filtering
 
@@ -1857,7 +1854,8 @@ get_emb_sz
 <function fastai.tabular.model.get_emb_sz(to, sz_dict=None)>
 ```
 
-#### fastai get_emb_sz
+### fastai get_emb_sz
+
 * [https://docs.fast.ai/tabular.model.html#get_emb_sz](https://docs.fast.ai/tabular.model.html#get_emb_sz)
 * Get default embedding size from TabularPreprocessor proc or the ones in sz_dict
 
@@ -2054,8 +2052,8 @@ EmbeddingNN
 fastai.collab.EmbeddingNN
 ```
 
+### fastai EmbeddingNN
 
-#### fastai EmbeddingNN
 * [https://docs.fast.ai/collab.html#EmbeddingNN](https://docs.fast.ai/collab.html#EmbeddingNN)
 * Create a neural network suitable for collaborative filtering
 * A subclass of TabularModel
@@ -2067,14 +2065,10 @@ TabularModel
 fastai.tabular.model.TabularModel
 ```
 
-#### TabularModel
+### TabularModel
+
 * [https://docs.fast.ai/tabular.model.html#TabularModel](https://docs.fast.ai/tabular.model.html#TabularModel)
 * Basic model for tabular data
-
-
-
-
-
 
 ## References
 
@@ -2086,9 +2080,5 @@ fastai.tabular.model.TabularModel
 **Previous:** [Notes on fastai Book Ch. 7](../chapter-7/)
 
 **Next:** [Notes on fastai Book Ch. 9](../chapter-9/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

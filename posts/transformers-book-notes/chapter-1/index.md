@@ -21,14 +21,10 @@ open-graph:
 
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
 :::
-
-
 
 * [Key Advancements](#key-advancements)
 * [Recurrent Architectures](#recurrent-architectures)
@@ -40,8 +36,6 @@ open-graph:
 * [The Hugging Face Ecosystem](#the-hugging-face-ecosystem)
 * [Main Challenges with Transformers](#main-challenges-with-transformers)
 * [References](#references)
-
-
 
 ## Key Advancements
 
@@ -62,7 +56,6 @@ open-graph:
 - Combining the Transformer architecture with unsupervised learning removed the need to train task-specific architectures from scratch.
 - Pretrained Transformers broke almost every benchmark in NLP by a significant margin.
 
-
 ## Recurrent Architectures
 
 - Recurrent architectures such as LSTMs were state of the art in Natural Language Processing (NLP) before Transformers.
@@ -79,7 +72,6 @@ open-graph:
 - The computations for recurrent models are inherently sequential and cannot parallelize across the input.
     - The inability to parallelize computations is a fundamental shortcoming of recurrent models.
 
-
 ## The Encoder-Decoder Framework
 
 - [Sequence to Sequence Learning with Neural Networks](https://arxiv.org/abs/1409.3215)
@@ -94,8 +86,6 @@ open-graph:
     - It has to represent the meaning of the whole input sequence.
     - This requirement creates an information bottleneck that can limit performance for longer sequences.
 
-
-
 ## Attention Mechanisms
 
 - Attention mechanisms allow the decoder to access all of the encoder's hidden states, not just the last one.
@@ -108,7 +98,6 @@ open-graph:
     - Self-attention operates on all states in the same layer of a neural network.
     - The outputs of the self-attention mechanisms serve as input to feed-forward networks.
     - This architecture trains much faster than recurrent models.
-
 
 ## Transfer Learning in NLP
 
@@ -134,8 +123,6 @@ open-graph:
 - GPT trained on the BookCorpus dataset while BERT trained on the BookCorpus dataset and English Wikipedia.
     - The [BookCorpus dataset](https://arxiv.org/abs/1506.06724) consists of thousands of unpublished books across many genres.
 
-
-
 ## Bridging the Gap With Hugging Face Transformers
 
 - Applying a novel machine learning architecture to a new application can be complicated and requires custom logic for each model and task.
@@ -149,8 +136,6 @@ open-graph:
 - Hugging Face Transformers provides a standardized interface to a wide range of transformer models, including code and tools to adapt these models to new applications.
     - The availability of a standardized interface catalyzed the explosion of research into transformers and made it easy for NLP practitioners to integrate these models into real-life applications.
 - The library supports the PyTorch, TensorFlow, and JAX deep learning frameworks and provides task-specific model heads to fine-tune transformers on downstream tasks.
-
-
 
 ## A Tour of Transformer Applications
 
@@ -242,10 +227,7 @@ transformers.pipelines.TASK_ALIASES
 {'sentiment-analysis': 'text-classification', 'ner': 'token-classification'}
 ```
 
-
-
-
-##### Sample Text: Customer Review
+#### Sample Text: Customer Review
 
 ```python
 text = """Dear Amazon, last week I ordered an Optimus Prime action figure \
@@ -256,8 +238,6 @@ dilemma. To resolve the issue, I demand an exchange of Megatron for the \
 Optimus Prime figure I ordered. Enclosed are copies of my records concerning \
 this purchase. I expect to hear from you soon. Sincerely, Bumblebee."""
 ```
-
-
 
 #### Text Classification Pipeline
 
@@ -293,9 +273,6 @@ pd.DataFrame(outputs)
   </tbody>
 </table>
 </div>
-
-
-
 
 #### Named Entity Recognition Pipeline
 
@@ -506,9 +483,6 @@ pd.DataFrame(ner_tagger.tokenizer.vocab, index=[0]).T.head(10)
 </table>
 </div>
 
-
-
-
 #### Question Answering Pipeline
 
 - [Documentation](https://huggingface.co/docs/transformers/v4.17.0/en/main_classes/pipelines#transformers.QuestionAnsweringPipeline)
@@ -549,8 +523,6 @@ pd.DataFrame([outputs])
 
 **Note:** This particular kind of question answering is called extractive question answering. The answer is extracted directly from the text.
 
-
-
 #### Summarization Pipeline
 
 - [Documentation](https://huggingface.co/docs/transformers/v4.17.0/en/main_classes/pipelines#transformers.SummarizationPipeline)
@@ -573,8 +545,6 @@ print(outputs[0]['summary_text'])
 
 **Note:** The model captured the essence of the customer message but directly copied some of the original text.
 
-
-
 #### Translation Pipeline
 
 - [Documentation](https://huggingface.co/docs/transformers/v4.17.0/en/main_classes/pipelines#transformers.TranslationPipeline)
@@ -596,8 +566,6 @@ Sehr geehrter Amazon, letzte Woche habe ich eine Optimus Prime Action Figur aus 
 ```
 
 **Note:** The model supposedly did a good job translating the text. (I don't speak German.)
-
-
 
 #### Text Generation Pipeline
 
@@ -629,14 +597,10 @@ Customer service response:
 Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was completely mislabeled, which is very common in our online store, but I can appreciate it because it was my understanding from this site and our customer service of the previous day that your order was not made correct in our mind and that we are in a process of resolving this matter. We can assure you that your order
 ```
 
-
-
 ## The Hugging Face Ecosystem
 
 - Hugging Face Transformers is surrounded by an ecosystem of helpful tools that support the modern machine learning workflow.
 - This ecosystem consists of a family of code libraries and a hub of pretrained model weights, datasets, scripts for evaluation, other resources.
-
-
 
 ### The Hugging Face Hub
 
@@ -645,8 +609,6 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 - Filters are available for tasks, frameworks, datasets, and more designed to help quickly navigate the Hub.
 - Users can directly try out any model through task-specific widgets.
 
-
-
 ### Hugging Face Tokenizers
 
 - [Documentation](https://huggingface.co/docs/transformers/v4.17.0/en/main_classes/tokenizer)
@@ -654,8 +616,6 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 - Tokens can be words, parts of words, or single characters.
 - Hugging Face Tokenizers takes care of all the preprocessing and postprocessing steps, such as normalizing the inputs and transforming the model outputs to the required format.
 - The [Tokenizers library](https://github.com/huggingface/tokenizers) uses a [Rust](https://www.rust-lang.org/) backend for fast tokenization.
-
-
 
 ### Hugging Face Datasets
 
@@ -666,39 +626,32 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 - The library is interoperable with frameworks like [Pandas](https://pandas.pydata.org/) and [NumPy](https://numpy.org/).
 - Scripts are available for many metrics to help make experiments more reproducible and trustworthy.
 
-
-
 ### Hugging Face Accelerate
 
 - [Documentation](https://huggingface.co/docs/accelerate/index)
 - The Accelerate library adds a layer of abstraction to training loops, which takes care of all the custom logic necessary for the training infrastructure.
 
-
-
 ## Main Challenges with Transformers
 
-#### Language
+### Language
 
 - It is hard to find pretrained models for languages other than English.
 
-#### Data Availability
+### Data Availability
 
 - Even with transfer learning, transformers still need a lot of data compared to humans to perform a task.
 
-#### Working With Long Documents
+### Working With Long Documents
 
 - Self-attention becomes computationally expensive when working on full-length documents.
 
-#### Opacity
+### Opacity
 
 - It is hard or impossible to determine precisely why a model made a given prediction.
 
-#### Bias
+### Bias
 
 - Biases present in the training data imprint into the model.
-
-
-
 
 ## References
 
@@ -708,9 +661,5 @@ Dear Bumblebee, I am sorry to hear that your order was mixed up. The order was c
 
 
 **Next:** [Notes on Transformers Book Ch. 2](../chapter-2/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

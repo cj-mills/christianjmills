@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction](#introduction)
 * [Background: The Need for Optimization](#background-the-need-for-optimization)
@@ -38,27 +33,17 @@ open-graph:
 * [Conclusion](#conclusion)
 * [Q&A Session](#qa-session)
 
-
-
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 12: Flash Attention](https://www.youtube.com/watch?v=zEuwuCTEf_0)
 
 :::
 
-
-
-
-
 ## Introduction
 
 - **Presenter:** Thomas Viehmann
 - **Topic:** Flash Attention, a highly optimized CUDA kernel for attention mechanisms in AI models, specifically transformers.
 - **Focus:** This lecture provides an introductory overview of Flash Attention, its underlying principles, and implementation challenges. It does not delve into live coding of the fastest kernels due to time constraints.
-
-
 
 ## Background: The Need for Optimization
 
@@ -68,8 +53,6 @@ open-graph:
   - Leveraging the speed advantages of SRAM over DRAM (typically an order of magnitude faster).
   - Reducing memory allocation and holding times, addressing GPU memory limitations.
 
-
-
 ## Memory Hierarchy and Performance
 
 - **DRAM vs. SRAM:**
@@ -77,8 +60,6 @@ open-graph:
   - **SRAM (Shared Memory):** Smaller capacity but significantly faster access times.
 - **Minimizing DRAM Access:** Flash Attention focuses on reducing the need to write intermediate results to DRAM and then reload them, aiming to keep computations within SRAM as much as possible.
 - **Changes in GPU Computing:** GPU architectures and software have evolved, requiring more sophisticated optimization techniques compared to earlier approaches where simple kernel sequencing could saturate GPU utilization.
-
-
 
 ## Attention Mechanisms: A Brief Overview
 
@@ -115,8 +96,6 @@ open-graph:
   - **Shared Memory:** Threads within a block can share memory, making it efficient to store and access data needed for the attention head's computation.
 
 - **Head Dimension Constraint:** The size of the head dimension (d) is a limiting factor as it affects the amount of shared memory and registers required per block. Flash Attention implementations often use small, fixed head dimensions (e.g., 128 or 256) to ensure computations fit within the resources of a single SM.
-
-
 
 ## Flash Attention: Tiling Strategy
 
@@ -163,8 +142,6 @@ open-graph:
 
   ![[Standard Attention vs Flash Attention v1](https://cdn-lfs.huggingface.co/datasets/huggingface/documentation-images/7a59cb2f5b1c0ed0a00fe065f89e3f736aea3d5b10df95d90a7747fe543f3925?response-content-disposition=inline%3B+filename*%3DUTF-8%27%27flash-attn.png%3B+filename%3D%22flash-attn.png%22%3B&response-content-type=image%2Fpng&Expires=1726702524&Policy=eyJTdGF0ZW1lbnQiOlt7IkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTcyNjcwMjUyNH19LCJSZXNvdXJjZSI6Imh0dHBzOi8vY2RuLWxmcy5odWdnaW5nZmFjZS5jby9kYXRhc2V0cy9odWdnaW5nZmFjZS9kb2N1bWVudGF0aW9uLWltYWdlcy83YTU5Y2IyZjViMWMwZWQwYTAwZmUwNjVmODllM2Y3MzZhZWEzZDViMTBkZjk1ZDkwYTc3NDdmZTU0M2YzOTI1P3Jlc3BvbnNlLWNvbnRlbnQtZGlzcG9zaXRpb249KiZyZXNwb25zZS1jb250ZW50LXR5cGU9KiJ9XX0_&Signature=Q4YZK%7Ep22EKRaDzKRHXvMiHLusgwlOz9tyGjY-iqvvkirvcXRFIQJnxgkCponnm%7ED--y8kqWOO4iePmt8o27tbGDn6XWq%7EiWh9eY7YKA0g1RE0S-JIzcnspFJInINeIo2mZ8FCAxUnACT1b1xGuJOO3ecrktWPd%7E4ZyqjDUZICQXcwdKXhTpYA3SbP2pvwf59wzpjTsBM94-sFIlewNKtRrJiMW5ic2LYvNq5OsRzrjHCsGDA9MCtIayQasmFStROB1boLAojLG8Y6FjVdcXZeySLBjdKZHIDQuT9W4CyE91ZUgxFzj28CUixEa53vOto7s8GeGbdR%7ERy95JwVF8OA__&Key-Pair-Id=K3ESJI6DHPFC7)](./images/flash-attn.png)
 
-
-
 ## The Softmax Challenge
 
 - **Softmax Formula:**
@@ -181,8 +158,6 @@ open-graph:
   - **Incremental Update:** The stabilized softmax can be computed incrementally by adjusting the sum when the maximum logit (m) changes.
   - **Implementation:** Flash Attention often implements this online softmax block-by-block.
 
-
-
 ## Flash Attention 2: Advanced Techniques
 
 - **Flash Attention 1 vs. 2:** Flash Attention 2 significantly improves performance over Flash Attention 1 by avoiding writing intermediate results (O, L, M) to DRAM.
@@ -191,8 +166,6 @@ open-graph:
   - **Optimized Tile Ordering:** Rearranges tile processing order to minimize DRAM writes.
   - **CUTLASS Integration:** Leverages the NVIDIA CUTLASS library for efficient tensor core utilization in matrix multiplications.
 - **Compilation Challenges:** The integration of CUTLASS makes Flash Attention 2 a complex C++ codebase, leading to significant compilation time and memory requirements.
-
-
 
 ## Implementation Attempts and Challenges
 
@@ -346,8 +319,6 @@ open-graph:
 
   - Declared as local arrays with constant size.
   - Accessed using simple loop indices (not dynamic indices).
-
-
 
 ## CUDA C++ Implementation
 
@@ -536,16 +507,12 @@ fn()
     - **Tool:** [godbolt](https://godbolt.org/)
 - **Compilation with Python CUDA:** The CUDA C++ kernel can be compiled directly within Python using the `nvrtc` runtime compiler provided by the [CUDA Python library](https://nvidia.github.io/cuda-python/overview.html).
 
-
-
 ### Thunder
 
 - **Thunder Integration:** [Thunder](https://github.com/Lightning-AI/lightning-thunder), a source-to-source compiler for PyTorch, can be used to seamlessly integrate custom kernels (like the Flash Attention implementation) into PyTorch models.
   - **Operator Registration:** Custom kernels can be registered as operators within Thunder.
   - **Kernel Replacement:** Thunder can automatically replace specific PyTorch operations (e.g., `torch.nn.functional.scaled_dot_product_attention`) with the registered custom kernel.
   - **Conditional Replacement:**  Checker functions allow defining conditions under which the replacement should occur (e.g., based on input shapes, presence of masks, etc.).
-
-
 
 ## Performance Evaluation and Future Directions
 
@@ -556,14 +523,10 @@ fn()
   - **Implementing Advanced Features:**  Adding support for masks, multiple heads, and dropout.
 - **Persistent Kernels:**  Future research directions include exploring persistent kernels, where a single CUDA kernel represents an entire neural network and remains resident on the GPU for processing multiple batches of data.
 
-
-
 ## Conclusion
 
 - **Flash Attention Summary:** Flash Attention is a powerful technique for optimizing attention calculations in transformer models. It achieves significant performance gains by minimizing DRAM access and leveraging the speed of SRAM.
 - **Implementation Challenges:** Implementing Flash Attention efficiently requires careful consideration of tiling strategies, softmax stabilization,
-
-
 
 ## Q&A Session
 
@@ -597,11 +560,5 @@ fn()
   * **A:**  Fusing the Q, K, and V matrix multiplications into a single kernel is a common optimization technique in Flash Attention implementations. However, fusing additional operations beyond this point might become challenging due to register limitations and the complexity of managing intermediate results within the kernel.
 
   * **Explanation:** Flash Attention already pushes the boundaries of kernel complexity and resource utilization. While further fusion might be theoretically possible, it requires careful consideration of resource constraints and potential performance trade-offs.
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

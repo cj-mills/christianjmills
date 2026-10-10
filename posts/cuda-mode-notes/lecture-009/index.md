@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction](#introduction)
 * [Examples of Reductions](#examples-of-reductions)
@@ -36,10 +31,6 @@ open-graph:
 * [Reductions in Machine Learning Frameworks](#reductions-in-machine-learning-frameworks)  
 * [Conclusion](#conclusion)
 * [Call to Action](#call-to-action)
-
-
-
-
 
 ::: {.callout-tip title="Resource Links:"}
 
@@ -63,10 +54,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 
 :::
 
-
-
-
-
 ## Introduction
 
 - This lecture covers **reductions**, a core concept in GPU programming and machine learning.
@@ -78,8 +65,6 @@ echo 'options nvidia NVreg_RestrictProfilingToAdminUsers=0' | sudo tee /etc/modp
 - **Reductions** are mathematical operations that reduce the size of input data, often producing a scalar from a vector in machine learning.
 
   ![Sum Reduction](./images/basic-reduction-graphviz.png)
-
-
 
 ## Examples of Reductions
 
@@ -122,8 +107,6 @@ data = [1, 2, 3, 4, 5]
     ```
 - Other common reductions: argmax, argmin, norm, mean, number of unique elements.
 
-
-
 ## Reductions in Machine Learning
 
 - **Ubiquitous** in machine learning code:
@@ -132,15 +115,11 @@ data = [1, 2, 3, 4, 5]
   - Loss calculations: Scalar loss computed from target and prediction.
   - Softmax normalization: Summation of exponentiated elements.
 
-
-
 ## Implementing Reductions in PyTorch
 
 - **Reduction Implementations:** [aten/src/ATen/native/cuda/ReduceOps.cpp](https://github.com/pytorch/pytorch/blob/main/aten/src/ATen/native/cuda/ReduceOps.cpp)
 - PyTorch provides built-in functions for common reductions (e.g., `torch.max`, `torch.min`, `torch.mean`).
 - These functions call optimized CUDA kernels when tensors are on a CUDA device.
-
-
 
 ## Serial Reduction
 
@@ -184,8 +163,6 @@ data = [1, 2, 3, 4, 5]
   ```
 
 - **Inefficient** for parallel architectures like GPUs.
-
-
 
 ## Parallel Reduction Algorithm
 
@@ -240,8 +217,6 @@ data = [1, 2, 3, 4, 5]
   ![Parallel Sum Reduction Tree](./images/parallel-sum-reduction-tree-graphviz.png)
 
 - **Logarithmic Complexity:** Requires `log n` steps for an input of size `n`.
-
-
 
 ## Non-Determinism in Floating-Point Reductions
 
@@ -309,8 +284,6 @@ data = [1, 2, 3, 4, 5]
   
   - Use higher-precision formats (e.g., bfloat16) for accumulation.
   - Upcast the accumulator to a higher precision (e.g., float32) during the reduction.
-
-
 
 ## Implementing Parallel Reduction in CUDA
 
@@ -452,8 +425,6 @@ data = [1, 2, 3, 4, 5]
   | **Branch Efficiency**     | %           | **74.05**    |
   | Avg. Divergent Branches   |             | 0.37         |
 
-
-
 ### Minimizing Control Divergence: Control Divergence Reduction
 
 - **Thread Strategy:** Threads are co-located, with stride starting at block dimension and halving at each iteration.
@@ -580,8 +551,6 @@ data = [1, 2, 3, 4, 5]
   | Branch Instructions       | inst        | 1,126        |
   | **Branch Efficiency**     | %           | **99.32**    |
   | Avg. Divergent Branches   |             | 0.01         |
-
-
 
 ### Utilizing Shared Memory: Shared Reduce
 
@@ -739,8 +708,6 @@ data = [1, 2, 3, 4, 5]
   | **Branch Efficiency**     | %           | **100**      |
   | Avg. Divergent Branches   |             | 0            |
 
-
-
 ### Segmented Multi-Block Reduction: Segmented Reduce
 
 - **Thread Strategy:** Uses multiple blocks to handle larger inputs. Each block performs a reduction on a segment of the input
@@ -877,8 +844,6 @@ data = [1, 2, 3, 4, 5]
   ```text
   Sum is 100000
   ```
-
-  
 
 ### Thread Coarsening: Reduced Coarsening
 
@@ -1024,10 +989,6 @@ data = [1, 2, 3, 4, 5]
   ```text
   Sum is 10000
   ```
-
-  
-
-
 
 ## Reductions in Machine Learning Frameworks
 
@@ -1218,8 +1179,6 @@ TORCH_LOGS="output_code" python reduce_compile.py
   - Triton performs reduction within threads, within warps, within blocks, and finally across blocks.
 - **Flexibility:** Triton provides primitives for building custom reduction kernels with fine-grained control over the reduction process.
 
-
-
 ## Conclusion
 
 - **Reductions are essential operations in GPU programming and machine learning.**
@@ -1228,21 +1187,10 @@ TORCH_LOGS="output_code" python reduce_compile.py
 - **Machine learning frameworks** like PyTorch and Triton employ sophisticated techniques to generate optimized reduction kernels.
 - **Understanding reduction algorithms and implementation strategies is crucial for developing high-performance GPU code.**
 
-
-
 ## Call to Action
 
 - **Start writing your own kernels!** This is the best way to solidify your understanding and gain practical experience.
 - **Consider collaborating with others** for motivation and support.
 - **Volunteer to give a lecture!** Share your knowledge and experience with the community. Topics like Trident kernels, prefix sum, and NCCL are highly relevant.
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -28,13 +28,10 @@ open-graph:
 * [ONNX-DirectML Inference](#onnx-directml-inference)
 * [PyTorch-DirectML Training](#pytorch-directml-training)
 
-
 ## Tutorial Links
 
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu](../../intel-pytorch-extension-tutorial/native-ubuntu/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows](../../intel-pytorch-extension-tutorial/native-windows/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
-
-
 
 ## Overview
 
@@ -52,25 +49,19 @@ Last week, I received an Arc A770 GPU from Intel as part of their Graphics Innov
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [2022.1 and 2022.2](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/download.html) | [1.12.1](https://www.nuget.org/packages/Microsoft.ML.OnnxRuntime.DirectML/1.12.1) | [1.8.0a0.dev220506](https://pypi.org/project/pytorch-directml/) |
 
-
-
 ## OpenVINO Inference
 
 I first tested the card’s performance in the Unity project from my [End-to-End Object Detection for Unity With IceVision and OpenVINO](../../icevision-openvino-unity-tutorial/part-1/) tutorial. The project uses OpenVINO 2022.1, and I noticed an odd sensitivity to input resolution when using FP16 precision.
 
 I use a default resolution of 398x224 (for a 16:9 aspect ratio), which translates to a 384x224 (divisible by 32) input resolution for the YOLOX tiny model. At this resolution, the model detects the same hand gestures with the Arc card as the CPU. However, the confidence scores are much lower, and the bounding box dimensions are slightly different (but still usable).
 
-
-
-##### **CPU (FP16)**
+### **CPU (FP16)**
 
 * **Objects Detected:** Call 78.54%, No Gesture 83.2%
 
 ![](./images/cpu_unity-openvino-yolox_384x224.png){fig-align="center"}
 
-
-
-##### **A770 (FP16)**
+### **A770 (FP16)**
 
 * **Objects Detected:** Call 23.25%, No Gesture 40.86%
 
@@ -94,25 +85,17 @@ I later updated OpenVINO to the recent 2022.2 release, which resolved this issue
 
 ![](./images/arc_a770_unity-openvino-2022-2-yolox_384x224.png){fig-align="center"}
 
-
-
-
-
-
-
 ## ONNX-DirectML Inference
 
 I used the project from my [Object Detection for Unity With ONNX Runtime and DirectML](../../onnx-directml-unity-tutorial/part-1/) tutorial to compare the inference speeds between the A770 and my Titan RTX. This project uses the same YOLOX tiny model and input resolution as the OpenVINO one but in FP32 precision.
 
 The Titan RTX, essentially a 2080 Ti, hit around 145fps, while the A770 hovered around 120fps.
 
-##### **A770**
+### **A770**
 
 **Objects Detected:** Call 78.64%, No Gesture 83.35%
 
 ![](./images/arc_a770_unity-onnx-directml-yolox_384x224.png){fig-align="center"}
-
-
 
 ## PyTorch-DirectML Training
 
@@ -129,13 +112,5 @@ However, it spikes to using all 16 GB at a batch size of 8 and crashes the scrip
 I then attempted to train the style transfer model included with the [pytorch examples repo](https://github.com/pytorch/examples) and hit the wall of unimplemented operators. Here is the [PyTorch DirectML Operator Roadmap](https://github.com/microsoft/DirectML/wiki/PyTorch-DirectML-Operator-Roadmap). Some of the missing operators are on the current roadmap, but not all of them.
 
 The tensorflow-directml package recently received its first update since May, so hopefully, the PyTorch version will receive an update soon. I have no idea when the main PyTorch and TensorFlow libraries will gain support for Intel GPUs, but hopefully, that is not too far off either.
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

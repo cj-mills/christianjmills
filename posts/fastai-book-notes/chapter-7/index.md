@@ -22,12 +22,10 @@ open-graph:
 
 ---
 
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
-
 
 * [Training a State-of-the-Art Model](#training-a-state-of-the-art-model)
 * [Imagenette](#imagenette)
@@ -39,14 +37,15 @@ open-graph:
 * [Papers and Math](#papers-and-math)
 * [References](#references)
 
-
 ## Training a State-of-the-Art Model
+
 - the dataset you are given is not necessarily the dataset you want.
 - aim to have an iteration speed of no more than a couple of minutes
     - think about how you can cut down your dataset, or simplify your model to improve your experimentation speed
 - the more experiments your can do the better
 
 ## Imagenette
+
 * [https://docs.fast.ai/data.external.html](https://docs.fast.ai/data.external.html)
 * A smaller version of the [imagenet dataset](https://image-net.org/)
 * Useful for quick experimentation and iteration
@@ -69,7 +68,7 @@ path
 Path('/home/innom-dt/.fastai/data/imagenette2')
 ```
 
-#### parent_label
+### parent_label
 
 * [https://docs.fast.ai/data.transforms.html#parent_label](https://docs.fast.ai/data.transforms.html#parent_label)
 * Label item with the parent folder name.
@@ -113,7 +112,7 @@ xresnet50
 <function fastai.vision.models.xresnet.xresnet50(pretrained=False, **kwargs)>
 ```
 
-#### CrossEntropyLossFlat
+### CrossEntropyLossFlat
 
 * [https://docs.fast.ai/losses.html#CrossEntropyLossFlat](https://docs.fast.ai/losses.html#CrossEntropyLossFlat)
 * Same as `nn.CrossEntropyLoss`, but flattens input and target.
@@ -249,8 +248,6 @@ learn.fit_one_cycle(5, 3e-3)
 </table>
 </div>
 
-
-
 ## Normalization
 
 - normalized data: has a mean value of `0` and a standard deviation of `1`
@@ -270,7 +267,7 @@ x.mean(dim=[0,2,3]),x.std(dim=[0,2,3])
  TensorImage([0.2893, 0.2792, 0.3022], device='cuda:0'))
 ```
 
-#### Normalize
+### Normalize
 
 * [https://docs.fast.ai/data.transforms.html#Normalize](https://docs.fast.ai/data.transforms.html#Normalize)
 * Normalize/denormalize a bath of [TensorImage](https://docs.fast.ai/torch_core.html#TensorImage)
@@ -384,8 +381,6 @@ learn.fit_one_cycle(5, 3e-3)
   </tbody>
 </table>
 </div>
-
-
 
 ## Progressive Resizing
 
@@ -528,7 +523,6 @@ learn.fine_tune(5, 1e-3)
   </tbody>
 </table>
 
-
 ## Test Time Augmentation
 
 - during inference or validation, creating multiple versions of each image using augmentation, and then taking the average or maximum of the predictions for each augmented version of the image
@@ -536,7 +530,8 @@ learn.fine_tune(5, 1e-3)
 - does not change the time required to train
 - will increase the amount of time required for validation or inference
 
-#### Learner.tta
+### Learner.tta
+
 * [https://docs.fast.ai/learner.html#Learner.tta](https://docs.fast.ai/learner.html#Learner.tta)
 * returns predictions using Test Time Augmentation
 
@@ -561,7 +556,6 @@ accuracy(preds, targs).item()
 ```text
 0.882001519203186
 ```
-
 
 ## Mixup
 
@@ -741,8 +735,6 @@ learn.fit_one_cycle(15, 3e-3)
 </table>
 </div>
 
-
-
 ## Label Smoothing
 
 - **[Rethinking the Inception Architecture for Computer Vision](https://arxiv.org/abs/1512.00567)**
@@ -886,8 +878,6 @@ learn.fit_one_cycle(15, 3e-3)
   </tbody>
 </table>
 </div>
-
-
 
 ## Label Smoothing, Mixup and Progressive Resizing
 
@@ -1130,17 +1120,12 @@ learn.fine_tune(10, 1e-3)
 </table>
 </div>
 
-
-
-
-
 ## Papers and Math
 
 - **[Greek letters used in mathematics, science, and engineering](https://en.wikipedia.org/wiki/Greek_letters_used_in_mathematics,_science,_and_engineering)**
 - **[Glossary of mathematical symbols](https://en.wikipedia.org/wiki/Glossary_of_mathematical_symbols)**
 - **[Detexify](https://detexify.kirelabs.org/classify.html)**
     - draw a mathematical symbol and get the latex code
-
 
 ## References
 
@@ -1152,9 +1137,5 @@ learn.fine_tune(10, 1e-3)
 **Previous:** [Notes on fastai Book Ch. 6](../chapter-6/)
 
 **Next:** [Notes on fastai Book Ch. 8](../chapter-8/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

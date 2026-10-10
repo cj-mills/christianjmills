@@ -21,8 +21,6 @@ open-graph:
 
 ---
 
-
-
 * [Introduction](#introduction)
 * [What is Machine Learning?](#what-is-machine-learning)
 * [Machine Learning Landscape](#machine-learning-landscape)
@@ -41,17 +39,13 @@ open-graph:
 * [Conclusion](#conclusion)
 * [Related Work](#related-work)
 
-
-
 ::: {.callout-tip title="Source Material"}
 
 * [Ben Berman - Machine Learning and Level Generation](https://www.youtube.com/watch?v=Z6lHExfem6U)
 
 :::
 
-
-
-## Introduction 
+## Introduction
 
 - **Level generation using machine learning** is a growing area of interest in game development, offering potential for "magical fantasy problem-solving."
 - This talk aims to provide a comprehensive overview of the current state of machine learning in level generation, including:
@@ -186,8 +180,6 @@ open-graph:
       - Geometry Dash (Cocos 2D)
   - Even raw level data (e.g., hexadecimal) can be used for training.
 
-  
-
 ## Libraries and Tools
 
 - **TensorFlow/PyTorch**: Recommended as a flexible, well-supported, and widely used library.
@@ -243,8 +235,6 @@ open-graph:
 - **Focus on Functional Game Content**: This is the next big challenge and opportunity in applying machine learning to game development.
 - Berman invites further discussion and collaboration on these topics. 
 
-
-
 ## Related Work
 
 - **AI4Animation: Deep Learning for Character Control**
@@ -258,14 +248,5 @@ open-graph:
 
 
 ​    
-
- 
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

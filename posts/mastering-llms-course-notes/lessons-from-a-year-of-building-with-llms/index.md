@@ -15,18 +15,12 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
 
-
-
-
-
-### Introduction and Background
+## Introduction and Background
 
 * **[Hugo Bowne-Anderson](https://hugobowne.github.io/)**: Host of the *Vanishing Gradients* podcast and live stream. Has a background in data science, machine learning, and education.
 * **Live Stream Focus**: Discussion of a report co-authored by six AI professionals (Eugene Yan, Shreya Shankar, Hamel Husain, Brian Bischof, Charles Frye, and Jason Liu), focusing on practical lessons learned from building real-world applications with Large Language Models (LLMs) over the past year.
@@ -37,7 +31,7 @@ open-graph:
   - **Operational**: Building development pipelines, integrating LLMs into existing workflows.
   - **Strategic**: Understanding business use cases, defining success metrics, and building trust with stakeholders.
 
-### Panelist Introductions and Motivations
+## Panelist Introductions and Motivations
 
 * **Eugene Yan**:
   - Works at Amazon Books, focusing on recommendation systems and search.
@@ -66,7 +60,7 @@ open-graph:
   - Interested in developing intelligent software and using LLMs to democratize cognition.
   - Key contributor to Modal's infrastructure and developer tools, including the TensorRT-LLM library.
 
-### The Genesis of the Report
+## The Genesis of the Report
 
 * **Origin**: The report originated from discussions within a group chat among the co-authors.
 * **Initial Motivation**:
@@ -82,7 +76,7 @@ open-graph:
   - Content was synthesized and organized collaboratively.
   - Charles Frye played a key role in editing and consolidating the material.
 
-### The Importance of Evaluation 
+## The Importance of Evaluation
 
 * **Traditional Evals vs. LLM Evals**:
   - **Shreya Shankar**:
@@ -108,7 +102,7 @@ open-graph:
   - Traditional machine learning relies on explicit loss functions for optimization.
   - In generative AI, the loss functions are less defined, and evals act as a proxy for measuring progress and alignment with desired outcomes.
 
-###  Underappreciated Aspects of LLM Development
+## Underappreciated Aspects of LLM Development
 
 * **Equipping Engineers with LLM Skills**:
   - Organizations need to focus on training existing software engineers to understand and effectively use LLMs.
@@ -139,7 +133,7 @@ open-graph:
   - "Homework" approach at Hex:  Team members use interactive Hex applications to provide feedback on model outputs and assist with data labeling.
   - This process helps to bootstrap data sets and align LLM evaluations with human judgment.
 
-### Misconceptions and Knowledge Gaps in Organizations
+## Misconceptions and Knowledge Gaps in Organizations
 
 * **The "AI Engineer" Narrative and Its Limitations**:
   - **Popular Characterization**:
@@ -160,7 +154,7 @@ open-graph:
   - Data literacy is essential for AI engineers to analyze outputs, understand failure modes, and develop effective evaluation strategies.
   - It's crucial for AI engineers to be able to examine data and draw conclusions about system performance without relying solely on AI tools.
 
-### Promising Opportunities and Future Challenges
+## Promising Opportunities and Future Challenges
 
 * **Focusing on Unsexy, Expensive, and Slow Tasks**:
   - LLMs offer the potential to automate tasks that are currently time-consuming and costly for humans.
@@ -178,7 +172,7 @@ open-graph:
   - **ChatGPT Example**:  Users act as programmers by refining their prompts and editing previous messages to achieve their desired outcomes.
   - **Notebook Interfaces**:  Offer a flexible workspace for both technical and non-technical users to interact with and programmatically control LLMs.
 
-### Key Insights from Collaboration
+## Key Insights from Collaboration
 
 * **Value of Community and Alignment**:
   - The most valuable aspect of the collaboration was the opportunity to connect with other experts, discuss ideas, and learn from each other's experiences.
@@ -195,7 +189,7 @@ open-graph:
   - The report's impact has extended beyond industry, reaching academics and researchers who traditionally do not engage with industry blogs.
   - The report's timing was critical, capturing the widespread interest in LLMs and their potential to transform computing.
 
-### The Importance of Data-Centric AI Development
+## The Importance of Data-Centric AI Development
 
 * **Data Literacy as a Core Skill**:
   - The ability to understand and work with data is essential for success with LLMs.
@@ -205,7 +199,7 @@ open-graph:
   - Experience with data analysis and visualization leads to an intuitive understanding of data distributions.
   - This intuition allows for quickly identifying issues in data or model outputs, even without specific theoretical knowledge.
 
-### Building Trust with Stakeholders and Users
+## Building Trust with Stakeholders and Users
 
 * **Collaborative Design**:
   - Involve designers, UX professionals, and domain experts early in the process to understand user needs and build trust.
@@ -217,7 +211,7 @@ open-graph:
   - Gathering user feedback through beta programs and interactions at meetups is crucial for moving beyond the hype of demos.
   - Directly observing user reactions provides valuable insights into usability and helps identify areas for improvement.
 
-### Systems Thinking vs. Model Focus
+## Systems Thinking vs. Model Focus
 
 * **The Importance of Systems-Level Design**:
   - Building successful LLM applications requires a systems-level perspective, not just a focus on the model itself.
@@ -231,7 +225,7 @@ open-graph:
   - Much of the knowledge and best practices from traditional machine learning apply to building LLM systems.
   - **Example**:  The principles outlined in the book *Machine Learning Design Patterns* are directly relevant to LLM application development.
 
-### Final Advice and Future Directions
+## Final Advice and Future Directions
 
 * **Prioritize Evaluation**:
   - Start by creating sample inputs and ideal outputs, then build evaluation methods to measure progress and identify issues.
@@ -251,7 +245,7 @@ open-graph:
   - **Example**:  Memory extenders and personal Memex systems.
   - LLMs will transform how we interact with information, socialize, and carry out our daily lives.
 
-### Conclusion
+## Conclusion
 
 * The report and this discussion highlight the essential lessons learned from a year of building with LLMs. 
 * **Key Takeaways**:
@@ -261,8 +255,5 @@ open-graph:
   - **Process over Tools**:  Focus on developing robust processes and methodologies rather than relying solely on tools. 
   - **User-Centricity**: Design applications with user needs in mind, prioritizing trust, feedback, and iterative improvement.
 * The future of LLMs is bright, with the potential to transform how we interact with information and build intelligent software.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

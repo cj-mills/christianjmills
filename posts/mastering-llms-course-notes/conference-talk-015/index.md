@@ -15,24 +15,16 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 ## Introduction
 
 - **Speaker:** Charles ([@charles_irl](https://twitter.com/charles_irl) on Twitter)
 - **Topic:** A deeper dive into Modal, focusing on its broader applications beyond fine-tuning LLMs.
 - **Slides:** [Simple Scalable Serverless Services](https://docs.google.com/presentation/d/14uDnzd06j9i0zAQ3lTmB7QHBSO45BIsVGUZBZ3HKxGo/edit#slide=id.g2c7588f453b_0_272)
-
-
 
 ## Modal Overview
 
@@ -111,35 +103,31 @@ open-graph:
 
 ![Cron Jobs with Modal](./images/cron-jobs-with-modal.png)
 
-
-
 ## Q&A Session 1
 
-#### Database Service Availability
+### Database Service Availability
 
 - Modal does not currently offer a managed database service, particularly serverless Postgres.
 
-#### Challenges of Serverless Postgres
+### Challenges of Serverless Postgres
 
 - Two main types of databases:
   - **OLTP (Online Transaction Processing):** Difficult to scale due to row-level operations and complex joins.
   - **OLAP (Online Analytical Processing):** More straightforward to run on Modal using examples with tools like DuckDB and parquet files stored in S3.
 
-#### Running Analytical Workloads on Modal
+### Running Analytical Workloads on Modal
 
 - Modal provides examples for running analytical workloads:
   - Downloading parquet files from S3.
   - Performing analysis using tools like DuckDB.
 
-#### Challenges of Scaling Transaction Processing
+### Challenges of Scaling Transaction Processing
 
 - Distributed transaction processing databases are more challenging to build and scale effectively.
 
-#### Recommendations for Serverless Postgres: Neon, Superbase
+### Recommendations for Serverless Postgres: Neon, Superbase
 
 - For serverless Postgres, Modal recommends using external services like [Neon](https://neon.tech/) or [Superbase](https://www.superbase.com/), which integrate well with Modal's serverless API apps.
-
-
 
 ## Storage in Modal
 
@@ -186,24 +174,20 @@ open-graph:
 
 - Scaling read operations is significantly easier than scaling write operations, making volumes well-suited for read-heavy workloads.
 
-
-
 ## Q&A Session 2
 
-#### Storage Pricing
+### Storage Pricing
 
 - While Modal does not currently charge for storage, it plans to implement pricing eventually.
 - The goal is to price storage at a rate comparable to S3, Modal's underlying storage provider.
 
-#### Addressing Other Storage-Related Questions
+### Addressing Other Storage-Related Questions
 
 - **Petabyte-Sized Datasets and S3:** Very large datasets may be stored directly on S3 rather than Modal's volumes.
 - **Data Transport Costs:** Modal does not currently charge for data ingress or egress, but may implement pricing if it becomes a significant cost.
 - **Explanation of Mounts:** Mounts make data from the local machine available to code running on Modal. This is useful for:
   - Accessing code files.
   - Including assets for static sites.
-
-
 
 ## Input and Output in Modal
 
@@ -261,39 +245,35 @@ open-graph:
 
 - Modal allows running arbitrary web servers, even those not written in Python, by treating them as subprocesses.
 
-
-
 ## Q&A Session 3
 
-#### DDoS Attack Prevention
+### DDoS Attack Prevention
 
 - Modal does not currently have built-in DDoS protection but acknowledges its importance and plans to offer it in the future.
 
-##### Current Mitigation Strategies
+#### Current Mitigation Strategies
 
 - Developers can implement authentication middleware in FastAPI or Flask to restrict access.
 
-##### Importance of Authentication and Rate Limiting
+#### Importance of Authentication and Rate Limiting
 
 - Authentication and rate limiting are crucial for preventing unauthorized access and mitigating DDoS attacks.
 
-##### Potential for Cloudflare DDoS Protection
+#### Potential for Cloudflare DDoS Protection
 
 - Integrating with services like Cloudflare for DDoS protection is worth exploring.
 
-#### WebSockets and Max Execution Time
+### WebSockets and Max Execution Time
 
 - For questions related to WebSockets and maximum execution time, Modal recommends reaching out on their Slack channel for more specific guidance.
 
-#### Clarification on Django's Async Support
+### Clarification on Django's Async Support
 
 - A participant clarifies that Django supports asynchronous views and requests when running under ASGI.
 
-#### Addressing Storage-Related Questions
+### Addressing Storage-Related Questions
 
 - Modal reiterates its stance on storage pricing and data transport costs, aiming for transparency and aligning with S3's pricing model.
-
-
 
 ## Serverless Nature of Modal
 
@@ -396,8 +376,6 @@ open-graph:
 
 - **Paper:** [Cloud Programming Simplified: A Berkeley View on Serverless Computing](https://arxiv.org/abs/1902.03383)
 
-
-
 ## Remote Procedure Calling (RPC) in Modal
 
 ### RPC as the Core Idea Behind Serverless
@@ -454,23 +432,18 @@ open-graph:
 
 - Mini Modal demonstrates the isolation of virtual environments, a key aspect of Modal's functionality.
 
-
-
 ## Q&A Session 4
 
-#### How Modal Hosts Suno.ai
+### How Modal Hosts Suno.ai
 
 - [Suno.ai](https://suno.com/), a generative AI application, utilizes various Modal features, including functions, cron jobs, volumes, and web endpoints.
 
-##### Suno.ai's Use of Modal's Features
+#### Suno.ai's Use of Modal's Features
 
 - A blog post details Suno.ai's reasons for choosing Modal and how they leverage its features.
 
-##### Blog Post about Suno.ai's Choice of Modal
+#### Blog Post about Suno.ai's Choice of Modal
 
 - The blog post provides insights into Suno.ai's decision to use Modal and their experience with the platform.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

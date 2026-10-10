@@ -15,10 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
 * [Introduction](#introduction)
 * [An Overview of Machine Learning, PyTorch, and Jupyter](#an-overview-of-machine-learning-pytorch-and-jupyter)
 * [Further Learning](#further-learning)
@@ -31,9 +27,6 @@ open-graph:
 * [Testing PyTorch and Jupyter Notebook Setup](#testing-pytorch-and-jupyter-notebook-setup)
 * [Managing and Updating Packages with Mamba](#managing-and-updating-packages-with-mamba)  
 * [Conclusion](#conclusion)
-
-
-
 
 ## Introduction
 
@@ -52,10 +45,6 @@ We'll demonstrate Mamba's effectiveness by installing PyTorch and Jupyter—esse
 ## Further Learning
 
 If you're new to machine learning and want to learn more, consider exploring the [Practical Deep Learning for Coders](https://course.fast.ai/) course. It uses a hands-on approach with PyTorch and the [fastai library](https://docs.fast.ai/) to teach you how to apply deep learning to real-world problems.
-
-
-
-
 
 ## Installing Mamba
 
@@ -131,8 +120,6 @@ Next, we will run the following commands inside the PowerShell interface to down
 
 We can close the PowerShell interface after running the last command. 
 
-
-
 ## Access the Miniforge Prompt
 
 On Windows, we use Mamba through the Miniforge Prompt. It is a dedicated command-line interface for interacting with conda environments.
@@ -197,12 +184,6 @@ The only one listed is `base`. If we go to the associated directory path in File
 
 ![](./images/miniforge3-env-location.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Benefits of Using Virtual Environments
 
 Before we create a new Python virtual environment, let's discuss why virtual environments are essential and how they benefit your Python projects.
@@ -212,12 +193,6 @@ Before we create a new Python virtual environment, let's discuss why virtual env
 - **Easier Project Management**: By maintaining separate configurations for each project, virtual environments make it easy to replicate or share environments with team members. This ensures consistent behavior across different machines and aids collaboration, troubleshooting, and deployment.
 
 - **Simplified System Maintenance**: Using virtual environments prevents cluttering your system-wide Python installation with various packages and versions. You can manage packages within each project's environment without affecting other projects or your system.
-
-
-
-
-
-
 
 ## Creating a Python Environment
 
@@ -272,12 +247,6 @@ When we activate it, the name in front of the current directory will change acco
 
 ![](./images/mamba-activate-env.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Package Overview
 
 Before installing PyTorch and Jupyter, let's briefly explore what each package does and why they're important for machine learning projects.
@@ -293,13 +262,6 @@ Before installing PyTorch and Jupyter, let's briefly explore what each package d
 
 - **Jupyter**: [Website](https://jupyter.org/)
   - Jupyter is an open-source project that lets you create and share documents containing live code, equations, visualizations, and text. With Jupyter Notebook, you can write, run, and debug code in a web-based environment while including visualizations and explanatory text.
-
-
-
-
-
-
-
 
 ## Installing PyTorch and Jupyter
 
@@ -403,10 +365,6 @@ pip install jupyter
 
 ![](./images/mamba-install-jupyter.png){fig-align="center"}
 
-
-
-
-
 ## Testing PyTorch and Jupyter Notebook Setup
 
 Now that we have PyTorch and Jupyter installed in our Python environment, we can verify everything works as expected by importing PyTorch into a Jupyter Notebook.
@@ -454,17 +412,9 @@ Select the code cell with your mouse and press `Ctrl+Enter` to run the code or `
 
 ![](./images/jupyter-notebook-torch-cuda-is-available.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Managing and Updating Packages with Mamba
 
 This section covers the commands to manage and update packages in your Python environment using Mamba. Proper package management is crucial for maintaining project stability and ensuring compatibility between dependencies.
-
-
 
 ### Listing Installed Packages
 
@@ -476,8 +426,6 @@ mamba list
 
 This command will display a list of installed packages and their respective versions and channels.
 
-
-
 ### Updating a Package
 
 Updating a package to its latest version is simple with Mamba. Use the following command, replacing package-name with the name of the package you want to update:
@@ -487,8 +435,6 @@ mamba update package-name
 ```
 
 Mamba will search for the latest version of the package, resolve any dependencies, and prompt you to confirm the update.
-
-
 
 ### Updating All Packages
 
@@ -500,8 +446,6 @@ mamba update --all
 
 Mamba will check for updates for all installed packages and prompt you to confirm the changes.
 
-
-
 ### Installing a Specific Package Version
 
 To install a specific package version, use the "=" sign to append the desired number to the package name. For example, to install version 1.0.0 of a package named example-package, use the following command:
@@ -509,8 +453,6 @@ To install a specific package version, use the "=" sign to append the desired nu
 ```bash
 mamba install example-package=1.0.0
 ```
-
-
 
 ### Removing a Package
 
@@ -521,8 +463,6 @@ mamba remove package-name
 ```
 
 Mamba will prompt you to confirm the removal of the package and its dependencies.
-
-
 
 ### Searching for Packages
 
@@ -538,10 +478,6 @@ This command will display a list of available versions and channels for the spec
 
 With these commands, you can effectively manage and update packages in your Python environment using Mamba, ensuring your projects stay up-to-date and compatible with the latest dependencies.
 
-
-
-
-
 ## Conclusion
 
 In this tutorial, you accomplished the following:
@@ -556,17 +492,6 @@ By leveraging virtual environments, you can:
 - Avoid dependency conflicts between packages.
 - Streamline project management and collaboration.
 
-
-
-
-
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

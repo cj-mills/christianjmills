@@ -29,7 +29,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [NLP Deep Dive](#nlp-deep-dive)
 * [Text Preprocessing](#text-preprocessing)
 * [Training a Text Classifier](#training-a-text-classifier)
@@ -60,8 +59,6 @@ def print_source(obj):
         print(line)
 ```
 
-
-
 ## NLP Deep Dive: RNNs
 
 * In NLP, pretrained models are typically trained on a different type of task than your target task
@@ -75,11 +72,10 @@ def print_source(obj):
     * used for pretraining a model that is then used for transfer learning
 * A pretrained language model is often trained using a different body of text than the one you are targeting
     * can be useful to further pretrain the model on your target body of text
-    
-#### [Universal Language Model Fine-tunine (ULMFiT)](https://arxiv.org/abs/1801.06146)
+
+### [Universal Language Model Fine-tunine (ULMFiT)](https://arxiv.org/abs/1801.06146)
+
 * showed that fine-tuning a language model on on the target body of text prior to transfer learning to a classification task, resulted in significantly better predictions
-
-
 
 ## Text Preprocessing
 
@@ -101,12 +97,14 @@ def print_source(obj):
 * we can use the corresponding rows in the embedding matrix for the pretrained  model and only initialize new rows in the matrix for new words
 
 ### Tokenization
+
 **token:** one element of a list created by the tokenization process. 
     * could be a word, part of a word, or a single character
 
 * tokenization is an active field of research, with new and improved tokenizers coming out all the time
-  
+
 #### Approaches
+
 * Word-based
     * split a sentence on spaces, as well as applying language-specific rules to try to separate parts of meaning even when there are no spaces
     * punctuation marks are typically split into separate tokens
@@ -121,6 +119,7 @@ def print_source(obj):
     * split a sentence into its individual characters
 
 ### Word Tokenization with fastai
+
 * fastai provides a consistent interface to a range of tokenizers in external libraries
 * The default English word tokenizer for fastai uses [spaCy](https://spacy.io/)
 
@@ -152,9 +151,8 @@ path
 Path('/home/innom-dt/.fastai/data/imdb')
 ```
 
-
-
 #### fastai get_text_files
+
 * [Documentation](https://docs.fast.ai/data.transforms.html#get_text_files)
 * Get text files in path recursively, only in folders, if specified.
 
@@ -233,9 +231,8 @@ txt = files[0].open().read(); txt[:75]
 'This conglomeration fails so miserably on every level that it is difficult '
 ```
 
-
-
 #### fastai SpacyTokenizer
+
 * [Documentation](https://docs.fast.ai/text.core.html#SpacyTokenizer)
 
 -----
@@ -465,8 +462,8 @@ print(coll_repr(tkn(txt), 31))
 (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level','that','it','is','difficult','to','decide','what','to','say','.','xxmaj','it','does',"n't",'merit','one','line',',','much','less','ten'...]
 ```
 
-
 #### Special Tokens
+
 * tokens that start with `xx` are special tokens
 * designed to make it easier for a model to recognize the important parts of a sentence
 * `xxbos`: Indicates the beginning of a text
@@ -474,7 +471,6 @@ print(coll_repr(tkn(txt), 31))
 * `xxunk`: Indicates the next word is unknown
 
 #### Preprocessing Rules
-
 
 ```python
 defaults.text_proc_rules
@@ -546,10 +542,7 @@ def lowercase(t, add_bos=True, add_eos=False):
     return (f'{BOS} ' if add_bos else '') + t.lower().strip() + (f' {EOS}' if add_eos else '')
 ```
 
-
-
 #### Postprocessing Rules
-
 
 ```python
 for rule in defaults.text_postproc_rules:
@@ -571,11 +564,10 @@ coll_repr(tkn('&copy;   Fast.ai www.fast.ai/INDEX'), 31)
 "(#11) ['xxbos','©','xxmaj','fast.ai','xxrep','3','w','.fast.ai','/','xxup','index']"
 ```
 
-
-
 ### Subword Tokenization
 
 #### Process
+
 1. Analyze a corpus of documents to find the most commonly occurring groups of letters. These become the vocab
 2. Tokenize the corpus using this vocab of subword units.
 
@@ -661,9 +653,8 @@ class SentencePieceTokenizer():#TODO: pass the special tokens symbol to sp
         for t in items: yield self.tok.EncodeAsPieces(t)
 ```
 
-
-
 #### sentencepiece tokenizer
+
 * [GitHub Repository](https://github.com/google/sentencepiece)
 * Unsupervised text tokenizer for Neural Network-based text generation. 
 
@@ -680,6 +671,7 @@ def subword(sz):
 ```
 
 #### Picking a vocab size
+
 * * provides an easy way to scale between character tokenization and word tokenization
 * a smaller vocab size results in each token representing fewer characters
 * an overly large vocab size results in most common words ending up in the vocab
@@ -730,10 +722,7 @@ subword(10000)
 "▁This ▁con g l ome ration ▁fails ▁so ▁miserably ▁on ▁every ▁level ▁that ▁it ▁is ▁difficult ▁to ▁decide ▁what ▁to ▁say . ▁It ▁doesn ' t ▁merit ▁one ▁line , ▁much ▁less ▁ten , ▁but ▁to ▁adhere ▁to ▁the ▁rules"
 ```
 
-
-
 ### Numericalization with fastai
-
 
 ```python
 toks = tkn(txt)
@@ -753,9 +742,8 @@ toks200[0]
 (#177) ['xxbos','xxmaj','this','conglomeration','fails','so','miserably','on','every','level'...]
 ```
 
-
-
 #### fastai Numericalize
+
 * [Documentation](https://docs.fast.ai/text.data.html#Numericalize)
 
 -----
@@ -851,10 +839,7 @@ TensorText([   2,    8,   19,    0,  585,   51, 1190,   36,  166,  586,   21,   
 
 **Note:** Special rules tokens appear first followed by tokens in order of frequency
 
-
-
 ### Putting Our Texts into Batches for a Language Model
-
 
 ```python
 stream = "In this chapter, we will go back over the example of classifying movie reviews we studied in chapter 1 and dig deeper under the surface. First we will look at the processing steps necessary to convert text into numbers and how to customize it. By doing this, we'll have another example of the PreProcessor used in the data block API.\nThen we will study how we build a language model and train it for a while."
@@ -1258,13 +1243,13 @@ x.shape,y.shape
 
 **Note:** The dependent variable is offset by one token, since the goal is to predict the next token in the sequence.
 
-
-
 ## Training a Text Classifier
+
 1. Fine-tune a language model pretrained on a standard corpus like Wikipedia on a target dataset
 2. Use the fine-tuned model to train a classifier
 
 ### Language Model Using DataBlock
+
 * fastai automatically handles tokenization and numericalization when `TextBlock` is passed to `DataBlock`
 * fastai saves the tokenized documents in a temporary fodler, so it does not have to tokenize them more than once
 * fastai runs multiple tokenization processes in parallel
@@ -1354,8 +1339,8 @@ dls_lm.show_batch(max_n=2)
 </table>
 </div>
 
-
 ### Fine-Tuning the Language Model
+
 1. Use embeddings to convert the integer word indices into activations that we can use for our neural network
 2. Feed those embeddings to a Recurrent Neural Nerwork (RNN), using an architecture called AWD-LSTM
 * This process is handled automatically inside [language_model_learner](https://docs.fast.ai/text.learner.html#language_model_learner)
@@ -1409,6 +1394,7 @@ learn = language_model_learner(
 ```
 
 #### Perplexity Metric
+
 * the exponential of the loss (i.e. `torch.exp(cross_entropy)`)
 * often used in NLP for language models
 
@@ -1469,9 +1455,7 @@ learn.fit_one_cycle(1, 2e-2)
 </table>
 </div>
 
-
 ### Saving and Loading Models
-
 
 ```python
 learn.save
@@ -1806,8 +1790,8 @@ learn.fit_one_cycle(10, 2e-3)
 </table>
 </div>
 
-
 #### Encoder
+
 * the model not including the task-specific final layer(s)
 * typically used to refer to the body of NLP and generative models
 
@@ -1842,7 +1826,9 @@ print_source(learn.save_encoder)
 ```python
 learn.save_encoder('finetuned')
 ```
+
 ### Text Generation
+
 * Training the model to predict the next word of a sentence enables it to generate new reviews
 
 -----
@@ -1873,6 +1859,7 @@ i liked this movie because it was based on a true story . The script was excelle
 **Note:** The model has learned a lot about English sentences, despite not having any explicitely programmed knowledge.
 
 ### Creating the Classifier DataLoaders
+
 * very similar to the DataBlocks used for the image classification datasets
 * data augmentation has not been well-explored
 * need to pad smaller documents when creating mini-batches
@@ -1980,6 +1967,7 @@ learn = learn.load_encoder('finetuned')
 ```
 
 ### Fine-Tuning the Classifier
+
 * NLP classifiers benefit from gradually unfreezing a few layers at a time
 
 -----
@@ -2108,20 +2096,14 @@ learn.fit_one_cycle(2, slice(1e-3/(2.6**4),1e-3))
 
 **Note:** We can further improve the accuracy by training another model on all the texts read backward and averaging the predictions of the two models.
 
-
-
 ## Disinformation and Language Models
+
 * Even simple algorithms based on rules could be used to create fraudulent accounts and try influence policymakers
 * [More than a Million Pro-Repeal Net Neutrality Comments were Likely Faked](https://hackernoon.com/more-than-a-million-pro-repeal-net-neutrality-comments-were-likely-faked-e9f0e3ed36a6)
     * Jeff Kao discovered a large cluster of comments opposing net neutrality that seemed to have been generated by some sort of Mad Libs-style mail merge.
     * estimated that less than 800,000 of the 22M+ comments could be considered unique
     * more than 99% of the truly unique comments were in favor of net neutrality
 * The same type of language model as trained above could be used to generate context-appropriate, believable text
-
-
-
-
-
 
 ## References
 
@@ -2133,11 +2115,5 @@ learn.fit_one_cycle(2, slice(1e-3/(2.6**4),1e-3))
 **Previous:** [Notes on fastai Book Ch. 9](../chapter-9/)
 
 **Next:** [Notes on fastai Book Ch. 11](../chapter-11/)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction](#introduction)  
 * [Relevant CUDA Concepts](#relevant-cuda-concepts)
@@ -34,18 +29,12 @@ open-graph:
 * [Use Case 2: CUDA Layers for Image Preprocessing](#use-case-2-cuda-layers-for-image-preprocessing)
 * [Conclusion and Future Directions](#conclusion-and-future-directions)
 
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 10: Build a Prod Ready CUDA library](https://www.youtube.com/watch?v=FHsEW0HpuoU)
 * **Slides:** [Lecture 10: Building production ready CUDA libraries](https://drive.google.com/drive/folders/158V8BzGj-IkdXXDAdHPNwUzDLNmr971_)
 
 :::
-
-
-
-
 
 ## Introduction
 
@@ -70,8 +59,6 @@ open-graph:
   - **CUDA Layers for Image Preprocessing**: Accelerating common image processing operations for tasks like neural network inference.
 - **Open Source Project**: Discussion of an open-source CUDA library project.
 
-
-
 ## Relevant CUDA Concepts
 
 - **Focus**: Host-side optimization for real-world applications.
@@ -84,8 +71,6 @@ open-graph:
   - **Memory-Bound Kernels**: Performance limited by memory bandwidth.
   - **Compute-Bound Kernels**: Performance limited by computational capacity.
 
-
-
 ## The CUDA Ninja's Motivation: Why Create Libraries?
 
 - **Initial Expectations (Ideal Scenario)**: 
@@ -97,8 +82,6 @@ open-graph:
   - **Performance Bottlenecks in Production**: Handling larger datasets and multiple cameras demanded further optimization beyond initial prototypes.
   - **QA and Performance Measurement**: Establishing performance benchmarks and cost goals.
 - **The Need for Automation**: Repetitive optimization tasks and the desire to empower non-CUDA programmers led to the idea of creating libraries and abstractions.
-
-
 
 ## Automatic TV: Understanding the Application and its Challenges
 
@@ -113,8 +96,6 @@ open-graph:
   - **Multi-GPU Support**: Distributing the processing workload across up to three GPUs for increased throughput.
   - **Efficient GPU Communication**: Minimizing the overhead of data transfer between GPUs and the CPU.
 
-
-
 ## Library Challenges: Abstraction vs. Performance
 
 - **Key Challenges**:
@@ -123,8 +104,6 @@ open-graph:
   - **Balancing Abstraction and Performance**: Finding the right level of abstraction that simplifies usage without significantly sacrificing performance.
   - **User Requirements**: Understanding the target users' needs and preferences (level of CUDA knowledge, performance expectations, etc.).
   - **API Design**: Creating an intuitive and familiar API that integrates seamlessly with existing workflows.
-
-
 
 ## Use Case 1: GPU Communication Manager
 
@@ -304,8 +283,6 @@ open-graph:
 
   ![Slide 45](./images/gpu-usage-diagram.png)
 
-
-
 ### Potential Application: Multi-GPU Neural Network Training
 
 - **Proposed Idea**:  Apply the Iterative Memory Manager concept to multi-GPU neural network training.
@@ -315,8 +292,6 @@ open-graph:
 - **Challenges**: 
   - Requires sufficient GPU memory to store multiple copies of intermediate data.
   - Complexity of integrating with existing training frameworks.
-
-
 
 ## Use Case 2: CUDA Layers for Image Preprocessing
 
@@ -354,8 +329,6 @@ open-graph:
 
 - **Section cut short due to time constraints for the live-stream.**
 
-
-
 ## Conclusion and Future Directions
 
 - **Key Takeaways**:
@@ -366,12 +339,5 @@ open-graph:
   - Explore the application of the Iterative Memory Manager to multi-GPU neural network training.
   - Further develop and refine the open-source CUDA layer library for image preprocessing.
   - Improve the abstraction and usability of the libraries to make them more accessible to a wider audience.
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,14 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
 
 ::: {.callout-tip title="Presentation Resources"}
 
@@ -31,15 +27,11 @@ open-graph:
 
 :::
 
-
-
-
-
-### Introduction
+## Introduction
 
 - **[Simon Willison](https://simonwillison.net/)**, creator of [Datasette](https://datasette.io/), Django co-creator, and PSF board member, presents a case for using Unix command line with LLMs.
 
-### Unix Command Line: A Perfect LLM Playground
+## Unix Command Line: A Perfect LLM Playground
 
 - **Unix Philosophy**: Tools output information that gets piped into other tools as input.
 - LLMs function similarly: Prompt input generates responses that can be further processed.
@@ -47,12 +39,12 @@ open-graph:
   - **GitHub Repository:** [https://github.com/simonw/llm](https://github.com/simonw/llm)
   - **Documentation:** [https://llm.datasette.io/en/stable/](https://llm.datasette.io/en/stable/)
 
-### Installing LLM
+## Installing LLM
 
 - **Python Users**: `pip install llm` (recommended: `pipx install llm`).
 - **Homebrew Users**: `brew install llm`.
 
-### Using LLM with OpenAI
+## Using LLM with OpenAI
 
 - **Setting API Key**: 
   - `llm keys set openAI <your_api_key>`
@@ -74,7 +66,7 @@ open-graph:
   - `llm models default` (shows the current default model)
   - `llm models default -m <model_name>` (sets a new default model, e.g., `chatGPT`).
 
-### LLM Plugins
+## LLM Plugins
 
 - **Plugin Directory**: [https://llm.datasette.io/en/stable/plugins/directory.html](https://llm.datasette.io/en/stable/plugins/directory.html)
 - **Plugin Types**:
@@ -87,7 +79,7 @@ open-graph:
 - **Using Plugin Aliases**:
   -  `llm -m <plugin_alias>` (e.g., `llm -m haiku` to use `llm-claude-3-haiku`).
 
-###  LLM and Local Models
+## LLM and Local Models
 
 - **Local Models**: Increasingly effective and accessible through LLM plugins.
 
@@ -123,7 +115,7 @@ open-graph:
     - Access LlamaFile models: `llm models`.
   - **Lava Model**: A notable LlamaFile model, recommended for its multi-modal capabilities.
 
-###  Command Line Scripts with LLM
+## Command Line Scripts with LLM
 
 - **[HN-Summary Script](https://til.simonwillison.net/llms/claude-hacker-news-themes)**: Summarizes Hacker News posts and conversations using a combination of:
   - `curl` to fetch data from the Hacker News API.
@@ -136,7 +128,7 @@ open-graph:
       files-to-prompt <project_directory> | llm -s "suggest tests to add to this project"
       ```
 
-###  LLM and ShotScraper for RAG
+## LLM and ShotScraper for RAG
 
 - **[ShotScraper Tool](https://github.com/simonw/shot-scraper)**: A browser automation tool for taking screenshots and executing JavaScript from the command line.
 - **Scraping Google Search Results**:
@@ -165,7 +157,7 @@ open-graph:
       ```
     - This script scrapes Google search results for "NY Times slop", extracts relevant information using JavaScript, and pipes the results to LLM to answer the question "describe slop".
 
-###  LLM and Embeddings
+## LLM and Embeddings
 
 - **Embeddings**: Supported through plugins, both API-based and local.
 
@@ -202,7 +194,7 @@ open-graph:
       llm similar -c links -d <database_path> "datasette plugins" | llm -s "most interesting plugins"
       ```
 
-###  Building a RAG System with LLM
+## Building a RAG System with LLM
 
 - **`blog-answer` Script**: A bash script demonstrating a full RAG Q&A workflow using:
   - Embedding search against paragraphs in a blog.
@@ -216,33 +208,27 @@ open-graph:
 - **Python API**:
   - `pip install llm` provides a Python API for accessing LLM functionalities.
 
-
-
-
-
-
-
 ## Q&A Highlights
 
-###  Hugging Face Hub Models
+### Hugging Face Hub Models
 
 - **No plugins currently exist for Hugging Face Hub models** in LLM due to Simon's lack of an NVIDIA GPU (required for most Hugging Face models).
 - **Opportunity for contribution**: Anyone with an NVIDIA GPU is encouraged to write an LLM plugin for Hugging Face models.
 - Other serving technologies for Hugging Face models (e.g., vLLM) are also worth exploring.
 
-###  Serverless Inference
+### Serverless Inference
 
 - LLM supports various **API-based models** through plugins (e.g., AnyScale, Fireworks, Open Router).
 - **OpenAI compatible models** can be configured directly within LLM without writing plugins.
 - **Hugging Face Inference API**: Potentially exciting opportunity for a new LLM plugin.
 
-###  Agentic Workflows
+### Agentic Workflows
 
 - **Not yet supported** in LLM due to the lack of function calling functionality.
 - **Future plans**: Function calling support and potential LLM agents plugin.
 - **Python API**: Offers a way to access LLM functionalities from Python code, but the interface is still under development.
 
-###  Productivity Tips from Simon Willison
+### Productivity Tips from Simon Willison
 
 - **Blog Post:** [Coping strategies for the serial project hoarder](https://simonwillison.net/2022/Nov/26/productivity/)
 - **Importance of Unit Tests and Documentation**: Enables revisiting and continuing projects easily.
@@ -250,27 +236,27 @@ open-graph:
 - **GitHub Issues for Comprehensive Note-Taking**: Use GitHub issues to document every step of a project, facilitating TIL writing and future reference.
   - **Example:** [Figure out how to serve an AWS Lambda function with a Function URL from a custom subdomain](https://github.com/simonw/public-notes/issues/1)
 
-###  Hardware and Local Model Performance
+### Hardware and Local Model Performance
 
 - **Simon's Hardware**: M2 Max with 64 GB RAM.
 - **Local Model Performance**: Runs Mistral and other small models flawlessly, Llama-370b requires 40 GB RAM.
 - **Apple Silicon's future**: Potentially a powerful platform for running local models with the development of Apple's MLX library.
 
-###  Running LLM on iPhones
+### Running LLM on iPhones
 
 - **[MLC Chat App](https://apps.apple.com/us/app/mlc-chat/id6448482937)**: Allows running Mistral directly on iPhones, enabling offline LLM access.
 
-###  Apple's Approach to LLMs
+### Apple's Approach to LLMs
 
 - **Focused on specific features**: Emphasizes using LLMs for functionalities like summarization and copy editing, avoiding the complexities of general chatbots.
 
-###  Value of Running Local LLMs
+### Value of Running Local LLMs
 
 - **Exploration and Learning**: Provides hands-on experience with different models, including less performant ones, which helps understand their strengths and weaknesses.
 - **Privacy**: Keeps sensitive data on your local machine.
 - **Offline Access**: Essential for situations without internet connectivity (e.g., flights, post-apocalyptic scenarios).
 
-###  LLM Evaluation Tool (In Development)
+### LLM Evaluation Tool (In Development)
 
 - **Goals**:
   - Record evaluation results in SQLite.
@@ -279,18 +265,14 @@ open-graph:
   - Fast, free, universally available.
   - Works as a portable file format for sharing evaluation data.
 
-###  Benchmarking and Logging
+### Benchmarking and Logging
 
 - **Planned Feature**: Log latency, token count, and duration of LLM operations in the SQLite database.
 - **Challenges**: Determining token counts for models that don't provide this information.
 
-###  Running LLM on Multiple Machines
+### Running LLM on Multiple Machines
 
 - **Solution**: Leverage existing tools like [Ansible](https://www.ansible.com/) to run LLM commands in parallel on different machines within a LAN.
 - **Unix Flexibility**: Highlights the ability to combine LLM with other Unix tools for customized workflows and automation.
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

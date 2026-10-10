@@ -29,7 +29,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Establishing a Baseline](#establishing-a-baseline)
 * [A Generic Optimizer](#a-generic-optimizer)
 * [Momentum](#momentum)
@@ -63,9 +62,7 @@ def print_source(obj):
         print(line)
 ```
 
-
 ## Establishing a Baseline
-
 
 ```python
 def get_data(url, presize, resize):
@@ -221,7 +218,6 @@ learn.fit_one_cycle(3, 0.03, moms=(0,0,0))
 </table>
 </div>
 **Note:** Plain SGD is training slower.
-
 
 ## A Generic Optimizer
 
@@ -394,8 +390,8 @@ learn.fit(3, 0.03)
 </table>
 </div>
 
-
 ## Momentum
+
 * use a moving average, instead of only the current gradient
 * used to skip over little bumps in the loss landscape
 * higher momentum will skip over bigger bumps
@@ -411,8 +407,7 @@ new_weight = weight - lr * weight.avg
     * `beta = 0`: no momentum
 * need to track the moving averages for each parameter in the model
 
-#### Noisy Data for a Single Parameter with Different Levels of Momentum
-
+### Noisy Data for a Single Parameter with Different Levels of Momentum
 
 ```python
 # Get 100 evenly spaced input values over the interval [-4,4]
@@ -626,8 +621,8 @@ learn.recorder.plot_sched()
 ```
 ![](./images/output_33_0.png){fig-align="center"}
 
-
 ## RMSProp
+
 * Introduced by Geoffrey Hinton in [Overview of mini-batch gradient descent](http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
     * Divide the learning rate for a weight by a running average of the magnitudes of recent gradients for that weight
 * Uses an adaptive learning rate
@@ -668,8 +663,7 @@ def rms_prop_step(p, lr, sqr_avg, eps, grad_avg=None, **kwargs):
     p.data.addcdiv_(-lr, p.grad, denom)
 ```
 
-#### [torch.addcdiv](https://pytorch.org/docs/stable/generated/torch.addcdiv.html): $\text{out}_i = \text{input}_i + \text{value} \times \frac{\text{tensor1}_i}{\text{tensor2}_i}$
-
+### [torch.addcdiv](https://pytorch.org/docs/stable/generated/torch.addcdiv.html): $\text{out}_i = \text{input}_i + \text{value} \times \frac{\text{tensor1}_i}{\text{tensor2}_i}$
 
 ```python
 help(torch.addcdiv)
@@ -777,6 +771,7 @@ learn.fit_one_cycle(3, 0.003)
 **Note:** Higher final accuracy
 
 ## Adam
+
 * Mixes the ideas of SGD with momentum and RMSProp together
 * Uses the moving average of the gradients as a direction and divides by the square root of the moving average of the gradients squared to give an adaptive learnig rate to each parameter\
 * takes the unbiased moving average
@@ -869,9 +864,8 @@ print_source(debias)
 def debias(mom, damp, step): return damp * (1 - mom**step) / (1-mom)
 ```
 
-
-
 ## Decoupled Weight Decay
+
 * [Decoupled Weight Decay Regularization](https://arxiv.org/abs/1711.05101)
 * each weight is decayed by a factor of `lr * wd`
 
@@ -906,15 +900,15 @@ def l2_reg(p, lr, wd, do_wd=True, **kwargs):
     if do_wd and wd!=0: p.grad.data.add_(p.data, alpha=wd)
 ```
 
-
-
 ## Callbacks
+
 * Allow users to insert code at any part of the training loop in a consistent, well-defined way
 * `callback`: a piece of code you write and inject into another piece of code at a predefined point
 * The typical approach to customizing the training loop by making a copy and inserting changes is problematic
     * hundreds of changes can be made to a training loop, meaning their are billions of possible permutations
 
 ### Basic Training Loop
+
 ```python
 for xb,yb in dl:
     loss = loss_func(model(xb),yb)
@@ -960,6 +954,7 @@ print_source(Learner._do_one_batch)
 * The callback will receive the entire state of training and can modify it
 
 ### Creating a Callback
+
 * `after_create`: called after the Learner is created
 * `before_fit`: called before starting training or inference, ideal for initial setup.
 * `before_epoch`: called at the beginning of each epoch, useful for any behavior you need to reset at each epoch.
@@ -1138,6 +1133,7 @@ class RNNRegularizer(Callback):
 **Note:** A callback will always try to get an attribute it does not have inside the Learner associated with it.
 
 #### [Learner attributes available to callbacks](https://docs.fast.ai/callback.core.html#Attributes-available-to-callbacks)
+
 * `model`: the model used for training/validation
 * `dls`: the underlying DataLoaders
 * `loss_func`: the loss function used
@@ -1156,6 +1152,7 @@ class RNNRegularizer(Callback):
 * `iter`: the current iteration index in self.dl (from 0 to n_iter-1)
 
 ### Callback Ordering and Exceptions
+
 * A callback sometimes need to tell fastai to skip over a batch or an epoch, or stop training all together
 
 -----
@@ -1221,12 +1218,6 @@ _ex_docs
 * `after_cancel_epoch`: reached immediately after a CancelEpochException before proceeding to after_epoch
 * `after_cancel_fit`: reached immediately after a CancelFitException before proceeding to after_fit
 
-
-
-
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1237,9 +1228,5 @@ _ex_docs
 **Previous:** [Notes on fastai Book Ch. 15](../chapter-15/)
 
 **Next:** [Notes on fastai Book Ch. 17](../chapter-17/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

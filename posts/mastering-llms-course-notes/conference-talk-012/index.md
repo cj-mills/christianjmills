@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Introduction](#introduction)
 * [Understanding Model Memory](#understanding-model-memory)
@@ -32,26 +26,16 @@ open-graph:
 * [Model Parallelism with FSDP](#model-parallelism-with-fsdp)
 * [Benchmarking FSDP2](#benchmarking-fsdp2)
 
-
-
-
-
 ::: {.callout-tip title="Presentation Resources"}
 
 * [Slaying OOMs](https://drive.google.com/drive/u/0/folders/1HmGNC4v4L5nXhtdDMVCpUBrme1ELp-2C)
 
 :::
 
-
-
-
-
 ## Introduction
 
 - OOM errors are a common challenge when working with large PyTorch models.
 - Traditional solutions like reducing batch size or model size are limited in effectiveness.
-
-
 
 ## Understanding Model Memory
 
@@ -65,8 +49,6 @@ open-graph:
     * Activations tend to dominate memory usage at larger batch sizes and context lengths.
 * **Example:** A full fine-tuning of a 7B parameter LLaMa model can easily exceed 56GB (14GB parameters + 14GB gradients + 28GB optimizer state), exceeding the VRAM capacity of most consumer GPUs.
 * **Forum Post:** [How to measure memory usage from your model without running it?](https://dev-discuss.pytorch.org/t/how-to-measure-memory-usage-from-your-model-without-running-it/2024/1)
-
-
 
 ## Optimizing Memory Usage
 
@@ -151,9 +133,6 @@ open-graph:
 
   * **[subclass_zoo](https://github.com/albanD/subclass_zoo/):** Contains a number of examples of Tensor subclasses in PyTorch
 
-
-
-
 ## Model Parallelism with FSDP
 
 ### Data Parallism
@@ -190,7 +169,6 @@ open-graph:
 
     ![FSDP CPU Offloading - Slaying OOMs: Slide 25](./images/fsdp-memory-step-cpu-offloading.png){fig-align="center"}
 
-
 ### FSDP1 vs. FSDP2
 
 * **Goal:** Make all-gather efficient
@@ -222,8 +200,6 @@ open-graph:
 
 * Leverages CPU memory to store parameters and optimizer states, further reducing the memory load on GPUs.
 * Offloads the optimizer step to the CPU, allowing GPUs to focus on computationally intensive forward and backward passes.
-
-
 
 ## Benchmarking FSDP2
 
@@ -272,7 +248,6 @@ open-graph:
   * **Significant difference in the number of optimizer steps:** The optimizer took much longer in FSDP2.
   * **Double the number of operations:** Indicating FSDP2 might be training on more parameters than the baseline.
 
-
 ### Identifying the Root Causes
 
 * **Root Cause 1: Configuration Discrepancy**
@@ -311,12 +286,5 @@ open-graph:
 * **Gap 5: Overlapping Communication and Computation**
   * **Problem:** FSDP2's stricter memory management exposed inefficiencies in overlapping CPU offloading with computation. The computation tasks were much smaller than the communication tasks, leading to idle time.
   * **Solution:** Adjusted the wrapping policy to group layers differently, enabling better overlap and reducing idle time. This solution is only feasible with FSDP2 due to its ability to handle mixed precision within a layer.
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

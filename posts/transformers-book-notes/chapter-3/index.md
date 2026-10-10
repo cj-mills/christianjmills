@@ -79,8 +79,6 @@ def print_source(obj, exclude_doc=True):
     print(astor.to_source(parsed))
 ```
 
-
-
 ## The Transformer Architecture
 
 * Standard Transformers use an encoder-decoder architecture.
@@ -124,8 +122,6 @@ def print_source(obj, exclude_doc=True):
   * We can apply encoder-only models to summarization tasks.
       * [Text Summarization with Pretrained Encoders](https://arxiv.org/abs/1908.08345)
 
-
-
 ## The Encoder
 
 * The encoder consists of many encoder layers stacked next to each other.
@@ -137,6 +133,7 @@ def print_source(obj, exclude_doc=True):
 * The output embeddings of each encoder layer have the same size as the inputs.
 
 ### Self-Attention
+
 * Attention is a mechanism that allows neural networks to assign a different amount of weight to each element in a sequence. 
 * For text sequences, the elements are token embeddings where each token maps to a vector of some fixed dimension.
   * A BERT model represents each token as a 768-dimensional vector.
@@ -166,6 +163,7 @@ def print_source(obj, exclude_doc=True):
 4. Matrix multiply the attention weights by the value vector $v_{1},\ldots,v_{n}$ to obtain an updated representation for embedding $$x^{\prime}_{i} = \sum{w_{ji}v_{j}}$$.
 
 #### BertViz
+
 * [GitHub Repository](https://github.com/jessevig/bertviz)
 * BertViz is an interactive tool to visualize attention in Transformer language models.
 
@@ -193,6 +191,7 @@ from bertviz.neuron_view import show
 ```
 
 #### neuron_view
+
 * [Documentation](https://github.com/jessevig/bertviz#neuron-view-1)
 * Trace the computation of the weights to show how the query and key vectors combine to produce the final weight.
 
@@ -219,6 +218,7 @@ show(model, "bert", tokenizer, text, display_mode="light", layer=0, head=8)
 **Note:** The `query` vector for "flies" has the most overlap with the `key` vector for "arrow."
 
 #### neuron_view.show
+
 * [Source Code](https://github.com/jessevig/bertviz/blob/24ed45268a0c616d9d7e342bf3c460e4aaac0035/bertviz/neuron_view.py#L37)
 
 ------
@@ -276,8 +276,8 @@ print_source(show, False)
         display(Javascript(vis_js))
 ```
 
-
 #### neuron_view.get_attention
+
 * [Source Code](https://github.com/jessevig/bertviz/blob/24ed45268a0c616d9d7e342bf3c460e4aaac0035/bertviz/neuron_view.py#L101)
 * Compute representation of attention to pass to the d3 visualization
 
@@ -315,6 +315,7 @@ from transformers import AutoConfig
 * The AutoConfig class also stores metadata such as label names.
 
 #### BertConfig
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/bert#transformers.BertConfig)
 * This is the configuration class to store the configuration of a BERT model.
 
@@ -359,6 +360,7 @@ from torch import nn
 ```
 
 #### nn.Embedding
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html)
 * Create a simple lookup table that stores embeddings of a fixed dictionary size.
 
@@ -399,6 +401,7 @@ from math import sqrt
 ```
 
 #### torch.bmm
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.bmm.html?highlight=torch%20bmm#torch.bmm)
 * Perform a batched matrix multiplication.
 
@@ -427,8 +430,6 @@ scores.size()
 ```python
 import torch.nn.functional as F
 ```
-
-
 
 #### functional.softmax
 
@@ -491,6 +492,7 @@ def scaled_dot_product_attention(query, key, value):
 * The self-attention layer typically applies three independent linear transformations to each embedding to generate the query, key, and value vectors rather than using the same vector for each.
 
 #### Multi-headed attention
+
 * The softmax of one attention head tends to focus on one aspect of similarity.
 * Having several heads allows the model to focus on several aspects at once.
 * The model learns what aspects of similarity to focus on from the data, similar to the convolutional filters in computer vision models.
@@ -522,6 +524,7 @@ class AttentionHead(nn.Module):
 **Note:** It is common practice to use a multiple of `embed_dim` for `head_dim` so that the computation across each head is constant.
 
 #### torch.nn.ModuleList
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.ModuleList.html?highlight=modulelist#torch.nn.ModuleList)
 * Store properly registered Modules in an indexable list.
 
@@ -572,6 +575,7 @@ from transformers import AutoModel
 ```
 
 #### head_view
+
 * [Documentation](https://github.com/jessevig/bertviz#head-and-model-views)
 
 ------
@@ -669,6 +673,7 @@ head_view(attention, tokens, sentence_b_start, heads=[8])
 * The attention weights allow the model to distinguish the use of "flies" as a verb or a noun.
 
 ### The Feed-Forward Layer
+
 * The feed-forward sublayer contains two linear layers and processes each embedding independently.
 * A rule of thumb is to have the hidden size of the first layer be four times the size of the embeddings.
 * The feed-forward layer typically uses the [Gaussian Error Linear Units (GELU)](https://pytorch.org/docs/stable/generated/torch.nn.GELU.html?highlight=gelu) activation function.
@@ -727,8 +732,8 @@ ff_outputs.size()
     torch.Size([1, 5, 768])
 ```
 
-
 ### Adding Layer Normalization
+
 * [Layer Normalization Paper](https://arxiv.org/abs/1607.06450)
 * Layer normalization normalizes each input in the batch to have zero mean and a variance of one.
 * Skip connections pass a tensor to the next layer of the model without processing and add it to the processed tensor.
@@ -738,6 +743,7 @@ ff_outputs.size()
     * Training is typically more stable with pre-layer normalization.
 
 #### nn.LayerNorm
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html?highlight=layer%20normalization)
 * Apply Layer Normalization over a mini-batch of inputs
 
@@ -796,25 +802,29 @@ inputs_embeds.shape, encoder_layer(inputs_embeds).size()
     (torch.Size([1, 5, 768]), torch.Size([1, 5, 768]))
 ```
 
-
 ### Positional Embeddings
+
 * Augment the token embeddings with a positional-dependent pattern of values arranged in a vector.
 * The attention heads and feed-forward layers in each stack learn to incorporate positional information when the pattern is characteristic for each position.
 
 #### Learnable Position Embeddings
+
 * A popular approach involves learning a pattern during pretraining.
 * This approach works the same as the token embeddings but uses the position index as input.
 * Learnable position embeddings work best when there is a large amount of pretraining data.
 
 #### Absolute Position Representations
+
 * Use static patterns consisting of modulated sine and cosine signals to encode the positions of tokens.
 * This approach works well when we don't have access to a large dataset.
 
 #### Relative Positional Encoding
+
 * Encode the relative positions between tokens.
 * Relative Positional Encoding requires modifying the attention mechanism with additional terms that account for the relative position between tokens.
 
 #### Rotary Position Embeddings
+
 * Combine the idea of absolute and relative positional representations.
 * Rotary position embeddings achieve excellent results on many tasks.
 
@@ -917,8 +927,8 @@ encoder(inputs.input_ids).size()
     torch.Size([1, 5, 768])
 ```
 
-
 ### Adding a Classification Head
+
 * Transformer models typically consist of a task-independent body and a task-dependent head.
 * We can attach a dropout and linear layer to the pretrained body to make a classification prediction.
 
@@ -964,28 +974,30 @@ encoder_classifier(inputs.input_ids)
 
 **Note:** For each example in the batch, we get the unnormalized logits for each class in the output.
 
-
-
 ## The Decoder
 
 * The main difference between the encoder and decoder is that the decoder has two attention sublayers.
 
 ### minGPT
+
 * [GitHub Repository](https://github.com/karpathy/minGPT)
 * A minimal PyTorch re-implementation of the OpenAI GPT (Generative Pretrained Transformer) training 
 
 ### Masked Multi-Head Self-Attention Layer
+
 * The Masked Multi-Head Attention Layer ensures the tokens generated at each timestep depend only on the past outputs and the current token by masking the inputs.
 * The goal is to prevent the decoder from cheating during training by copying the target translation.
 * Use a mask matrix with ones on the lower diagonal and zeros above.
 
 ### Encoder-Decoder Attention Layer
+
 * The Encoder-Decoder Attention Layer performs multi-head attention using the encoder stack's output "key" and "value" vectors.
 * The intermediate representations from the decoder serve as the "query" vectors.
 * The encoder-decoder attention layer learns to relate tokens from two different sequences.
 * The decoder has access to the encoder keys and values in each block.
 
 #### torch.tril
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.tril.html?highlight=torch%20tril#torch.tril)
 * Get the lower triangular part of the matrix or batch of matrices
 
@@ -1035,35 +1047,40 @@ def scaled_dot_product_attention(query, key, value, mask=None):
     return weights.bmm(value)
 ```
 
-
-
 ## Meet the Transformers
 
 ### The Encoder Branch
+
 * Encoder-only models still dominate research and industry on NLU tasks such as text classification, named entity recognition, and question answering.
 
 #### [BERT](https://arxiv.org/abs/1810.04805)
+
 * BERT was the first encoder-only Transformer model and outperformed all state-of-the-art models on the [GLUE benchmark](https://arxiv.org/abs/1804.07461).
     * The GLUE Benchmark measures natural language understanding (NLU) across several tasks of varying difficulty.
 * BERT is pretrained to predict masked tokens in a piece of text (Masked Language Modeling) and determine if one text passage likely follows another (Next Sentence Prediction).
 
 #### [DistilBERT](https://arxiv.org/abs/1910.01108)
+
 * DistilBERT uses knowledge distillation during pretraining to achieve 97% of BERT's performance while using 40% less memory and is 60% faster. 
 
 #### [RoBERTa](https://arxiv.org/abs/1907.11692)
+
 * RoBERTa trains for longer on larger batches with more training data than BERT and drops the Next Sentence Prediction task.
 * RoBERTa achieves significantly higher performance compared to BERT.
 
 #### [XLM: Cross-lingual Language Model](https://arxiv.org/abs/1901.07291)
+
 * The XLM paper explores the effectiveness of cross-lingual model pretraining.
 * The authors introduced Translation Language Modeling (TLM), which extends Masked Language Modeling to multiple languages.
 * The authors achieved state-of-the-art results on several multilingual NLU benchmarks and translation tasks.
 
 #### [XLM-RoBERTa](https://arxiv.org/abs/1911.02116)
+
 * XLM-Roberta massively upscales the amount of training data used for multilingual pretraining.
 * The developers created a dataset with 2.5 terabytes of text and pretrained an encoder with Masked Language Modeling.
 
 #### [ALBERT](https://arxiv.org/abs/1909.11942)
+
 * Alberta decouples the token embedding and hidden dimensions to decrease parameter count.
 * All layers share the same parameters, decreasing the "effective" number of parameters even further.
 * A Sentence Ordering Prediction (SOP) objective replaces the Next Sentence Prediction objective.
@@ -1071,6 +1088,7 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 * These changes make it possible to train larger models with fewer parameters and achieve superior performance on NLU tasks.
 
 #### [ELECTRA](https://arxiv.org/abs/2003.10555)
+
 * Standard MLM pretraining only updates the representations of the masked tokens.
 * ELECTRA uses a two-model approach to address this limitation.
     * The first model predicts masked tokens.
@@ -1079,62 +1097,69 @@ def scaled_dot_product_attention(query, key, value, mask=None):
         * We fine-tune the discriminator for downstream tasks.
 
 #### [DeBERTa](https://arxiv.org/abs/2006.03654)
+
 * DeBERTa represents each token using a vector for the content and a vector for relative position.
     * Disentangling the tokens' content from their relative positions helps the self-attention layers better model the dependency of nearby token pairs.
 * DeBERTa adds an absolute position embedding just before the softmax layer of the token decoding head.
 * DeBERTa was the first model (as an ensemble) to beat the human baseline on the [SuperGLUE](https://arxiv.org/abs/1905.00537) benchmark.
 
 ### The Decoder Branch
+
 * Decoder models are exceptionally good at predicting the next word in a sequence.
 * Most of the progress for decoder models comes from training with larger datasets and scaling the language models to larger sizes.
 
 #### [GPT: Generative Pretrained Transformer](https://openai.com/blog/language-unsupervised/)
+
 * GPT combined the transformer decoder architecture and transfer learning.
 * The training process involves predicting the next word based on the previous ones.
 * The model also achieved impressive results on downstream tasks such as classification. 
 
 #### [GPT-2](https://openai.com/blog/better-language-models/)
+
 * GPT-2 upscales the original GPT model and training set.
 * The model can produce longer sequences of coherent text.
 
 #### [CTRL: Conditional Transformer Language](https://arxiv.org/abs/1909.05858)
+
 * CTRL adds "control tokens" at the beginning of a sequence to control the style of the generated text.
 
 #### [GPT-3](https://arxiv.org/abs/2005.14165)
+
 * [Scaling Laws for Neural Language Models](https://arxiv.org/abs/2001.08361)
     * There are simple power laws that govern the relationship between compute, dataset size, model size, and the performance of a language model.
 * GPT-3 upscales GPT-2 to 175 billion parameters.
 * The model can generate impressively realistic text passages and exhibits few-shot learning capabilities.
 
 #### [GPT-Neo](https://zenodo.org/record/5297715)/[GPT-J-6B](https://github.com/kingoflolz/mesh-transformer-jax)
+
 * These are GPT-like models trained by [EleutherAI](https://www.eleuther.ai/), a collective of researchers who aim to recreate and release GPT-3 scale models.
 * The current models come in 1.3, 2.7, and 6 billion variants and are competitive with the smaller GPT-3 models offered by OpenAI.
 
 ### The Encoder-Decoder Branch
 
 #### [T5](https://arxiv.org/abs/1910.10683)
+
 * The T5 model frames all Natural Language Understanding and Generation tasks as sequence-to-sequence tasks.
 * The model handles text classification problems by feeding the text to the encoder and generating a label as plain text instead of a class id.
 * The T5 architecture uses the original Transformer architecture.
 * The model trains on the C4 dataset using masked language modeling and the SuperGLUE tasks. 
 
 #### [BART](https://arxiv.org/abs/1910.13461)
+
 * BART combines the pretraining procedures of BERT and GPT within the encoder-decoder architecture.
 * The input sequences undergo one of several possible transformations, including simple masking, sentence permutation, token deletion, and document rotation.
 * The modified inputs pass through the encoder, and the decoder reconstructs the original texts.
 
 #### [M2M-100](https://arxiv.org/abs/2010.11125)
+
 * M2M-100 is the first model able to translate between 100 languages. 
     * This capability enables high-quality translation between rare and underrepresented languages.
 * The model uses prefix tokens to indicate the source and target language.
 
-
 #### [BigBird](https://arxiv.org/abs/2007.14062)
+
 * BigBird uses a sparse form of attention that scales linearly to avoid the quadratic memory requirements of standard attention mechanisms.
 * BigBird has a maximum context size of 4092 compared to the context size of 512 in most BERT models.
-
-
-
 
 ## References
 
@@ -1148,9 +1173,5 @@ def scaled_dot_product_attention(query, key, value, mask=None):
 **Previous:** [Notes on Transformers Book Ch. 2](../chapter-2/)
 
 **Next:** [Notes on Transformers Book Ch. 4](../chapter-4/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

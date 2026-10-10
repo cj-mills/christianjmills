@@ -15,27 +15,17 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Importance of LLM Evaluation ](#importance-of-llm-evaluation)
 * [Building Effective Evaluations](#building-effective-evaluations)
 * [LLM Eval For Text2SQL Notebook](#llm-eval-for-text2sql-notebook)
 * [Q&A Session](#qa-session)
 
-
-
-
-
-## Importance of LLM Evaluation 
+## Importance of LLM Evaluation
 
 * **Goals of Evaluation:**
   * Determine if the system effectively solves the problem.
@@ -44,9 +34,7 @@ open-graph:
   * Identify and address regressions, avoiding a "whack-a-mole" scenario.
   * Systematically improve the overall system quality.
 
-
-
-## Building Effective Evaluations 
+## Building Effective Evaluations
 
 * **Three Core Components:**
   * **Data:**
@@ -87,10 +75,6 @@ open-graph:
     * **Task Function:** Optimize prompts or refine the workflow of LLM calls.
     * **Scoring Functions:**  Improve heuristics, leverage LLM-based scoring, or integrate human evaluation. 
 
-
-
-
-
 ## LLM Eval For Text2SQL Notebook
 
 ::: {.callout-tip title="Resources:"}
@@ -104,8 +88,6 @@ open-graph:
   - **[BrainTrust](https://www.braintrustdata.com/docs/welcome):** LLM evaluation platform for managing experiments, data, and results.
 
 :::
-
-
 
 ### Downloading the data
 
@@ -398,8 +380,6 @@ conn.query("SELECT * FROM nba LIMIT 5").to_df()
 </table>
 </div>
 
-
-
 ### Prototyping Text2SQL
 
 - **Simple Approach:** Directly use the OpenAI API client for interacting with the LLM.
@@ -473,8 +453,6 @@ execute_query(query)
 [{'Team': 'GSW', 'Wins': 265}]
 ```
 
-
-
 ### Initial evals
 
 - **Goal:** Evaluate the model's ability to generate valid SQL queries, not necessarily correct answers.
@@ -532,7 +510,6 @@ async def no_error(output):
 
 #### Eval
 
-
 ```python
 from braintrust import Eval
 
@@ -561,7 +538,6 @@ EvalResultWithSummary(summary="...", results=[...])
 ```
 
 #### Results
-
 
 <div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
@@ -685,12 +661,9 @@ LIMIT 1;', 'results': [{'Team': 'GSW', 'Wins': 265}]}</td>
 </table>
 </div>
 
-
 #### Saving Good Data
 
 ![add to dataset](./images/add-to-dataset.gif){fig-align="center"}
-
-
 
 #### Updating the eval
 
@@ -925,7 +898,6 @@ EvalResultWithSummary(summary="...", results=[...])
 ```
 
 #### Results
-
 
 <div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
@@ -1325,8 +1297,6 @@ EvalResultWithSummary(summary="...", results=[...])
 
 ![eval 3](./images/eval-3.png){fig-align="center"}
 
-
-
 ### Trying GPT-4
 
 - **Experiment:** Replace GPT-4o with GPT-4 in the task function.
@@ -1364,7 +1334,6 @@ EvalResultWithSummary(summary="...", results=[...])
 ```
 
 #### Results
-
 
 <div style="overflow-x:auto; max-height:500px">
 <table border="1" class="dataframe">
@@ -1665,15 +1634,9 @@ This query first calculates the number of wins and losses for each team for each
 </table>
 </div>
 
-
-
 #### Analyze Regressions
 
 ![diff](./images/analyze-regressions.gif){fig-align="center"}
-
-
-
-
 
 ## Q&A Session
 
@@ -1707,16 +1670,11 @@ This query first calculates the number of wins and losses for each team for each
     * Consider schema modifications or view creation to simplify data access for the LLM.
   * **Leverage User Feedback:**  Use thumbs-up/thumbs-down ratings or more detailed feedback to guide improvement efforts.  
 
-
-
 ## Recommendations
 
 * **Adopt the three-component framework** (data, task function, scoring) when building your LLM evaluations.
 * **Don't overcomplicate initial evaluations.** Start with hardcoded data and progressively enhance complexity. 
 * **Actively use logs and user feedback** to drive iterative improvements, especially when dealing with complex, unfamiliar databases. 
 * **Explore the Braintrust platform** and its features, including the cookbook and shared notebook, for practical implementation guidance. 
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

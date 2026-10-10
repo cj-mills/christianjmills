@@ -55,15 +55,12 @@ def print_source(obj):
         print(line)
 ```
 
-
-
 ## CNN Interpretation with CAM
-
-
 
 ## CAM and Hooks
 
 ### Class Activation Map (CAM)
+
 * [Learning Deep Features for Discriminative Localization](https://arxiv.org/abs/1512.04150)
 * uses the output of the last convolutional layer together with the predictions to generate a heatmap visualization of why the model made its decision
 * at each position of our final convolutional layer, we have as many filters as in the last linear layer
@@ -72,6 +69,7 @@ def print_source(obj):
     * can use [PyTorch hooks](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)
 
 ### [PyTorch Hooks](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)
+
 * PyTorch's equivalent of fastai's callbacks
 * allow you to inject code into the forward and backward calculations themselves
 * can attach a hook to any layer of the model, and it will be executed when we compute the outputs (forward hook) or during backpropogation (backward hook)
@@ -392,8 +390,6 @@ with Hook(learn.model[0]) as hook:
 
 **Note:** This method only works for the last layer.
 
-
-
 ## Gradient CAM
 
 * [Grad-CAM: Why did you say that?](https://arxiv.org/abs/1611.07450)
@@ -551,9 +547,6 @@ print_source(ActivationStats)
                 ax.set_title(title)
 ```
 
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -564,9 +557,5 @@ print_source(ActivationStats)
 **Previous:** [Notes on fastai Book Ch. 17](../chapter-17/)
 
 **Next:** [Notes on fastai Book Ch. 19](../chapter-19/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

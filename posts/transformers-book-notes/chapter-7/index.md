@@ -117,7 +117,6 @@ for module in ["farm.utils", "farm.infer", "haystack.reader.farm.FARMReader",
 
 ------
 
-
 ## Introduction
 
 * Extractive question answering is the most common form and requires the answer to be available as a span of text in a document.
@@ -130,13 +129,12 @@ for module in ["farm.utils", "farm.infer", "haystack.reader.farm.FARMReader",
     * Closed-domain QA deals with questions about a narrow topic like a single product category.
     * Open-domain QA deals with questions about almost anything.
 
-
-
 ## Project: Build a Review-Based QA System
 
 * The goal is to build a question-answering model that finds answers to questions in customer reviews.
 
 ### The Dataset
+
 * [SubjQA: A Dataset for Subjectivity and Review Comprehension](https://arxiv.org/abs/2004.14283)
 * [GitHub Repository](https://github.com/megagonlabs/SubjQA)
 * [Hugging Face Dataset Card](https://huggingface.co/datasets/subjqa)
@@ -395,7 +393,6 @@ for question_type in ["How", "What", "Is"]:
 
 ------
 
-
 ### The Stanford Question Answering Dataset (SQuAD)
 
 * [SQuAD: 100,000+ Questions for Machine Comprehension of Text](https://arxiv.org/abs/1606.05250)
@@ -409,16 +406,19 @@ for question_type in ["How", "What", "Is"]:
     * The answers in NQ are much longer than in SQuAD and present a more challenging benchmark.
 
 ### Extracting Answers from Text
+
 * We need a way to identify a potential answer as a span of text in a customer review.
     * Frame the supervised learning problems.
     * Tokenize and encode text for QA tasks.
     * Deal with long passages that exceed a model's maximum context size.
 
 #### Span classification
+
 * The model needs to predict the start and end tokens of an answer.
 * This approach is the most common way to extract answers from a text.
 
 #### Transfer Learning
+
 * We can compensate for a relatively small dataset by starting with a language model fine-tuned on a large-scale QA dataset like SQuAD.
 * These models typically have strong reading comprehension capabilities and serve as a good baseline.
 * [Hugging Face Hub models trained on SQuAD](https://huggingface.co/models?dataset=dataset:squad&sort=downloads)
@@ -431,7 +431,6 @@ for question_type in ["How", "What", "Is"]:
 | [RoBERTa-base](https://huggingface.co/roberta-base)      | RoBERTa models have better performance than their BERT counterparts and can fine-tune on most QA datasets using a single GPU. | 125M                  | 83.0                       |
 | [ALBERT-XXL](https://huggingface.co/models?pipeline_tag=question-answering&sort=downloads&search=albert-xxl)        | State-of-the-art performance on SQuAD 2.0, but computationally intensive and difficult to deploy. | 235M                  | 88.1                       |
 | [XLM-RoBERTa-large](https://huggingface.co/models?search=xlm-roberta-large) | Multilingual model for 100 languages with strong zero-shot performance. | 570M                  | 83.8                       |
-
 
 #### Tokenizing text for QA
 
@@ -641,7 +640,6 @@ from transformers import AutoModelForQuestionAnswering
 
 ------
 
-
 #### `AutoModelForQuestionAnswering`
 
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModelForQuestionAnswering)
@@ -727,7 +725,6 @@ type(outputs)
 ```
 
 ------
-
 
 #### `QuestionAnsweringModelOutput`
 
@@ -893,7 +890,6 @@ type(pipe)
 
 ------
 
-
 #### `QuestionAnsweringPipeline`
 
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/pipelines#transformers.QuestionAnsweringPipeline)
@@ -937,7 +933,6 @@ pipe(question="Why is there no data?", context=context, handle_impossible_answer
 ```
 
 ------
-
 
 #### Dealing with long passages
 
@@ -1021,7 +1016,6 @@ for window in tokenized_example["input_ids"]:
 
 ------
 
-
 ### Using Haystack to Build a QA Pipeline
 
 * Real-world users will only provide a question about a product rather than a question-context pair.
@@ -1031,6 +1025,7 @@ for window in tokenized_example["input_ids"]:
 * Modern QA systems typically use the retriever-reader architecture.
 
 #### Retriever-Reader Architecture
+
 * The retriever is responsible for retrieving relevant documents for a given query.
 * Retrievers can be either sparse or dense.
     * Sparse retrievers use word frequencies to represent each document and query as a vector where most elements are zero.
@@ -1044,6 +1039,7 @@ for window in tokenized_example["input_ids"]:
 * The reader's answers might require postprocessing when the correct answer comes from various passages in a lengthy document.
 
 #### Haystack
+
 * [Homepage](https://haystack.deepset.ai/overview/intro)
 * Haystack is an open-source framework for building search systems that work over massive document collectors.
 * Haystack integrates tightly with Hugging Face Transformers.
@@ -1051,8 +1047,8 @@ for window in tokenized_example["input_ids"]:
 * The document store component is a document-oriented database that stores the documents and metadata provided to the retriever at query time.
 * The pipeline combines all the components of a QA system to enable custom query flows, merging documents from multiple retrievers, etc.
 
-
 #### Initializing a document store
+
 * Haystack provides various document stores to choose from, and we can pair each one with a dedicated set of retrievers.
 
 **Compatibility of Haystack retreivers and document stores**
@@ -1065,7 +1061,6 @@ for window in tokenized_example["input_ids"]:
 | [DPR](https://haystack.deepset.ai/docs/v0.4.0/retrievermd#dense-passage-retrieval-recommended)       | Yes       | Yes           | Yes   | Yes    |
 
 ------
-
 
 #### Elasticsearch
 
@@ -1100,9 +1095,11 @@ from subprocess import Popen, PIPE, STDOUT
 * Execute a child program in a new process.
 
 #### `Pipe`
+
 * [Documentation](https://docs.python.org/3/library/subprocess.html#subprocess.PIPE)
 
 #### `STDOUT`
+
 * [Documentation](https://docs.python.org/3/library/subprocess.html#subprocess.STDOUT)
 
 **Start the Elasticsearch server**
@@ -1193,7 +1190,6 @@ from haystack.document_store.elasticsearch import ElasticsearchDocumentStore
 
 ------
 
-
 #### `ElasticsearchDocumentStore`
 
 * [Documentation](https://haystack.deepset.ai/reference/document-store#elasticsearchdocumentstore)
@@ -1242,9 +1238,7 @@ print(f"Loaded {document_store.get_document_count()} documents")
 
 ------
 
-
 #### Initializing a retriever
-
 
 ```python
 from haystack.retriever.sparse import ElasticsearchRetriever
@@ -1368,8 +1362,8 @@ pd.DataFrame(sample_doc.items()).T
 
 ------
 
-
 #### Initializing a reader
+
 * Haystack provides two types of readers to extract answers from a given context.
 * The FARMReader reader builds on Deepset's FARM framework for fine-tuning and deploying transformers.
 * FARMreader is compatible with Hugging Face Transformers and can load models directly from the Hugging Face Hub.
@@ -1388,7 +1382,6 @@ from haystack.reader.farm import FARMReader
 ```
 
 ------
-
 
 #### `FARMReader`
 
@@ -1519,8 +1512,8 @@ pd.DataFrame(result.items())
 </div>
 ------
 
-
 #### Putting it all together
+
 * Haystack provides a Pipeline abstraction that allows us to combine retrievers, readers, and other components as a customizable graph.
 * There are predefined pipelines specialized for QA systems.
 
@@ -1587,12 +1580,12 @@ for idx in range(n_answers):
 
 ------
 
-
 ## Improving Our QA Pipeline
 
 * The retriever sets an upper bound on the performance of the whole QA system.
 
 ### Evaluating the Retriever
+
 * The recall metric measures the fraction of all relevant documents retrieved and is a prevalent method for evaluating retrievers.
 * A document is relevant if it contains the answer.
 * We can compute recall for a given set of questions by counting the number of times an answer appears in the top-k documents returned by the retriever.
@@ -1970,7 +1963,6 @@ plot_retriever_eval([es_topk_df], ["BM25"])
 
 ------
 
-
 #### Dense Passage Retrieval
 
 * [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906)
@@ -1988,7 +1980,6 @@ from haystack.retriever.dense import DensePassageRetriever
 ```
 
 ------
-
 
 #### `DensePassageRetriever`
 
@@ -2041,8 +2032,8 @@ plot_retriever_eval([es_topk_df, dpr_topk_df], ["BM25", "DPR"])
 
 ------
 
-
 ### Evaluating the Reader
+
 * There are two primary metrics to evaluate readers in extractive QA.
 * Exact Match (EM) is a binary metric that gives EM = 1 if the characters in the predicted and ground-truth answers match exactly and EM = 0 otherwise.
 * $F_{1}$-score measures the harmonic mean of the precision and recall.
@@ -2153,7 +2144,6 @@ plot_reader_eval(reader_eval)
 * The inherent subjectivity of the SubjQA dataset might also be affecting performance.
 
 ------
-
 
 ### Domain Adaptation
 
@@ -2366,7 +2356,6 @@ plot_reader_eval(reader_eval)
 
 ------
 
-
 ### Evaluating the Whole QA Pipeline
 
 **Augment the retriever pipeline with nodes for the reader and its evaluation**
@@ -2407,7 +2396,6 @@ plot_reader_eval({"Reader": reader_eval["Fine-tune on SQuAD + SubjQA"],
 
 ------
 
-
 ## Going Beyond Extractive QA
 
 * Abstractive/Generative QA generates answers with a pretrained model rather than extracting them as spans of text.
@@ -2415,6 +2403,7 @@ plot_reader_eval({"Reader": reader_eval["Fine-tune on SQuAD + SubjQA"],
 * Generative QA is a less mature but fast-moving field of research.
 
 ### Retrieval-augmented generation (RAG)
+
 * Retrieval-augmented generation (RAG) is the current state-of-the-art.
 * RAG extends the classic retriever-reader architecture by swapping the reader for a generator and using DPR as the retriever.
 * The generator is a pretrained sequence-to-sequence transformer like T5 or BART that receives latent vectors of documents from DPR and then iteratively generates an answer based on the query and these documents.
@@ -2510,8 +2499,6 @@ generate_answers("What is the main drawback?")
 
 ------
 
-
-
 ## Conclusion
 
 * The techniques in this chapter can generalize to open-domain QA.
@@ -2532,7 +2519,6 @@ generate_answers("What is the main drawback?")
     * [PAQ: 65 Million Probably-Asked Questions and What You Can Do With Them](https://arxiv.org/abs/2102.07033)
     * [Synthetic Data Augmentation for Zero-Shot Cross-Lingual Question Answering](https://arxiv.org/abs/2010.12643)
 
-
 ## References
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
@@ -2543,9 +2529,5 @@ generate_answers("What is the main drawback?")
 **Previous:** [Notes on Transformers Book Ch. 6](../chapter-6/)
 
 **Next:** [Notes on Transformers Book Ch. 8](../chapter-8/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

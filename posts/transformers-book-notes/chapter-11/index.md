@@ -27,7 +27,6 @@ open-graph:
 * [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
 :::
 
-
 * [Scaling Transformers](#scaling-transformers)
 * [Going Beyond Text](#going-beyond-text)
 * [Multimodal Transformers](#multimodal-transformers)
@@ -36,7 +35,6 @@ open-graph:
 
 
 ------
-
 
 ```python
 import transformers
@@ -81,8 +79,6 @@ def print_source(obj, exclude_doc=True):
 ```
 
 ------
-
-
 
 ## Scaling Transformers
 
@@ -169,6 +165,7 @@ plt.show()
 * Scaling laws are also present for other modalities like images, videos, and mathematical problem-solving.
 
 ### Challenges with Scaling
+
 * Provisioning and managing hundreds or thousands of GPU nodes typically requires specialized engineers familiar with running large-scale, distributed experiments.
 * Most companies cannot afford the teams and resources to train models at the largest scales.  
 * A recently proposed distributed deep learning framework enables smaller groups to pool their computational resources and pre-train models.
@@ -191,6 +188,7 @@ plt.show()
     * [GPT-J 6B](https://huggingface.co/EleutherAI/gpt-j-6B)
 
 ### Attention Please!
+
 * Self-attention involves performing pairwise comparisons of all the tokens in a sequence, which becomes a computational bottleneck.
 * The self-attention layer of the Transformer architecture naively scales like $O(n^{2})$, where n is the length of the sequence.
 * A recent paper from Google shows we can reduce the memory complexity to $O \left( \log{n} \right)$ via a simple reordering of the operations.
@@ -200,6 +198,7 @@ plt.show()
 * Common approaches to making attention more efficient involve introducing sparsity into the attention mechanism or applying kernels to the attention matrix.
 
 ### Sparse Attention
+
 * We can reduce the number of computations performed in the self-attention layer by limiting the number of query-key pairs it generates according to a predefined pattern.
 * There are a handful of popular "atomic" sparsity patterns.
     * [A Survey of Transformers](https://arxiv.org/abs/2106.04554)
@@ -215,6 +214,7 @@ plt.show()
     * [Reformer](https://huggingface.co/google/reformer-crime-and-punishment) uses a hash function to cluster similar tokens.
 
 ### Linearized Attention
+
 * Linearized attention involves changing the order of operations for computing attention scores.
 * We compute the self-attention score of the queries and keys using a similarity function like the dot product.
 * For a general similarity function $sim \left( q_{i},k_{j} \right)$, we can express the attention outputs as the following equation:
@@ -233,37 +233,44 @@ plt.show()
     * [Rethinking Attention with Performers](https://arxiv.org/abs/2009.14794)
 
 ## Going Beyond Text
-* Developing effective strategies for common textual tasks like classification and question answering allows us to address many types of real-world problems.
 
+* Developing effective strategies for common textual tasks like classification and question answering allows us to address many types of real-world problems.
 
 ### Limitations to using text
 
 #### Human reporting bias
+
 * The frequencies of events in the training text my not represent their actual frequencies.
     * [Reporting Bias and Knowledge Acquisition](https://openreview.net/pdf?id=AzxEzvpdE3Wcy)
 * A model trained exclusively on text from the internet might have a distorted image of the world.
 
 #### Common Sense
+
 * Most do not document their reasoning based on common sense.
 * Language models trained on text might know many facts about the world but lack basic common-sense reasoning.
 
 #### Facts
+
 * A probabilistic language model cannot reliably store facts and can produce factually incorrect text.
 * Such models can detect named entities but have no direct way to access information about them.
 
 #### Modality
+
 * Language models can't connect to other modalities, such as audio, visual signals, or tabular data, that might address some of these limitations.
 
 ### Vision
+
 * Transformers are now achieving efficiency similar to or better than Convolutional Neural Networks (CNNs).
 
 #### iGPT
+
 * iGPT (short for image GPT) uses the GPT architecture and autoregressive pretraining objective to predict future pixel values by viewing images as sequences of pixels.
 * [Generative Pretraining From Pixels](https://proceedings.mlr.press/v119/chen20s.html)
 * Pretraining on large image datasets enables iGPT to "autocomplete" partial images.
 * iGPT achieves performant results on classification tasks when using a classification head.
 
 #### ViT
+
 * Vision Transformer (Vit) is a BERT-style take on transformers for vision.
 * We split the image into smaller patches and then embed each of these patches with a linear projection.
 * We combine the patch embeddings with position embeddings and feed them through an ordinary transformer encoder.
@@ -621,8 +628,8 @@ pd.DataFrame(table_qa.tokenizer.vocab.keys()).head(1500).T
 ```
 ------
 
-
 #### `TapasForQuestionAnswering`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/tapas#transformers.TapasForQuestionAnswering)
 * Create a Tapas Model with a cell selection head and optional aggregation head for question answering tasks.
 
@@ -675,6 +682,7 @@ for query, pred in zip(queries, preds):
 ## Multimodal Transformers
 
 ### Speech-to-Text
+
 * Speaking is more convenient than reading and writing for a significant portion of the population.
 * Automatic speech recognition (ASR) involves converting spoken words to text and enables voice technologies like Siri to answer questions like "What is the weather like today?".
 * The [wave2vec 2.0](https://huggingface.co/models?search=wav2vec2+facebook) family of models is one of the most recent developments in ASR and uses a transformer layer in combination with a CNN.
@@ -817,6 +825,7 @@ print(f"https://huggingface.co/{asr.model.config._name_or_path}")
 ------
 
 #### `Wav2Vec2ForCTC`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/wav2vec2#transformers.Wav2Vec2ForCTC)
 * Create a Wav2Vec2 model with a language modeling head for Connectionist Temporal Classification (CTC).
 
@@ -956,15 +965,18 @@ print(pred)
 ![](./images/chapter11_wav2vec-u.png){fig-align="center"}
 
 ### Vision and Text
+
 * There have been several developments in combining visual and textual information.
 
 #### VQA
+
 * [Making the V in VQA Matter: Elevating the Role of Image Understanding in Visual Question Answering](https://arxiv.org/abs/1612.00837)
 * Models such as LXMERT and VisualBERT use vision models like ResNets to extract features from images and then use transformer encoders to combine them with the natural questions and predict and answer.
     * [LXMERT: Learning Cross-Modality Encoder Representations from Transformers](https://arxiv.org/abs/1908.07490)
     * [VisualBERT: A Simple and Performant Baseline for Vision and Language](https://arxiv.org/abs/1908.03557)
 
 #### LayoutLM
+
 * The [LayoutLM](https://huggingface.co/models?search=microsoft+layoutlm) family of models uses an enhanced Transformer architecture that receives a text sequence, an image, and a layout as input.
 * There are embedding layers associated with each modality, a spatially-aware self-attention mechanism, and a mix of image and text/image pretraining objectives to align the different modalities.
 * LayoutLM models pre-train on millions of scanned documents and can transfer to various downstream tasks, similar to BERT for NLP.
@@ -973,11 +985,13 @@ print(pred)
 ![](./images/chapter11_layoutlm.png){fig-align="center"}
 
 #### DALL·E
+
 * DALLE uses the GPT architecture and autoregressive modeling to generate images from text.
 * It regards the words and pixels as one sequence of tokens and can, therefore, continue generating an image from a text prompt.
 * [Zero-Shot Text-to-Image Generation](https://arxiv.org/abs/2102.12092)
 
 #### CLIP
+
 * [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020)
 * We can use the pretrained model for classification by embedding the possible classes with the text encoder and comparing the class embeddings to the image embedding that we want to classify.
 * We select the class with the highest similarity. 
@@ -1002,6 +1016,7 @@ from transformers import CLIPProcessor, CLIPModel
 * Create a CLIP processor which wraps a CLIP feaure extractor and a CLIP tokenizer into a single processor.
 
 #### `CLIPModel`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/model_doc/clip#transformers.CLIPModel)
 
 **Instantiate a CLIPModel and processor**
@@ -1126,8 +1141,6 @@ pd.DataFrame(zip(texts, probs[0].numpy()), columns=['Text', "Probability"])
 </div>
 ------
 
-
-
 ## References
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
@@ -1136,9 +1149,5 @@ pd.DataFrame(zip(texts, probs[0].numpy()), columns=['Text', "Probability"])
 
 
 **Previous:** [Notes on Transformers Book Ch. 10](../chapter-10/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

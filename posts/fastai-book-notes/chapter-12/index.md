@@ -29,7 +29,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [The Data](#the-data)
 * [Our First Language Model from Scratch](#our-first-language-model-from-scratch)
 * [Improving the RNN](#improving-the-rnn)
@@ -64,6 +63,7 @@ def print_source(obj):
 ## A Language Model from Scratch
 
 ## The Data
+
 * try to think of the simplest useable dataset when starting on a new problem
 * the starter dataset should allow you to quickly and easily try out methods and interpret the results
 * one of the most common practical mistakes is failing to use appropriate datasets at appropriate times during the analysis process
@@ -76,7 +76,8 @@ def print_source(obj):
 from fastai.text.all import *
 ```
 
-#### fastai Human Numbers Dataset
+### fastai Human Numbers Dataset
+
 * A synthetic dataset consisting of human number counts in text such as one, two, three, four.. 
 * Useful for experimenting with Language Models
 
@@ -352,10 +353,7 @@ nums
 (#63095) [0,1,2,1,3,1,4,1,5,1...]
 ```
 
-
-
 ## Our First Language Model from Scratch
-
 
 ```python
 # Create a list of (input, target) tuples
@@ -436,9 +434,8 @@ dls.one_batch()[0][0], dls.one_batch()[1][0]
 (tensor([0, 1, 2]), tensor(1))
 ```
 
-
-
 ### Our Language Model in PyTorch
+
 * Every word is interpreted in the information context of any words preceding it
 
 -----
@@ -578,9 +575,11 @@ counts[idx].item()/n)
 **Note:** This indicates the model is performing much better than picking a word at random.
 
 ### Our First Recurrent Neural Network (a.k.a A Looping Network)
+
 * replace the hardcoded forward function in the LMModel1 with a for loop
 
 #### Hidden State:
+
 * the activations that are updated at each step of a recurrent neural network
 
 -----
@@ -655,7 +654,6 @@ learn.fit_one_cycle(4, 1e-3)
 </table>
 </div>
 
-
 ## Improving the RNN
 
 * the above LMModel2 version resets the hidden state for every new input sequence
@@ -663,7 +661,6 @@ learn.fit_one_cycle(4, 1e-3)
 * the above LMModel2 version only tries to predict the fourth word
 
 ### Maintaining the State of an RNN
-
 
 ```python
 class LMModel3(Module):
@@ -687,6 +684,7 @@ class LMModel3(Module):
 ```
 
 #### Backpropogation Through Time (BPTT)
+
 * Treating a neural net with effectively one layer per time step (usually refactored using a loop) as one big model, and calculating gradients on it in the usual way
 * usually use Truncated BPTT which detaches the history of computation steps in the hidden state every few time steps.
 
@@ -756,9 +754,8 @@ class ModelResetter(Callback):
                  after_fit="Reset the model after fitting")
 ```
 
-
-
 #### fastai Callbacks
+
 * [Documentation](https://docs.fast.ai/callback.core.html#Callback)
 * `after_create:` called after the Learner is created
 * `before_fit:` called before starting training or inference, ideal for initial setup.
@@ -921,6 +918,7 @@ learn.fit_one_cycle(10, 3e-3)
 </div>
 
 ### Creating More Signal
+
 * we can increase the amount of signal for updating the model weights by predicting the next word after every single word, rather than every three words
 
 -----
@@ -1114,13 +1112,11 @@ learn.fit_one_cycle(15, 3e-3)
 </table>
 </div>
 
-
 ## Multilayer RNNs
 
 * pass the activations from one RNN into another RNN
 
 ### The Model
-
 
 ```python
 class LMModel5(Module):
@@ -1285,6 +1281,7 @@ learn.fit_one_cycle(15, 3e-3)
 **Note:** The multi-layer RNN performs worse than the single-layer RNN
 
 ### Exploding or Disappearing Activations
+
 * deeper models are more difficult to train
     * performing matrix multiplication so many times can cause numbers to get extremely big or extremely small
     * floating point numbers get less accurate the further away they get from zero
@@ -1293,8 +1290,6 @@ learn.fit_one_cycle(15, 3e-3)
 * Two types of layers are frequently used to avoid exploding activations in RNNs
     1. Gated Recurrent Units (GRUs)
     2. Long short-term memory (LSTM)
-
-
 
 ## LSTM
 
@@ -1341,10 +1336,7 @@ torch.tanh(tensor(0.5))
 tensor(0.4621)
 ```
 
-
-
 ### Building an LSTM from Scratch
-
 
 ```python
 class LSTMCell(Module):
@@ -1394,6 +1386,7 @@ class LSTMCell(Module):
 ```
 
 #### torch chunk
+
 * [Documentation](https://pytorch.org/docs/stable/generated/torch.chunk.html)
 
 -----
@@ -1473,10 +1466,7 @@ t.chunk(2)
 (tensor([0, 1, 2, 3, 4]), tensor([5, 6, 7, 8, 9]))
 ```
 
-
-
 ### Training a Language Model Using LSTMs
-
 
 ```python
 class LMModel6(Module):
@@ -1643,8 +1633,6 @@ learn.fit_one_cycle(15, 1e-2)
 **Note:** We were able to use a higher learning rate and achieve a much higher accuracy than the multi-layer RNN.
 **Note:** There is still some overfitting.
 
-
-
 ## Regularizing an LSTM
 
 * [Regularizing and Optimizing LSTM Language Models](https://arxiv.org/abs/1708.02182)
@@ -1652,6 +1640,7 @@ learn.fit_one_cycle(15, 1e-2)
     * called the combination an **AWD-LSTM**
 
 ### Dropout
+
 * [Improving neural networks by preventing co-adaptation of feature detectors](https://arxiv.org/abs/1207.0580)
 * [Dropout: A Simple Way to Prevent Neural Networks from Overfitting](https://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf)
 * randomly change some activations to zero at training time
@@ -1738,9 +1727,8 @@ bernoulli(...)
                 [ 0.,  0.,  0.]])
 ```
 
-
-
 ### Activation Regularization and Temporal Activation Regularization
+
 * both are similar to weight decay (AR)
 * activation regularization: try to make the final activations produced by the LSTM as small as possible
     * `loss += alpha * activations.pow(2).mean()`
@@ -1754,9 +1742,11 @@ bernoulli(...)
     * applied to non-dropped-out activations (because the zeros in the dropped-out activations create big differences)
 
 ### Training a Weight-Tied Regularized LSTM
+
 * need to return the normal output from the LSTM, the dropped-out activations, and the activations from the LSTMs
 
 #### Weight Tying
+
 * in a language model, the input embeddings represent a mapping from English words to activations and the output hidden layer represents a mapping from activations to English words
     * these mappings could be the same
 * introduced in AWD-LSTM paper
@@ -1975,9 +1965,6 @@ learn.fit_one_cycle(15, 1e-2, wd=0.1)
 
 **Note:** This performance is significantly better than the regular LSTM.
 
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1988,9 +1975,5 @@ learn.fit_one_cycle(15, 1e-2, wd=0.1)
 **Previous:** [Notes on fastai Book Ch. 11](../chapter-11/)
 
 **Next:** [Notes on fastai Book Ch. 13](../chapter-13/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

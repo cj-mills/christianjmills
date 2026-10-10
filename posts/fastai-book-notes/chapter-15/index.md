@@ -30,7 +30,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Application Architectures Deep Dive](#application-architectures-deep-dive)
 * [Computer Vision](#computer-vision)
 * [Natural Language Processing](#natural-language-processing)
@@ -62,26 +61,24 @@ def print_source(obj):
         print(line)
 ```
 
-
-
-
 ## Application Architectures Deep Dive
-
-
 
 ## Computer Vision
 
 ### cnn_learner
 
 #### Transfer Learning
+
 * the head (the final layers) of the pretrained model needs to be cut off  and replaced
 * fastai stores where to cut the included pretrained models in the [model_meta](https://github.com/fastai/fastai/blob/01d7f879d3efe14530243e1074c1c5efbd717195/fastai/vision/learner.py#L120) dictionary
 
 #### Head
+
 * the part that is specialized for a particular task
 * generally the part after the adaptive average pooling layer
 
 #### Body
+
 * everything other than the head
 * includes the stem
 
@@ -283,9 +280,8 @@ def create_head(nf, n_out, lin_ftrs=None, ps=0.5, concat_pool=True, first_bn=Tru
     return nn.Sequential(*layers)
 ```
 
-
-
 #### One Last Batchnorm
+
 * bn_final: setting this to True will cause a batchnorm layher to be added as the final layer
 * can be useful in helping your model scale appropriately for your output activations
 
@@ -315,9 +311,8 @@ class AdaptiveConcatPool2d(Module):
     def forward(self, x): return torch.cat([self.mp(x), self.ap(x)], 1)
 ```
 
-
-
 ### unet_learner
+
 * used for generative vision models
 * use a custom head which progressively increases the dimensions back to the same as the source image
     * can use nearest neighbor interpolation
@@ -329,13 +324,13 @@ class AdaptiveConcatPool2d(Module):
 * [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
 
 #### Tasks
+
 * segmentation
 * super resolution
 * colorization
 * style transfer
 
 ### A Siamese Network
-
 
 ```python
 #hide
@@ -673,8 +668,8 @@ learn.fit_one_cycle(4, slice(1e-6,1e-4))
 </table>
 </div>
 
-
 ## Natural Language Processing
+
 * We can convert an AWD-LSTM language model into a transfer learning classifier by selecting stack RNN for the encoder
 * [Universal Language Model Fine-tuning for Text Classification](https://arxiv.org/abs/1801.06146)
     * divide the document into fixed-length batches of size b
@@ -695,10 +690,7 @@ learn.fit_one_cycle(4, slice(1e-6,1e-4))
 * the activations of each batch are stored
 * at the end, we use the same average and max concatenated pooling trick used for computer vision models
 
-
-
 ## Tabular
-
 
 ```python
 from fastai.tabular.all import *
@@ -773,8 +765,6 @@ def forward(self, x_cat, x_cont=None):
     return self.layers(x)
 ```
 
-
-
 ## Conclusion
 
 * deep learning can be challenging because your data, memory, and time are typically limited
@@ -796,9 +786,6 @@ def forward(self, x_cat, x_cont=None):
     5. Reduce architecture complexity
         * Should be the last thing you try
 
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -809,11 +796,5 @@ def forward(self, x_cat, x_cont=None):
 **Previous:** [Notes on fastai Book Ch. 14](../chapter-14/)
 
 **Next:** [Notes on fastai Book Ch. 16](../chapter-16/)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

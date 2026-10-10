@@ -25,13 +25,9 @@ open-graph:
 * [Sudoku](#sudoku)
 * [WaveFunctionCollapse Algorithm](#wavefunctioncollapse-algorithm)
 
-
-
 ## Overview
 
 Here are some notes I took while watching Martin Donald's [video](https://www.youtube.com/watch?v=2SuvO4Gi7uY) providing an overview of the WaveFunctionCollapse algorithm as well as implementation considerations when using it with 3D modules.
-
-
 
 ## [Sudoku](https://en.wikipedia.org/wiki/Sudoku)
 
@@ -171,9 +167,6 @@ Here are some notes I took while watching Martin Donald's [video](https://www.yo
         }
         ```
 
-
-
-
 ### WFC Demos on Itch:
 
 [Wave Function Collapse - Mixed Initiative Demo](https://bolddunkley.itch.io/wfc-mixed)
@@ -190,12 +183,5 @@ Here are some notes I took while watching Martin Donald's [video](https://www.yo
 * [WaveFunctionCollapse](https://github.com/mxgmn/WaveFunctionCollapse)
 * [The Wavefunction Collapse Algorithm explained very clearly](https://robertheaton.com/2018/12/17/wavefunction-collapse-algorithm/)
 * [Unity WaveFunctionCollapse](https://github.com/selfsame/unity-wave-function-collapse/)
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

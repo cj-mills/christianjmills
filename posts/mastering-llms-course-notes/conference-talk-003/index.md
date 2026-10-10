@@ -16,16 +16,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [What is a Large Language Model?](#what-is-a-language-model)
 * [Prompt Crafting](#prompt-crafting)
@@ -39,19 +33,11 @@ open-graph:
 * [Tips for Defining Tools](#tips-for-defining-tools)
 * [Q&A Session](#qa-session)
 
-
-
-
-
 ::: {.callout-tip title="Presentation Slides"}
 
 * [Prompt Engineering - John Berryman](https://docs.google.com/presentation/d/1PXzENGNN5NFbEDJ59wbSp8fro6dPt4xHGNN6X0KU82A/)
 
 :::
-
-
-
-
 
 ## What is a Language Model?
 
@@ -78,8 +64,6 @@ open-graph:
   - **Paper:** [Language Models are Unsupervised Multitask Learners](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
 - The power of LLMs raises concerns about potential misuse, as they can be manipulated to generate misleading or harmful content.
 
-
-
 ## Prompt Crafting
 
 - **Prompt:**  Instructions or context provided to an LLM to guide its text generation process. Effective prompt crafting is crucial for achieving desired outputs.
@@ -104,8 +88,6 @@ open-graph:
     < ¿Puedo tener papas fritas con eso?
     ```
   :::
-
-  
 
 ### Technique #2: Chain-of-Thought Reasoning
 
@@ -173,16 +155,12 @@ open-graph:
 
   :::
 
-
-
 ## LLMs are Dumb Mechanical Humans
 
 - **Use Familiar Language and Constructs:** LLMs perform better with language and structures commonly found in their training data.
 - **Avoid Overloading with Context:**  While providing context is essential, too much information can distract the model and hinder its performance.
 - **Provide Necessary Information:** LLMs are not psychic; they rely on the prompt for information not present in their training data.
 - **Ensure Prompt Clarity:** If the prompt is confusing for a human, it will likely be confusing for the LLM as well.
-
-
 
 ## Building LLM Applications
 
@@ -194,8 +172,6 @@ open-graph:
   4. **Transformation to User Space:** The application converts the LLM's text output into a format actionable and understandable by the user.
 
 ![[Prompt Engineering by John Berryman - Slide 14](https://docs.google.com/presentation/d/1PXzENGNN5NFbEDJ59wbSp8fro6dPt4xHGNN6X0KU82A/edit#slide=id.g2c14fe843d2_1_120)](./images/llm-application-diagram.png){fig-align="center"}
-
-
 
 ## Creating the Prompt
 
@@ -248,8 +224,6 @@ open-graph:
   4. cursor
   :::
 
-
-
 ## The Introduction of Chat
 
 - **Shift Towards Conversational Interfaces:**  Chat interfaces have become a popular paradigm for LLM applications.
@@ -291,8 +265,6 @@ open-graph:
   - **System Messages:** Allow developers to control the assistant's behavior and personality.
   - **Enhanced Safety:**  Chat-based models are often fine-tuned to avoid generating harmful or inappropriate content.
   - **Reduced Prompt Injection Risk:** Special tokens in ChatML make it difficult for users to manipulate the assistant's behavior through malicious prompts.
-
-
 
 ## The Introduction of Tools
 
@@ -386,8 +358,6 @@ open-graph:
   - **Flexibility in Response:** Models can choose to respond to user requests by either calling functions or providing text-based answers.
   - **Potential for Parallel Processing:**  LLMs are being developed to execute multiple function calls concurrently, improving efficiency.
 
-
-
 ## Building LLM Applications - Continued
 
 - **Enhanced Application Architecture:** With the introduction of chat and tool calling, the architecture of LLM applications becomes more sophisticated.
@@ -417,8 +387,6 @@ open-graph:
 
 ![[Prompt Engineering by John Berryman - Slide 20](https://docs.google.com/presentation/d/1PXzENGNN5NFbEDJ59wbSp8fro6dPt4xHGNN6X0KU82A/edit#slide=id.g2c247832288_0_62)](./images/llm-application-diagram-bag-of-tools.png){fig-align="center"}
 
-
-
 ## Creating the Prompt: Copilot Chat
 
 - **Context Collection:**
@@ -433,9 +401,8 @@ open-graph:
 - **Context Trimming:**  Prioritizes keeping essential elements and trimming less crucial information like historic messages or function definitions if space is limited.
 - **Fallback Mechanisms:**  If the prompt becomes too large, the application should have strategies to handle the situation gracefully, such as prioritizing essential elements or informing the user about limitations.
 
-
-
 ## Tips for Defining Tools
+
 * **Quantity:**
   * Don't have "too many" tools
   * Look for evidence of collisions
@@ -453,8 +420,6 @@ open-graph:
     * Doesn't know about internal company acronyms.
 * **Output:** Don't include extra "just-in-case" content
 * **Errors:** when reasonable, send errors to model (validation errors)
-
-
 
 ## Q&A Session
 
@@ -532,13 +497,5 @@ open-graph:
     * **Blog Post:** [ReAct: Synergizing Reasoning and Acting in Language Models](https://research.google/blog/react-synergizing-reasoning-and-acting-in-language-models/)
   * **Reflexion:**  Focuses on evaluating and iteratively improving the model's output. For example, running generated code through tests and feeding error messages back into the prompt for correction.
     * **Paper:** [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366)
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

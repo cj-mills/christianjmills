@@ -15,38 +15,28 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
 
-
-
-
-
-### Introduction
+## Introduction
 
 * **Pawell**, from **[Fireworks AI](https://fireworks.ai/)**, discusses fine-tuning LLMs for function calling, covering key decisions, challenges, and solutions.
 * **Documentation:** [Using function-calling](https://docs.fireworks.ai/guides/function-calling)
 * **Documentation:** [Fine-tuning models](https://docs.fireworks.ai/fine-tuning/fine-tuning-models)
 * **Documentation:** [Using grammar mode](https://docs.fireworks.ai/structured-responses/structured-output-grammar-based)
 
-
-
-### Understanding Function/Tool Calling
+## Understanding Function/Tool Calling
 
 * **Definition:** Giving LLMs the ability to interact with the external world.
 * **Use Cases:**
   * **Accessing real-time or unavailable information:** E.g., retrieving current stock prices.
   * **Orchestrating multi-agent systems:** LLMs can access and utilize multiple tools to assist users.
 
+## Key Decisions in Fine-Tuning for Function Calling
 
-
-### Key Decisions in Fine-Tuning for Function Calling
-
-#### 1.  Objective Selection:
+### 1.  Objective Selection:
 
 * **Impact:** The objective significantly impacts data preparation, training data volume, fine-tuning complexity, and model usage.
 * **Recommendation:** Choose the simplest objective that meets the use case requirements.
@@ -133,7 +123,7 @@ open-graph:
         }
         ```
 
-#### 2. Function Call Token:
+### 2. Function Call Token:
 
 * **Purpose:** 
   * Indicate to the client when the model is switching to function call mode.
@@ -150,7 +140,7 @@ open-graph:
   * Improved **streaming generation** by enabling the client to wait for the entire function call signature before processing.
   * Facilitates **constraint generation**, ensuring the model adheres to predefined function schemas.
 
-#### 3. Syntax for Function Calling:
+### 3. Syntax for Function Calling:
 
 * **Options:**
   * **Python Syntax:** Generate function calls using Python function call signature syntax.
@@ -163,7 +153,7 @@ open-graph:
     * **Advantages:** Better suited for complex, nested parameter types; easier to enforce schema with constraint generation; compatible with OpenAI APIs.
     * **Disadvantages:** Potentially more challenging for LLMs to generate compared to Python syntax.
 
-#### 4. Preserving Existing Model Capabilities:
+### 4. Preserving Existing Model Capabilities:
 
 * **Challenge:** Fine-tuning for function calling can inadvertently degrade pre-existing instruction following and general language capabilities.
 * **Recommendations:**
@@ -172,7 +162,7 @@ open-graph:
   * **Reduce Training Data:** Minimize the amount of training data to reduce the risk of overwriting existing capabilities.
   * **High-Quality Data:** Use a smaller volume of carefully curated, high-quality training data.
 
-#### 5. Full-Weight Tuning vs. LoRA Tuning:
+### 5. Full-Weight Tuning vs. LoRA Tuning:
 
 * **Recommendation:** LoRA tuning is generally sufficient and preferable for function calling, particularly in low-data regimes.
 * **Advantages of LoRA:**
@@ -180,7 +170,7 @@ open-graph:
   * Faster iteration cycles, enabling more experimentation.
   * Lower hosting and experimentation costs, especially with efficient LoRA serving solutions like Fireworks AI's platform.
 
-#### 6. Constraint Generation:
+### 6. Constraint Generation:
 
 * **Purpose:** Reduce hallucinations in model-generated function calls by leveraging the known schema of available functions.
 * **Implementation:**
@@ -191,14 +181,12 @@ open-graph:
   * **Faster Generation:** Enables short-circuiting generation by autocompleting predictable tokens based on the grammar, improving inference speed. 
 * **Fireworks AI:** Offers constraint generation support for function calling, requiring users to provide the function schemas.
 
-
-
-### General Recommendations and Considerations
+## General Recommendations and Considerations
 
 * **Work Smart:** Utilize existing open-source function-calling models whenever possible, as they are often sufficient for many use cases.
 * **Fine-Tuning Effort:** Be prepared for an iterative and potentially time-consuming process when fine-tuning for complex function-calling objectives.
 
-### Fireworks AI's Fire Function Models
+## Fireworks AI's Fire Function Models
 
 * **Playground:** [Firefunction V2](https://fireworks.ai/models/fireworks/firefunction-v2)
 * **Blog Post:** [Firefunction-v2: Function calling capability on par with GPT4o at 2.5x the speed and 10% of the cost](https://fireworks.ai/blog/firefunction-v2-launch-post)
@@ -221,9 +209,7 @@ open-graph:
   | Nexus parallel                     | 0.53            | 0.47     |
   | Mtbench                            | 0.84            | **0.93** |
 
-
-
-### Challenges in Fine-tuning for Function Calling
+## Challenges in Fine-tuning for Function Calling
 
 - **Data Scarcity:** Unlike general language modeling, readily available datasets for function calling are limited.
   - Existing datasets often focus on specific use cases (e.g., GPT-4 conversations or a limited number of functions).
@@ -245,9 +231,7 @@ open-graph:
     - Include precise instructions in system prompts. 
   - **Ongoing Research:** This area requires further exploration as function calling and multi-agent systems become more prevalent.
 
-
-
-### Prompt Templates for Fine-tuning
+## Prompt Templates for Fine-tuning
 
 - **System prompts** provide context and instructions to the model.
 - **General Guidelines:**
@@ -257,16 +241,12 @@ open-graph:
   - **Parsability:** Ensure the format allows easy parsing of function calls by the client.
   - **Mixed Output Handling:** Use special tokens to delineate between natural language and function call sections in assistant responses.
 
-
-
-### Successful Fine-tuning Examples
+## Successful Fine-tuning Examples
 
 - **GPT-4 Limitations:** Fine-tuning can overcome limitations in existing models, such as character limits in function descriptions.
 - **Complex Instructions:** Fine-tuning is particularly effective for scenarios with complex instructions on when to call specific functions, even with relatively simple functions.
 
-
-
-### Function Calling Data Sets and Evaluation
+## Function Calling Data Sets and Evaluation
 
 - **Datasets:**
   - [**Glaive**](https://huggingface.co/datasets/glaiveai/glaive-function-calling-v2)**:** High-quality but limited coverage of use cases.
@@ -283,9 +263,7 @@ open-graph:
   * **Real-World Testing:**  It's essential to test and evaluate models on the specific use cases they are intended for.
   * **Model Selection:**  Don't rely solely on benchmark scores; try out the top-performing models on your own data and use case to determine the best fit.
 
-
-
-### Base Models for Fine-tuning
+## Base Models for Fine-tuning
 
 - **Llama 3 & Llama 3.1:** Strong general-purpose models.
   - **FireFunction V1:** Based on Mistral.
@@ -295,9 +273,7 @@ open-graph:
 - **Phi (Microsoft):** Smaller models that perform well for their size and can potentially run without a GPU.
 - **Model Selection:**  Consider the specific objective (e.g., forced function calling, Python syntax) when choosing a base model. 
 
-
-
-### Memory Retention in Long Chains of Calls
+## Memory Retention in Long Chains of Calls
 
 - **Longer Context Models:** Opt for models with larger context windows (e.g., beyond Llama 3's 8K context) for extended conversations.
   - [Llama 3.1](https://llama.meta.com/) has 128K content window
@@ -309,9 +285,7 @@ open-graph:
   - Have the model summarize the key aspects of the conversation at the end of each turn.
   - Pass only the summary to the model in subsequent turns, effectively resetting the context while retaining essential information.
 
-
-
-### Multi-Agent Systems and Function Calling
+## Multi-Agent Systems and Function Calling
 
 * **Function as Agent:** A function can be considered an agent within a multi-agent system, interacting with other agents (potentially other functions or models) to complete tasks.
 * **Orchestration:**  Multi-agent frameworks like Autogen provide tools for defining agents, extracting function schemas, routing messages, and executing function calls based on model responses.
@@ -324,9 +298,7 @@ open-graph:
 
 - **Cost and Latency Optimization:**  Consider using smaller, specialized models for specific tasks to reduce cost and latency.
 
-
-
-### Comparison with Gorilla Project
+## Comparison with Gorilla Project
 
 - **Gorilla:**
   - Focuses on single-turn, forced function calling with Python signature generation.
@@ -337,9 +309,7 @@ open-graph:
   - Handles functions with more complex parameters and instructions.
 - **Benchmarks:** Gorilla leaderboard lacks tasks for complex system prompts and mixed conversation scenarios.
 
-
-
-### Smallest Model for Local Smart Home Assistant
+## Smallest Model for Local Smart Home Assistant
 
 - **Challenges:**  Running a model locally with hundreds of functions on a resource-constrained device.
 - **Potential Solutions:**
@@ -347,25 +317,19 @@ open-graph:
   - **Function Retrieval with RAG:** Use retrieval augmented generation (RAG) to dynamically select relevant functions based on user input, reducing the number of functions in the prompt.
   - **Smaller Models:** Explore smaller models like Phi or Qwen2 (2 billion parameters) that can potentially run without a GPU.
 
-
-
-### Function Calling with GraphQL
+## Function Calling with GraphQL
 
 - **GraphQL as Structured Data:** GraphQL can be treated as a structured data format similar to function call schemas.
 - **Leveraging Function Calling Models:**  Explore using existing function calling models to generate or complete GraphQL queries by defining GraphQL operations as functions.
 - **[Grammar Mode](https://docs.fireworks.ai/structured-responses/structured-output-grammar-based):**  Leverage the grammar enforcement capabilities of function calling models to ensure syntactically correct GraphQL queries.
 
-
-
-### Handling API Changes
+## Handling API Changes
 
 * **Canonical Data Format:** Store data in a format that can be easily translated to different API syntaxes.
 * **Client-Side Translation:**  Implement a wrapper around the API to handle syntax conversions, allowing the model to remain agnostic to specific API changes.
 * **Prompt-Based Function Definitions:**  Consider defining functions within the prompt itself.  This approach allows for easier updates when APIs change, eliminating the need for retraining.
 
-
-
-### Synthetic Data Generation Best Practices
+## Synthetic Data Generation Best Practices
 
 - **High-Quality Prompt and Seed Data:** Start with well-crafted prompts and a small, high-quality seed dataset.
 - **Good Generation Model:** Utilize a capable language model for generation, balancing the legal constraints of using closed-source models with the effort required for filtering outputs from open-source models.
@@ -375,15 +339,10 @@ open-graph:
 - **Post-Filtering:** Implement filtering mechanisms to remove low-quality or incorrect samples.
 - **DPO Alignment (Optional):** Use DPO to refine the model's behavior, especially for complex system prompts, by providing examples of both desired and undesired outputs.
 
-
-
-### Importance of Data vs. Hyperparameters vs. Base Model
+## Importance of Data vs. Hyperparameters vs. Base Model
 
 - **Data Quality:** As models become more intelligent and training data becomes smaller, the quality of the data becomes increasingly crucial.
 - **Hyperparameter Sensitivity:** Smaller datasets often lead to increased sensitivity to hyperparameters, requiring careful tuning.
 - **Base Model:** The choice of base model significantly impacts performance, especially for specialized tasks like Python code generation.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,8 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 * [Introduction](#introduction)
 * [Create a Kaggle Account](#create-a-kaggle-account)
 * [Sign in to Kaggle](#sign-in-to-kaggle)
@@ -25,14 +23,9 @@ open-graph:
 * [Store the Kaggle API Key](#store-the-kaggle-api-key)
 * [Conclusion](#conclusion)
 
-
-
-
 ## Introduction
 
 In this tutorial, I will guide you step-by-step to obtain a Kaggle API key, which you will need to access and download datasets from Kaggle using their API. This tutorial is suitable for beginners, even those who do not have a Kaggle account yet.
-
-
 
 ## Create a Kaggle Account
 
@@ -60,8 +53,6 @@ In this tutorial, I will guide you step-by-step to obtain a Kaggle API key, whic
 
    ![kaggle-verify-email-with-six-digit-code](./images/kaggle-verify-email-with-six-digit-code.png){fig-align="center"}<br>
 
-
-
 ## Sign in to Kaggle
 
 1. If you aren't already signed in, click the `Sign In` button at the top-right corner of the Kaggle homepage.
@@ -76,8 +67,6 @@ In this tutorial, I will guide you step-by-step to obtain a Kaggle API key, whic
 
    ![kaggle-sign-in-page](./images/kaggle-sign-in-page.png){fig-align="center"}<br>
 
-
-
 ## Access your Kaggle Account Settings
 
 1. Click on your profile picture at the top-right corner of the page. 
@@ -87,8 +76,6 @@ In this tutorial, I will guide you step-by-step to obtain a Kaggle API key, whic
 2. In the popout menu, click the `Settings` option.
 
    ![kaggle-click-settings-menu-option](./images/kaggle-click-settings-menu-option.png){fig-align="center"}<br>
-
-
 
 ## Generate Your Kaggle API Key
 
@@ -101,10 +88,6 @@ In this tutorial, I will guide you step-by-step to obtain a Kaggle API key, whic
    ![kaggle-save-kaggle-json-file](./images/kaggle-save-kaggle-json-file.png){fig-align="center"}<br>
 
 3. Download the `kaggle.json` file and save it to a secure location on your computer. This file contains your Kaggle API key and username.
-
-
-
-
 
 ## Store the Kaggle API Key
 
@@ -132,24 +115,10 @@ If you plan to use the Kaggle API on your local machine, ensure the `kaggle.json
   /Users/<username>/.kaggle/kaggle.json
   ```
 
-
-
-
-
 ## Conclusion
 
 You have successfully obtained your Kaggle API key. You can now use it to download datasets from Kaggle using their API.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

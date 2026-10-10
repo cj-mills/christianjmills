@@ -16,10 +16,6 @@ open-graph:
  
 ---
 
-
-
-
-
 - [Part I: Entering Through the Gates of Insight](#part-i-entering-through-the-gates-of-insight)
   - [Chapter 1: Hunting for Insights](#chapter-1-hunting-for-insights)
   - [Chapter 2: The Flash of Illumination](#chapter-2-the-flash-of-illumination) 
@@ -42,19 +38,9 @@ open-graph:
   - [Chapter 17: Tips for Becoming an Insight Hunter](#chapter-17-tips-for-becoming-an-insight-hunter) 
   - [Chapter 18: The Magic of Insights](#chapter-18-the-magic-of-insights)
 
-
-
-
-
 ::: {.callout-note title="Book LInks:"}
 * [Publisher Page](https://www.hachettebookgroup.com/titles/gary-klein/seeing-what-others-dont/9781610392754/)
 :::
-
-
-
-
-
-
 
 ## Part I: Entering Through the Gates of Insight
 
@@ -180,8 +166,6 @@ open-graph:
 - Klein's initial project aimed to find commonalities among insights and offer advice on increasing them.
 - However, the diverse nature of the collected stories led to the central mystery: What sparks an insight?
 
-
-
 ### Chapter 2: The Flash of Illumination
 
 #### Graham Wallace's Model of Insight
@@ -280,8 +264,6 @@ open-graph:
   * Connections, Coincidences, Curiosities, Contradictions, Creative Desperation. 
   * Most incidents involved multiple strategies. 
   * Klein questions which strategy is primary or whether a combined approach is more appropriate. These strategies are explored in the following chapters.
-
-
 
 ### Chapter 3: Connections
 
@@ -387,7 +369,6 @@ open-graph:
   - Yamamoto, Stark, and Chalfie demonstrate the process of receiving new information and grasping its implications.
   - Connecting new data to existing knowledge to gain insights and guide action.
 
-
 #### Broccoli and Goldfish: Infant Empathy
 
 - **Alison Gopnik's Insight:**
@@ -418,7 +399,6 @@ open-graph:
 - **Gopnik's Connection Insight:**
   - Similar to Yamamoto, Gopnik connected a new idea (her son's statement) to her existing work.
   - Led to a new understanding and expanded research possibilities.
-
 
 #### The Mother of All Scientific Insights: Darwin's Theory of Evolution
 
@@ -464,7 +444,6 @@ open-graph:
   - First-hand experience as naturalists, observing variations within and between species.
   - Recognized individual differences as the basis for blind variation and selective retention.
 
-
 #### The Connection Strategy and Its Limitations
 
 - **Connection Strategy:** A dominant pattern in insights, involving connecting new information with existing knowledge.
@@ -491,7 +470,6 @@ open-graph:
   - The connection strategy involves changing the way we think.
   - Other insight strategies (contradictions, creative desperation) also play a role.
 
-
 #### Multiple Insight Strategies at Play
 
 - **Coding for Insight Strategies:**
@@ -502,15 +480,10 @@ open-graph:
   - Only 45 cases relied solely on the connection strategy.
   - 53 cases involved connections plus other strategies.
 
-
 #### Conclusion: The Investigative Process
 
 - Insights are not simply about connecting the dots.
 - Like a mystery story, the investigation continues beyond the first likely suspect.
-
-
-
-
 
 ### Chapter 4: Coincidences and Curiosities
 
@@ -585,7 +558,6 @@ open-graph:
 - **Coincidence Insights**: Repetition is key. The specific details of individual instances are less important than the recurring pattern.
 - **Example**: If Gottlieb's first patient hadn't shown up, the subsequent patients would still have revealed the AIDS pattern.
 
-
 #### Curiosities
 
 - **Curiosities** represent another insight strategy.
@@ -607,7 +579,6 @@ open-graph:
   - Observed a significant current jump when using a cracked piece of silicon exposed to light.
   - Investigated the anomaly and discovered the impact of impurities on silicon's electrical conductivity.
   - This led to the development of transistors and diodes, and later, silicon solar cells.
-
 
 #### The Danger of Coincidence
 
@@ -666,7 +637,6 @@ open-graph:
   - Reed's team had to overcome flawed data (Finlay's study) and a prevailing belief.
   - The mosquito theory lacked plausibility compared to the miasma theory (disease caused by bad air).
 
-
 #### The Importance of Challenging Evidence
 
 - The ulcer and yellow fever examples show how flawed evidence can seemingly disprove a correct insight.
@@ -675,14 +645,11 @@ open-graph:
 - Both Marshall and Reed had to challenge existing beliefs and evidence.
 - Coincidence insights often involve contradictions between existing beliefs and new evidence.
 
-
 #### Conclusion
 
 - Coincidences, curiosities, and contradictions can all lead to valuable insights.
 - It's crucial to be open to exploring these avenues, even when they challenge established knowledge.
 - Evidence is important, but it can be misleading; critical thinking and careful investigation are essential.
-
-
 
 ### Chapter 5: Contradictions
 
@@ -765,7 +732,6 @@ open-graph:
 - Recognized an unsustainable bubble and AIG's vulnerability.
 - Unable to profit from his insight or convince his bosses of the impending danger.
 
-
 #### The Skeptical Mindset
 
 - The five investors and Harry Markopolos were skeptics.
@@ -791,7 +757,6 @@ open-graph:
 - Acted as a detective, challenging popular beliefs.
 - Similar to the five investors who foresaw the subprime bubble's end.
 - A suspicious mind offers unique benefits, exposing alternative facts and trends.
-
 
 #### The Broad Street Pump
 
@@ -823,14 +788,12 @@ open-graph:
 - Broad Street pump handle removed, coinciding with the epidemic's end (though it was already waning).
 - Snow's theory faced ridicule, but gained acceptance after the Broad Street pump incident.
 
-
 #### Contradictions and Insights
 
 - Contradictions fueled Snow's and Walter Reed's insights.
 - Humans are built to detect anomalies and inconsistencies.
 - Contradictions lead to insights (the better story) and can be considered insights themselves.
 - Noticing a contradiction shifts understanding.
-
 
 #### Thomas Kuhn and Paradigm Shifts
 
@@ -860,10 +823,6 @@ open-graph:
 - The strategy of using contradictions differs from noticing coincidences, curiosities, and making connections.
 - Klein questioned the ability to formulate a single answer to the mystery of insight.
 - One more strategy remained: the scientific method.
-
-
-
-
 
 ### Chapter 6: Creative Desperation
 
@@ -999,10 +958,6 @@ open-graph:
 - 29 out of Klein's 120 cases (nearly a quarter) fit this category.
 - Klein questions how to reconcile these cases with other types of insights.
 
-
-
-
-
 ### Chapter 7: Different Ways to Look at Insight
 
 #### Investigating the Origin of Insights
@@ -1048,7 +1003,6 @@ open-graph:
 - Mayweather tested Hatton's tendencies throughout the fight, observing his reactions to jabs and hooks.
 - The knockout was the culmination of a gradual process of observation, analysis, and timing. Klein's own understanding of the fight unfolded gradually, with no single "aha" moment.
 
-
 #### Looking at the Scientific Literature
 
 - Klein intentionally delayed reviewing existing research to maintain fresh perspective.
@@ -1068,7 +1022,6 @@ open-graph:
   - System 2: Slower, critical, analytical thinking (monitors and corrects System 1).
 - The heuristics and biases research emphasizes strengthening System 2 (downward arrow in performance diagram - reducing errors).
 - Klein argues for balancing this focus with an appreciation for insights (upward arrow - gaining new understanding).
-
 
 #### Looking at the Stories
 
@@ -1090,10 +1043,6 @@ open-graph:
 - Klein's working definition of insight is "an unexpected shift to a better frame."
 - The concept of a **frame** with data-fitting **slots** is introduced as a potential avenue for understanding insight.
 - Klein acknowledges the vagueness of these ideas but hopes they will lead to a new model of insight.
-
-
-
-
 
 ### Chapter 8: The Logic of Discovery
 
@@ -1217,13 +1166,7 @@ open-graph:
   - Problem reformulation/restructuring: Contradiction.
 - Triple-path model clarifies why researchers seem to talk past each other (different paths).
 
-
-
-
-
 ## Part II: Shutting the Gates
-
-
 
 ### Chapter 9: Stupidity
 
@@ -1305,8 +1248,6 @@ open-graph:
 - Klein's diverse examples lacked this control.
 - Could a "natural experiment" be designed?
 
-
-
 ### Chapter 10: The Study of Contrasting Twins
 
 #### Introduction
@@ -1380,7 +1321,6 @@ open-graph:
   - Making cosmetic changes to their theory.
 - Physicians also exhibit "**knowledge shields**" to protect initial (sometimes incorrect) diagnoses (Paul Feltovich).
 
-
 #### Lack of Experience
 
 - Second reason for missed insights.
@@ -1409,7 +1349,6 @@ open-graph:
   - Obtained release from the non-compete clause by requesting the impossible client list.
 - **Legal officer at Ginger's new company**: Failure twin.
   - Only interpreted the agreement, didn't consider its practical implications.
-
 
 #### A Concrete Reasoning Style
 
@@ -1452,7 +1391,6 @@ open-graph:
   - Opposite chain directions (mirror images).
   - Replication mechanism (zipper-like).
 
-
 ##### The Scientific Community vs. Watson and Crick
 
 - **Scientific Community**:
@@ -1464,7 +1402,6 @@ open-graph:
   - Right blend of experience: Crick (physics, X-ray diffraction, proteins, gene function), Watson (biology, phages, bacterial genetics).
   - Benefited from Alfred Hershey's 1952 discovery that only phage DNA enters the host cell, contradicting the protein belief.
 
-
 ##### Chargaff vs. Watson and Crick
 
 - **Erwin Chargaff**:
@@ -1474,8 +1411,6 @@ open-graph:
 - **Watson and Crick**:
   - Crick immediately saw the implication of complementary pairing upon hearing Chargaff's results.
   - Active mindset, especially Crick's focus on DNA function and replication.
-
-
 
 ##### Franklin vs. Watson and Crick
 
@@ -1491,7 +1426,6 @@ open-graph:
   - Model-building approach.
   - Active and playful reasoning styles.
 
-
 ##### Watson vs. Crick
 
 - **Watson**:
@@ -1502,7 +1436,6 @@ open-graph:
 - **Crick**:
   - Immediately saw the implication of complementary pairing.
   - Active and functional perspective.
-
 
 ##### Luck and the Double Helix
 
@@ -1516,10 +1449,6 @@ open-graph:
 - Four factors hinder insights: flawed beliefs, limited experience, passive stance, concrete reasoning style.
 - Playful/concrete reasoning is a personality trait.
 - Additional barriers can be inadvertently created (e.g., computer systems).
-
-
-
-
 
 ### Chapter 11: Dumb by Design
 
@@ -1619,7 +1548,6 @@ This chapter explores how common design guidelines for computer-based decision s
     - Walter Reed: Chasing mosquitoes instead of improving sanitation.
     - Wagner Dodge: Stopping to light an escape fire.
 
-
 #### Stronger Design Equals Weaker Insights
 
 - The four design principles rely on order and structure, while insights are disorderly.
@@ -1633,10 +1561,6 @@ This chapter explores how common design guidelines for computer-based decision s
 - Klein acknowledges the usefulness of the four guidelines but emphasizes their potential to stifle insight.
 - Organizations often claim to value innovation but their practices often hinder it.
 - Klein is pessimistic about designing systems that foster insight because the traditional guidelines are too compelling and organizations might resist more flexible approaches.
-
-
-
-
 
 ### Chapter 12: How Organizations Obstruct Insights
 
@@ -1734,10 +1658,6 @@ This section describes how organizations obstruct insights through management co
 - **Thomas Kuhn**: Kuhn's concept of "normal science" describes how scientists often suppress novelties that challenge established paradigms, highlighting the prevalence of error aversion even in scientific research.
 - **Examples of Scientific Suppression**: The resistance faced by Carlos Finlay (mosquitoes and yellow fever), John Snow (contaminated water and cholera), and Barry Marshall (H. pylori and ulcers) demonstrates the scientific community's susceptibility to the down arrow.
 - **Puzzle-Solving Focus**: Kuhn's description of normal science as puzzle-solving parallels the focus of insight researchers on puzzle problems, which, as explored in the next chapter, has contributed to limiting the understanding of insights.
-
-
-
-
 
 ### Chapter 13: How Not to Hunt for Insights
 
@@ -1872,17 +1792,10 @@ This section describes how organizations obstruct insights through management co
 - Klein emphasizes that the purpose of science is to learn about the world, not just to adhere to rigid methods.
 - They advocate for using methods that effectively capture the phenomenon under investigation, even if it means departing from conventional approaches.
 
-
 #### Conclusion: Retiring the Impasse Paradigm
 
 - Klein concludes that the impasse paradigm may have become "played out" and proposes moving beyond it.
 - While valuable insights have been gained, it's time to explore new approaches that capture the full complexity of insights.
-
-
-
-
-
-
 
 ## Part III: Opening the Gates
 
@@ -1913,7 +1826,6 @@ This section describes how organizations obstruct insights through management co
   * The technique involved asking the firefighter to explain his rationale instead of immediately reprimanding him.
   * This led the captain to realize the firefighter's actions were well-intentioned, leading to the self-insight: "*I was the attitude problem*."
   * The captain's tilt reflex was triggered by the unexpected explanation, revealing his own role in creating conflict through rigid adherence to procedures. He gained insight into his firefighter and himself by actively seeking another perspective and being open to contradictory views.
-
 
 ##### Swirl (Connection Path)
 
@@ -1966,7 +1878,6 @@ This section describes how organizations obstruct insights through management co
 * **Caution Against Overreliance on Critical Thinking:** Excessive critical thinking can stifle creativity and exploration of new ideas. It can dampen the "up arrow" and interfere with non-critical, playful thinking.
 * **Role of Critical Thinking in Insight:** Most useful in times of desperation when flawed assumptions hinder progress.
 
-
 #### The Pause That Refreshes (Incubation)
 
 * **Incubation in Wallace's Four-Stage Model:** Wallace emphasized incubation as a stage in the creative process.
@@ -2002,10 +1913,6 @@ This section describes how organizations obstruct insights through management co
 
 * Exposure to diverse ideas is primarily relevant for the connection path.
 * Breaking through fixation and impasses applies mainly to the desperation path.
-
-
-
-
 
 ### Chapter 15: Helping Others
 
@@ -2100,10 +2007,6 @@ This section describes how organizations obstruct insights through management co
 - Klein should have explored the sergeant's reasoning and helped him differentiate between being ambushed and observing an ambush.
 - This missed opportunity highlights Klein's own learning process in helping others gain insights.
 
-
-
-
-
 ### Chapter 16: Helping Our Organizations
 
 #### The Tyranny of the Down Arrow
@@ -2168,7 +2071,6 @@ This section describes how organizations obstruct insights through management co
 
 * **Downward Arrow Persistence**: Klein's pessimism stems from observing how "flavor of the month" initiatives often give way to the persistent forces of predictability and perfection.
 
-
 #### Loosen the Filters
 
 *   **Alternate Reporting**: Create alternate reporting routes to bypass routine editing and filtering.
@@ -2209,7 +2111,6 @@ This section describes how organizations obstruct insights through management co
 
 * **Diagnosing Organizational Problems**: Organizations need self-insight to determine whether their problems stem from preventing, filtering, or failing to act on insights.
 
-
 #### Appeal to Authority
 
 *   **Changing the Culture**: Leaders can be persuaded to change the organizational culture by demonstrating the negative consequences of overemphasizing the down arrow.
@@ -2219,10 +2120,6 @@ This section describes how organizations obstruct insights through management co
 *   **Balancing the Arrows with Six Sigma**: Six Sigma shouldn't be abandoned but integrated into a balanced approach.
 *   **Ambidextrous Organizations**: Charles O'Reilly III and Michael Tushman's concept of **ambidextrous organizations** advocates for separate groups focused on efficiency (down arrow) and innovation (up arrow) reporting to the same manager. This helps prevent the error-reduction culture from stifling creativity.
 *   **Pragmatism and Survival**: Appealing to the desire for organizational success and survival in a competitive environment can be a powerful motivator for change.
-
-
-
-
 
 ### Chapter 17: Tips for Becoming an Insight Hunter
 
@@ -2361,10 +2258,6 @@ This section describes how organizations obstruct insights through management co
 - **Alternative Interpretation**: Gary honorably admitted his foolishness (but he had forgotten Helen's initial suggestion).
 - **Conclusion**: Even simple incidents can reveal multiple layers of insight.
 
-
-
-
-
 ### Chapter 18: The Magic of Insights
 
 #### The Illusion of Magical Insights
@@ -2482,10 +2375,5 @@ This section describes how organizations obstruct insights through management co
 
 - The ancient Greeks revered the capacity for insight, honoring the Muses as goddesses of creative inspiration.
 - While demystifying insights, Klein emphasizes the importance of appreciating the awe and wonder they inspire.
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

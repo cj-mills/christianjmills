@@ -30,21 +30,15 @@ open-graph:
 * [Test it Out](#test-it-out)
 * [Conclusion](#conclusion)
 
-
-
 ## Introduction
 
 In this post, we'll cover how to use a [compute shader](https://docs.unity3d.com/Manual/class-ComputeShader.html) to flip an image across the x-axis, y-axis, and diagonal axis. We will also demonstrate how these operations can be combined to rotate an image.
-
-
 
 ## Create a 2D Unity Project
 
 Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, but you should be fine using other versions.
 
 ![](./images/unity-hub-create-project.png){fig-align="center"}
-
-
 
 ## Create Compute Shader
 
@@ -99,8 +93,6 @@ int width;
 // Stores the new location for individual pixel values
 int2 coords;
 ```
-
-
 
 ### Define Flip Functions
 
@@ -157,19 +149,11 @@ void FlipDiag(uint3 id : SV_DispatchThreadID)
 }
 ```
 
-
-
-
-
-
-
 ## Create `Flip` Script
 
 Back in Unity, right-click an empty space in the Assets folder and select `C# Script` in the `Create` submenu. Name the new script, `Flip` and open it in your code editor.
 
 ![](./images/unity-create-flip-script.png){fig-align="center"}
-
-
 
 ### Define Variables
 
@@ -207,8 +191,6 @@ public class Flip : MonoBehaviour
     private RenderTexture image;
 ```
 
-
-
 ### Define `Start()` Method
 
 In the `Start()` method, we'll store a copy the original test image in the `image` `RenderTexture`. We can do so by getting a reference to the `Texture` attached to the `screen` and using the [`Graphics.Blit()`](https://docs.unity3d.com/ScriptReference/Graphics.Blit.html) method. We'll also get a reference to the camera so that we can adjust the view to fit the current image. 
@@ -229,8 +211,6 @@ void Start()
     mainCamera = GameObject.Find("Main Camera");
 }
 ```
-
-
 
 ### Define `FlipImage()` Method
 
@@ -278,8 +258,6 @@ private void FlipImage(RenderTexture image, RenderTexture tempTex, string functi
     RenderTexture.ReleaseTemporary(result);
 }
 ```
-
-
 
 ### Define `Update()` Method
 
@@ -367,8 +345,6 @@ void Update()
 }
 ```
 
-
-
 ## Create Screen GameObject
 
 Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Quad` from the `3D Object` submenu. Name the new object `Screen`. The size will be updated automatically by the `Flip.cs` script.
@@ -388,8 +364,6 @@ With the `ImageFlipper` selected, drag and drop the `Flip.cs` script into the `I
 Drag and drop the `Screen` object from the `Hierarchy` tab as well as the `FlipShader` from the `Assets` folder onto their respective spots in the `Inspector` tab.
 
 ![](./images/unity-inspector-assign-parameters.png){fig-align="center"}
-
-
 
 ## Test it Out
 
@@ -431,13 +405,9 @@ Now we can click the Play button and toggle the different flip checkboxes to con
 
 ![](./images/flip-y-axis.png){fig-align="center"}
 
-
-
 ### Flip Diagonal Axis
 
 ![](./images/flip-diagonal-axis.png){fig-align="center"}
-
-
 
 ### Flip X-Axis and Y-Axis
 
@@ -455,8 +425,6 @@ Now we can click the Play button and toggle the different flip checkboxes to con
 
 ![](./images/flip-x-axis-y-axis-and-diagonal-axis.png){fig-align="center"}
 
-
-
 ## Conclusion
 
 That is one approach to efficiently flip images on the GPU in Unity. As demonstrated above, the operations can be combined in different ways to rotate the image as well.
@@ -464,11 +432,5 @@ That is one approach to efficiently flip images on the GPU in Unity. As demonstr
 
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Flip-Image-Compute-Shader)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

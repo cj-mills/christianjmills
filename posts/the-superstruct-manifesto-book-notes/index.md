@@ -16,12 +16,6 @@ open-graph:
  
 ---
 
-
-
-
-
-
-
 - [**Epigraph**](#epigraph)
 - [**Introduction**](#introduction)  
 - [**Chapter 1: We Will Not Inflict Daily Standups on Our Devs**](#chapter-1-we-will-not-inflict-daily-standups-on-our-devs)  
@@ -37,22 +31,14 @@ open-graph:
 - [**Conclusion**](#conclusion)  
 - [**Key Takeaways**](#key-takeaways)
 
-
-
-
-
 ::: {.callout-note title="Book LInks:"}
 * [Book Website](https://superstructmanifesto.com/)
 :::
-
-
 
 ## **Epigraph**
 
 > *"It's not because things are difficult that we dare not venture. It's because we dare not venture that they are difficult."*
 > **– Seneca**
-
-
 
 ## **Introduction**
 
@@ -97,8 +83,6 @@ open-graph:
 8. **Ownership and Structure**
    - If you **want engineers to behave like seniors**, you must **provide and enforce** the appropriate structure.
    - Some engineers may **push back** against imposed structure (they want “ice cream for dinner”), but **unfocused freedom** can lead to **low-value output** and **too many distractions**.
-
-
 
 ## **Chapter 1: We Will Not Inflict Daily Standups on Our Devs**
 
@@ -160,8 +144,6 @@ open-graph:
 - **Quote**: “Nothing stands in the way of devs alerting their teammates to blockers.”
 - Daily stand-ups are **inefficient** and can be **replaced** by **less disruptive** methods.
 
-
-
 ## **Chapter 2: We Will Not Test Devs with Computer Science Riddles**
 
 ### **Context**
@@ -203,8 +185,6 @@ open-graph:
    - See if a candidate can **knock out real features** from your **actual roadmap** or from **similar** past experience.
 3. **Focus on Fit**
    - People with heavy algorithmic training might **not** be the best fit for a small startup that prioritizes **direct customer impact**.
-
-
 
 ## **Chapter 3: We Will Not Recruit 10x Developers**
 
@@ -260,8 +240,6 @@ open-graph:
 - **Focus** on building a **balanced team** that can consistently deliver.
 - **Quote**: “Optimize for predictability, not the extremes.”
 
-
-
 ## **Chapter 4: We Will Not Let Devs Start without an Estimate**
 
 ### **Importance of Estimates**
@@ -294,7 +272,6 @@ open-graph:
        - The dev might **over-engineer** a piece that’s not crucial.
      - Or you missed some **hidden complexity**.
 
-
 ### **Constraints and Realities**
 
 1. **Aligning Incentives**
@@ -318,8 +295,6 @@ open-graph:
 
 - Estimates ensure **devs truly understand** the task and have **skin in the game**.
 - They also help you **plan checkpoints** and **hold devs accountable**.
-
-
 
 ## **Chapter 5: We Will Not Sprint**
 
@@ -363,8 +338,6 @@ open-graph:
      - Meet regularly for **feedback**.
    - **None** of these require forcing everything into a **two-week cycle**.
 
-
-
 ## **Chapter 6: We Will Not Allow Our Devs to Multitask**
 
 ### **Value of Finished Projects**
@@ -407,8 +380,6 @@ open-graph:
    - Meeting a valuable contact for dinner: If you *really* care, you’ll find a way despite obstacles.
 3. **Conclusion**
    - Don’t reward devs for simply **starting** multiple things. Reward them for **seeing things through** to production.
-
-
 
 ## **Chapter 7: We Will Not Accept the First Solution a Dev Thinks Up**
 
@@ -457,8 +428,6 @@ open-graph:
 
    - **Better** to take time up front, handle **uncomfortable** brainstorming, and find the approach that fits the **business constraints** (time, money, scope).
 
-
-
 ## **Chapter 8: We Will Not Allow Our Devs to Talk in Private**
 
 ### **Knowledge Retention**
@@ -485,8 +454,6 @@ open-graph:
 4. **Benefits of Writing**
    - Forces **more precise thought** and fosters a **lasting record**.
    - The company **should own** the knowledge, not let it vanish when employees depart.
-
-
 
 ## **Chapter 9: We Will Not Allow Our Devs to Wander Off**
 
@@ -517,8 +484,6 @@ open-graph:
    - If devs **never** see the **impact** of their output, they lose motivation.
    - Founders know how features matter to customers, but devs may **not** see that connection.
 
-
-
 ## **Chapter 10: We Will Not Let Our Devs Boss Us Around**
 
 ### **Founder Fears**
@@ -546,8 +511,6 @@ open-graph:
    - A dev who **bullies** you into rewrites or halting your roadmap is a liability.
 4. **Challenge Their Assumptions**
    - Make devs **prove** that a major refactor or rewrite is truly best for the **business** rather than an **engineering** preference.
-
-
 
 ## **Conclusion**
 
@@ -585,8 +548,6 @@ open-graph:
 4. **Courage and Honesty**
    - Retain what’s **effective** and drop what’s **not**, even if it’s an industry trend.
 
-
-
 ## **Key Takeaways**
 
 - **Daily stand-ups**: Disruptive, often low-ROI, large **context-switching** cost.
@@ -601,10 +562,5 @@ open-graph:
 - **Do not fear your devs**: They work **for** you and **your customers’** benefit.
 
 > **Above all**: Engineering strategies should serve the **business’s** success and **customer needs**.
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

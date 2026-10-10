@@ -27,7 +27,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [The Magic of Convolutions](#the-magic-of-convolutions)
 * [Our First Convolutional Neural Network](#our-first-convolutional-neural-network)
 * [Improving Training Stability](#improving-training-stability)
@@ -60,23 +59,23 @@ def print_source(obj):
         print(line)
 ```
 
-
-
 ## Convolutional Neural Networks
 
 ## The Magic of Convolutions
+
 * feature engineering
     * creating new transformations of the input data in order to make it easier to the model
     * one of the most powerful tools machine learning practitioners have at their disposal
 * a feature is a transformation of the data that is designed to make it easier to the model
 
+### Convolution
 
-#### Convolution
 * applies a kernel across an image
     * multiplies each element of an $NxN$ size kernel by each element of an $NxN$ block of an image and adds the results together
 * kernel: a little matrix
 
-#### [A guide to convolution arithmetic for deep learning](https://arxiv.org/abs/1603.07285)
+### [A guide to convolution arithmetic for deep learning](https://arxiv.org/abs/1603.07285)
+
 * provides many great diagrams showing how image kernels can be applied
 
 -----
@@ -558,10 +557,7 @@ apply_kernel(5,7,top_edge)
 tensor(762.)
 ```
 
-
-
 ### Mapping a Convolution Kernel
-
 
 ```python
 # Nested list comprehension to generate a list of coordinates
@@ -627,9 +623,7 @@ show_image(bottom_edge3);
 ```
 ![](./images/output_27_0.png){fig-align="center"}
 
-
 ### Convolutions in PyTorch
-
 
 ```python
 diag1_edge = tensor([[ 0,-1, 1],
@@ -839,13 +833,14 @@ for i in range(6):
 
 ![](./images/output_37_5.png){fig-align="center"}
 
-
 ### Strides and Padding
+
 * appropriate padding ensures the output activation map is the same size as the original image
 * the necessary padding for an $ksxks$ size kernel (where $ks$ is an odd number) is `ks//2`
     * almost never use even size kernels
-    
+
 #### Stride
+
 * the amount of pixels the kernel moves across the image at each step
 * stride-1 convolutions (with appropriate padding) maintain the same image size
 * stride-2 convolutions are usefult for reducing the size of the output
@@ -859,15 +854,12 @@ for i in range(6):
     2. some elements are forced to have the same value
 * These constraints enforce a certain pattern of connectivity
 
-
-
 ## Our First Convolutional Neural Network
 
 * the kernels for the convolutions are learned during training
     * the model will learn what features are useful for classification
 
 ### Creating the CNN
-
 
 ```python
 simple_net = nn.Sequential(
@@ -1083,9 +1075,7 @@ learn.fit_one_cycle(2, 0.01)
 </table>
 </div>
 
-
 ### Understanding Convolution Arithmetic
-
 
 ```python
 m = learn.model[0]
@@ -1129,17 +1119,17 @@ m[0].bias.shape
 torch.Size([4])
 ```
 
-
-
 ### Receptive Fields
+
 * the area of an image that is involved in the calculation of a layer
 
-
 ### A Note About Twitter
+
 * Many of the top people in deep learning today are Twitter regulars
 * One of the main ways to stay up to date with interesting papers, software releases, and other deep learning news
 
 ## Color Images
+
 * a color image is a rank-3 tensor
 * we don't use the same convolutional kernel for all three color channels
 * kernel has a size of `ch_in x 3 x 3` where `ch_in` is the number of input channels (e.g. 3 for RGB)
@@ -1198,8 +1188,6 @@ for bear,ax,color in zip(im,axs,('Reds','Greens','Blues')):
 ```
 ![](./images/output_69_0.png){fig-align="center"}
 
-
-
 ## Improving Training Stability
 
 ```python
@@ -1252,8 +1240,8 @@ dls.show_batch(max_n=9, figsize=(4,4))
 ```
 ![](./images/output_75_0.png){fig-align="center"}
 
-
 ### A Simple Baseline
+
 * more convolutional filters are likely required since there are more numbers to recognize
 * it is important to keep the number of filters smaller than the number of pixels in the kernel size
     * this forces the neural network to extract useful features
@@ -1303,6 +1291,7 @@ def fit(epochs=1):
 ```
 
 #### fastai ActivationStats
+
 * provides som handy utilities for plotting the activations during training
 
 -----
@@ -1440,6 +1429,7 @@ learn.activation_stats.plot_layer_stats(-2)
 **Note:** The problems got wors toward the end of the network.
 
 ### Increase Batch Size
+
 * a larger batch size can make training more stable
 * larger batches have more accurate gradients, since they are calculated from more data
 * larger batch sizes mean fewer batches per epoch, meaning fewer opportunities for your model to update weights
@@ -1488,6 +1478,7 @@ learn.activation_stats.plot_layer_stats(-2)
 **Note:** Still a high number of activations near zero.
 
 ### 1cycle Training
+
 * it is dangerous to begin training with a high learning rate as the initial random weights are not well suited to the target task
 * don't want to end with a high learning rate either
 * want to start with a smaller learning rate, then gradually increase it, then gradually decrease it again towards the end of training
@@ -1502,8 +1493,8 @@ learn.activation_stats.plot_layer_stats(-2)
         * we end up in a smoother, more generalizable part of the loss landscape
 * a model that generalizes well is one whose loss would not change much if you changed the input a little
 
-
 #### Momentum
+
 * a technique where the optimizer takes a step not only in the direction of the gradients, but also that continues in the direction of previous steps
 * [A disciplined approach to neural network hyper-parameters: Part 1 -- learning rate, batch size, momentum, and weight decay](https://arxiv.org/abs/1803.09820)
     * cyclical momentum: the momentum varies in the opposite direction of the learning rate
@@ -1522,6 +1513,7 @@ def fit(epochs=1, lr=0.06):
 ```
 
 #### fastai fit_one_cycle
+
 * uses cosine annealing instead of linear annealing
 * `lr_max`: the highest learning rate that will be used during training
     * single number for all layers
@@ -1649,9 +1641,8 @@ Recorder
 fastai.learner.Recorder
 ```
 
-
-
 #### fastai Recorder
+
 * [Documentaion]()
 * records everything that happens during training including
     * losses
@@ -1859,9 +1850,8 @@ class ActivationStats(HookCallback):
             ax.set_title(title)
 ```
 
-
-
 #### fastai color_dim
+
 * [Detailed Explanation](https://forums.fast.ai/t/the-colorful-dimension/42908)
 * developed with fast.ai student Stefano Giomo
 * express with colors the mean and standard deviation of activations for each batch during training
@@ -1892,6 +1882,7 @@ learn.activation_stats.color_dim(-2)
 * This can be addressed with batch normalization
 
 ### Batch Normalization
+
 * take the average of the mean and standard deviations of the activations of a layer and use those to normalize that activations
     * this by itself can cause problems if the network wants some activations to be really high in order to make accurate predictions
         * resolved by adding two learnable parameters, gamma and beta
@@ -2160,9 +2151,6 @@ learn = fit(5, lr=0.1)
 </table>
 </div>
 
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -2173,11 +2161,5 @@ learn = fit(5, lr=0.1)
 **Previous:** [Notes on fastai Book Ch. 12](../chapter-12/)
 
 **Next:** [Notes on fastai Book Ch. 14](../chapter-14/)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

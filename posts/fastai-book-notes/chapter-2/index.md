@@ -28,7 +28,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [The Practice of Deep Learning](#the-practice-of-deep-learning)
 * [Gathering Data](#gathering-data)
 * [From Data to DataLoaders](#from-data-to-dataloaders)
@@ -36,7 +35,6 @@ open-graph:
 * [Turn Your Model into an Online Application](#turn-your-model-into-an-online-application)
 * [How to Avoid Disaster](#how-to-avoid-disaster)
 * [References](#references)
-
 
 ## The Practice of Deep Learning
 
@@ -155,8 +153,6 @@ open-graph:
     4. Models
         - Build a model that you can use to determine the best actions to take to get the best results in terms of your objective
         - The models we can build are determined by the objective, available levers and available data
-
-
 
 ## Gathering Data
 
@@ -488,11 +484,9 @@ print(failed[:5])
 failed.map(Path.unlink);
 ```
 
-
-
 ## From Data to DataLoaders
 
-#### DataLoaders
+### DataLoaders
 
 - A thin fastai class that just stores whatever DataLoader objects passed to it and makes them available as the properties `train` and `valid`
 - Provides the data for your model
@@ -503,11 +497,11 @@ failed.map(Path.unlink);
     - How to label these items
     - How to create the validation set
 
-#### DataLoader
+### DataLoader
 
 - A class that provides batches of a few items at a time to the GPU
 
-#### Data block API
+### Data block API
 
 - A flexible system to fully customize every stage of the creation of your DataLoaders
 - Data block: a template for creating a DataLoaders object
@@ -600,8 +594,6 @@ dls.train.show_batch(max_n=4, nrows=1, unique=True)
 
 ![](./images/output_26_0.png){fig-align="center"}
 
-
-
 ### Data Augmentation
 
 - Refers to creating random variations of our input data, such that they appear different but do not change the meaning of the data
@@ -635,9 +627,8 @@ X = torch.linalg.solve(A, B) (Triggered internally at  ../aten/src/ATen/native/B
 
 ![](./images/output_28_1.png){fig-align="center"}
 
-
-
 ## Using a Model to Clean Your Data
+
 - Cleaning data and getting it ready for your model are two of the biggest challenges for data scientists
     - Data scientists say it takes 90% of their time
 - Using the model for data cleaning
@@ -770,10 +761,6 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 # for idx,cat in cleaner.change(): shutil.move(str(cleaner.fns[idx]), path/cat)
 ```
 
-
-
-
-
 ## Turn Your Model into an Online Application
 
 - inference: using a trained model to make predictions on new data
@@ -793,8 +780,6 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 - CPU inference is much cheaper than GPU
 - There are often free CPU servers available for demoing prototype application
 - Run your model on a server instead of an edge device when possible
-
-
 
 ## How to Avoid Disaster
 
@@ -853,8 +838,6 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
     - How would you know what was really going on?
 - Make sure that reliable and resilient communication channels exist so that the right people will be aware of issues and will have the power to fix them
 
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -865,9 +848,5 @@ VBox(children=(Dropdown(options=('black', 'grizzly', 'teddy'), value='black'), D
 **Previous:** [Notes on fastai Book Ch. 1](../chapter-1/)
 
 **Next:** [Notes on fastai Book Ch. 3](../chapter-3/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

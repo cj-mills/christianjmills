@@ -27,8 +27,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
-
 * [A Brief History of Neural Networks](#a-brief-history-of-neural-networks)
 * [How to Learn Deep Learning](#how-to-learn-deep-learning)
 * [What is Machine Learning?](#what-is-machine-learning?)
@@ -38,7 +36,6 @@ open-graph:
 * [Other Deep Learning Applications](#other-deep-learning-applications)
 * [Jargon](#jargon)
 * [References](#references)
-
 
 ## A Brief History of Neural Networks
 
@@ -60,7 +57,6 @@ open-graph:
   - Gave the artificial neuron the ability to learn
   - Invented the perceptron algorithm in 1958
   - Wrote The Design of an Intelligent Automaton
-
 
 ### [Perceptrons](https://en.wikipedia.org/wiki/Perceptrons_(book))
 
@@ -94,7 +90,6 @@ open-graph:
     - [Volume 2](https://mitpress.mit.edu/books/parallel-distributed-processing-volume-2)
     - [PDF Scans](https://stanford.edu/~jlmcc/papers/PDP/)
 
-
 ### 1980s-1990s
 
 - Most models were built with a second layer of neurons
@@ -102,8 +97,6 @@ open-graph:
 - A misunderstanding of the theoretical issues held back the field
     - In theory, two-layer models could approximate any mathematical function
     - In practice, multiple layers are needed to get good, practical performance
-
-
 
 ## How to Learn Deep Learning
 
@@ -133,8 +126,6 @@ open-graph:
 - Focus on underlying techniques and how to apply them over specific tools or software libraries
 - Experiment constantly
 
-
-
 ## What is Machine Learning?
 
 * another way to get computers to complete a desired task
@@ -146,8 +137,6 @@ open-graph:
 
 
 ![A traditional program](./images/a-traditional-program.png){fig-align="center"}
-
-
 
 ### Machine Learning
 
@@ -183,8 +172,6 @@ open-graph:
 
 ![Using a trained model as a program](./images/using-a-trained-model.png){fig-align="center"}
 
-
-
 ### What is a Neural Network?
 
 - A particular kind of machine learning model
@@ -192,17 +179,12 @@ open-graph:
 - [Universal Approximation Theorem](https://en.wikipedia.org/wiki/Universal_approximation_theorem): shows that a neural network can, in theory, solve any problem to any level of accuracy
 - [Stochastic Gradient Descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent): a general way to automatically update the weights of a neural network to make it improve at any given task
 
-
-
 ### Deep learning
 
 - A computer science technique to extract and transform data by using multiple layers of neural networks
 - Output from the previous layer serves as input for the next
 - Each layer progressively refines their input
 - A neural network learns to perform a specified task through training its layers using algorithms that minimize their errors and improve their accuracy
-
-
-
 
 ### Inherent Limitations of Machine Learning
 
@@ -216,14 +198,9 @@ open-graph:
     2. Law enforcement officers using the model might decide to focus policing activity in areas where previous arrests were made, resulting in more arrests in those areas
     3. The data from these new arrests are then fed into the model, increasing its bias towards those areas
 
-
-
-
-
 ## Create an Image Classifier
 
 ### Import Dependencies
-
 
 ```python
 # Import fastai computer vision library
@@ -231,10 +208,7 @@ open-graph:
 from fastai.vision.all import *
 ```
 
-
-
 ### Load Training Data
-
 
 ```python
 # Download and extract the training dataset 
@@ -430,12 +404,9 @@ dls.after_batch
 Pipeline: IntToFloatTensor -- {'div': 255.0, 'div_mask': 1}
 ```
 
-
-
 ### Train a Model
 
 #### Randomly Initialized Weights
-
 
 ```python
 learn = cnn_learner(dls, resnet34, metrics=accuracy, pretrained=False)
@@ -484,9 +455,7 @@ learn.fine_tune(1)
 </table>
 </div>
 
-
 #### Pretrained Weights
-
 
 ```python
 # removes the last layer of the of the pretrained resnet34 and
@@ -674,10 +643,7 @@ accuracy
 <function fastai.metrics.accuracy(inp, targ, axis=-1)>
 ```
 
-
-
 ### Use Trained Model
-
 
 ```python
 # Upload file(s) from browser to Python kernel as bytes
@@ -756,9 +722,6 @@ Is this a cat?: True.
 Probability it's a cat: 1.000000
 ```
 
-
-
-
 ## Inspecting Deep Learning Models
 
 - It is possible to inspect deep learning models and get rich insights from them
@@ -768,8 +731,6 @@ Probability it's a cat: 1.000000
     - showed how to visualize the neural network weights learned in each layer of a model
     - discovered the early layers in a convolutional neural network recognize edges and simple patterns which are combined in later layers to detect more complex shapes
       - very similar to the basic visual machinery in the human eye
-
-
 
 ## Applying Image Models to Non-Image Tasks
 
@@ -787,8 +748,6 @@ Probability it's a cat: 1.000000
 - It is often a good idea to represent your data in a way that makes it as easy as possible to pull out the most important components
     - In a time series, things like seasonality and anomalies are most likely to be of interest
 - Rule of thumb: if the human eye can recognize categories from images, then a deep learning model should be able to as well
-
-
 
 ## Other Deep Learning Applications
 
@@ -949,12 +908,6 @@ learn.show_results(max_n=6, figsize=(18,20))
 
 
 ![](./images/output_47_2.png){fig-align="center"}
-
-
-
-
-
-
 
 ### Natural Language Processing (NLP)
 
@@ -1214,8 +1167,6 @@ learn.predict("I really hated that movie!")
 ('neg', TensorText(0), TensorText([0.9534, 0.0466]))
 ```
 
-
-
 ### Tabular Data
 
 - data that in in the form of a table
@@ -1458,9 +1409,6 @@ learn.fit_one_cycle(3)
 </table>
 </div>
 
-
-
-
 ### Recommendation Systems
 
 - model tries to predict the rating a user would give for something
@@ -1669,10 +1617,6 @@ learn.show_results()
 </table>
 </div>
 
-
-
-
-
 ## Validation Sets and Test Sets
 
 - changes we make during the training process are influenced by the validation score
@@ -1690,10 +1634,6 @@ Use Judgment in Defining Test Sets
 - the validation set and test set should be representative of the new data the model will encounter once deployed
 - a validation set for time series data should be a continuous section with the latest dates
 - determine if your model will need to handle examples that are qualitatively different from the training set
-
-
-
-
 
 ## Jargon
 
@@ -1783,8 +1723,6 @@ Use Judgment in Defining Test Sets
 
 - **weights**: are often called parameters
 
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1795,11 +1733,5 @@ Use Judgment in Defining Test Sets
 
 
 **Next:** [Notes on fastai Book Ch. 2](../chapter-2/)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

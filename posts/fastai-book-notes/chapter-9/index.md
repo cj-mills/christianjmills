@@ -28,7 +28,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Tabular Modeling](#tabular-modeling)
 * [Categorical Embeddings](#categorical-embeddings)
 * [Beyond Deep Learning](#beyond-deep-learning)
@@ -42,7 +41,6 @@ open-graph:
 
 
 -----
-
 
 ```python
 import fastbook
@@ -103,14 +101,10 @@ def untar_data(url, archive=None, data=None, c_key='data', force_download=False)
     return d.get(url, force=force_download, extract_key=c_key)
 ```
 
-
-
 ## Tabular Modeling
 
 * takes data in the form of a table.
 * goal is to predict the value in one column based on the values in the other columns
-
-
 
 ## Categorical Embeddings
 
@@ -127,6 +121,7 @@ def untar_data(url, archive=None, data=None, c_key='data', force_download=False)
     * We can combine the continuous embedding values with other continuous input data by concatenating the variables
 
 ### Early state of the art tabular deep learning model (2015)
+
 *  Rossman Store Sales Kaggle Competition
     * [Competition Page](https://www.kaggle.com/c/rossmann-store-sales)
     * Forecast sales using store, promotion, and competitor data
@@ -138,8 +133,6 @@ def untar_data(url, archive=None, data=None, c_key='data', force_download=False)
 [Wide & Deep Learning for Recommender Systems](https://arxiv.org/abs/1606.07792)
 * Explains the recommendation systems used for the Google Play Store
 * Uses a combination of the dot product and embedding approaches
-
-
 
 ## Beyond Deep Learning
 
@@ -170,21 +163,21 @@ def untar_data(url, archive=None, data=None, c_key='data', force_download=False)
     * There are some high-cardinality categorical variables that are very important
     * There are some columns that contain data that would be best understood with a neural network such as plain text data
 
-
 ### [Scikit-Learn](https://scikit-learn.org/stable/)
+
 * a popular library for creating machine learning models, using non-deep learning approaches
-
-
 
 ## The Dataset
 
 ### Blue Book for Bulldozers
+
 * predict the sale price of a piece of equipment at auction, based on its usage, equipment type, and configuration
 * data is sourced from auction result postings and includes information on usage and equipment configurations
 * [Dataset Page](https://www.kaggle.com/c/bluebook-for-bulldozers/data)
     * requires a Kaggle account
 
 ### Kaggle API
+
 * [GitHub Repository](https://github.com/Kaggle/kaggle-api)
 * [Documentation](https://github.com/Kaggle/kaggle-api#competitions)
 * Install: `pip install kaggle`
@@ -320,8 +313,8 @@ path.ls(file_type='text')
 (#7) [Path('/home/innom-dt/.fastai/archive/bluebook/ValidSolution.csv'),Path('/home/innom-dt/.fastai/archive/bluebook/Machine_Appendix.csv'),Path('/home/innom-dt/.fastai/archive/bluebook/Valid.csv'),Path('/home/innom-dt/.fastai/archive/bluebook/Test.csv'),Path('/home/innom-dt/.fastai/archive/bluebook/random_forest_benchmark_test.csv'),Path('/home/innom-dt/.fastai/archive/bluebook/median_benchmark.csv'),Path('/home/innom-dt/.fastai/archive/bluebook/TrainAndValid.csv')]
 ```
 
-
 ### Look at the Data
+
 * Look at your data directly
     * understand the format
     * understand how it's stored
@@ -371,8 +364,8 @@ Index(['SalesID', 'SalePrice', 'MachineID', 'ModelID', 'datasource',
       dtype='object')
 ```
 
-
 #### Ordinal Columns
+
 * columns containing strings or similar, where those strings have a natural ordering
 * need to tell Pandas the correct ordering for ordinal columns
 
@@ -402,12 +395,14 @@ df['ProductSize'] = df['ProductSize'].astype('category')
 ```
 
 #### pandas.core.categorical.Categorical
+
 * [Documentation](https://pandas.pydata.org/pandas-docs/version/0.15.2/generated/pandas.core.categorical.Categorical.html)
 * Represents a categorical variable in classic R/ [S-plus](https://en.wikipedia.org/wiki/S-PLUS) fashion
 * Categoricals can only take on only a limited, and usually fixed, number of possible values
 * All values of the Categorical are either in categories or [np.nan](https://numpy.org/doc/stable/reference/constants.html#numpy.NAN)
 
 #### pandas.core.categorical.Categorical.set_categories:
+
 * [Documentation](https://pandas.pydata.org/pandas-docs/version/0.15.2/generated/pandas.core.categorical.Categorical.set_categories.html#pandas.core.categorical.Categorical.set_categories)
 * Sets the categories to the specified new_categories
 
@@ -428,6 +423,7 @@ dep_var = 'SalePrice'
 ```
 
 ### Selecting a Metric
+
 * it is important to note what metric is being used for a project
 * selecting the metric is part of the project setup
 * often requires more than just selecting a variable that already exists
@@ -435,9 +431,11 @@ dep_var = 'SalePrice'
 * may need to build the metric from the variables that are available
 
 #### Kaggle Competition Metric
+
 * Root Mean Squared Log Error (RMSLE) between the actual prediction prices and predicted auction prices
 
 #### numpy.log
+
 * [Documentation](https://numpy.org/doc/stable/reference/generated/numpy.log.html#numpy-log)
 * Natural logarithm, element-wise
 
@@ -447,8 +445,6 @@ dep_var = 'SalePrice'
 df[dep_var] = np.log(df[dep_var])
 ```
 
-
-
 ## Decision Trees
 
 * asks a series of binary (yes or no) questions about the data
@@ -457,6 +453,7 @@ df[dep_var] = np.log(df[dep_var])
 * there is a fundamental compromise between how well a decision tree generalizes and how accurate it is on the training set
 
 ### Training Steps
+
 1. Loop through each column of the dataset in turn
 2. For each column, loop through each possible level of that column in turn
 3. Try splitting the data into two groups based on whether they are greater than or less than that value
@@ -466,6 +463,7 @@ df[dep_var] = np.log(df[dep_var])
 7. Continue this process recursively, until you reach some stopping criterion
 
 ### Handling Dates
+
 * some dates are qualitatively different from others in a way that is often relevant to the systems we are modeling
 * we might want our model to know more than whether a date is more or less recent than another
     * the day of the week
@@ -473,9 +471,9 @@ df[dep_var] = np.log(df[dep_var])
     * the month a day is in
     * etc.
 * replace every date column with a set of date metadata
-  
 
 #### fastai add_datepart
+
 * [Documentation](https://docs.fast.ai/tabular.core.html#add_datepart)
 * Helper function that adds columns relevant to a date
 
@@ -535,10 +533,10 @@ df_test = add_datepart(df_test, 'saledate')
 'saleYear saleMonth saleWeek saleDay saleDayofweek saleDayofyear saleIs_month_end saleIs_month_start saleIs_quarter_end saleIs_quarter_start saleIs_year_end saleIs_year_start saleElapsed'
 ```
 
-
 ### Using TabularPandas and TabularProc
 
 #### TabularPandas
+
 * [Documentation](https://docs.fast.ai/tabular.core.html#TabularPandas)
 * A Tabular object with transforms
 * Wraps a Pandas DataFrame and provides a few conveniences
@@ -567,8 +565,8 @@ class TabularPandas(Tabular):
         if len(cols) > 0: self[cols] = self[cols].transform(f)
 ```
 
-
 #### TabularProc
+
 * [Documentation](https://docs.fast.ai/tabular.core.html#TabularProc)
 * Base class to write a non-lazy tabular processor for dataframes
 * returns the exact same object that is passed to it, after modifying it in place
@@ -600,8 +598,8 @@ class TabularProc(InplaceTransform):
     def name(self): return f"{super().name} -- {getattr(self,'__stored_args__',{})}"
 ```
 
-
 #### Categorify
+
 * [Documentation](https://docs.fast.ai/tabular.core.html#Categorify)
 * replaces a column with a numeric categorical column
 
@@ -630,6 +628,7 @@ class Categorify(TabularProc):
 ```
 
 #### FillMissing
+
 * [Documentation](https://docs.fast.ai/tabular.core.html#FillMissing)
 * replaces values with the median of the column, and creates a new Boolean column that is set to True for any row where the value was missing
 
@@ -685,6 +684,7 @@ cond = (df.saleYear<2011) | (df.saleMonth<10)
 ```
 
 #### NumPy where
+
 * [Documentation](https://numpy.org/doc/stable/reference/generated/numpy.where.html)
 * Return elements chosen from x or y depending on condition.
 
@@ -707,6 +707,7 @@ splits = (list(train_idx),list(valid_idx))
 ```
 
 #### fastai cont_cat_split
+
 * [Documentation](https://docs.fast.ai/tabular.core.html#cont_cat_split)
 * returns column names of cont and cat variables from given DataFrame
 
@@ -1256,8 +1257,8 @@ to.classes['ProductSize']
 ['#na#', 'Large', 'Large / Medium', 'Medium', 'Small', 'Mini', 'Compact']
 ```
 
-
 #### fastcore save_pickle
+
 * [Documentation](https://fastcore.fast.ai/xtras.html#save_pickle)
 * Save a pickle file, to a file name or opened file
 
@@ -1290,6 +1291,7 @@ save_pickle(path/'to.pkl',to)
 ### Creating the Decision Tree
 
 #### fastcore load_pickle
+
 * [Documentation](https://fastcore.fast.ai/xtras.html#load_pickle)
 * Loack a pickle file from a file name or opened file
 
@@ -1335,6 +1337,7 @@ sklearn.tree._classes.DecisionTreeRegressor
 ```
 
 #### scikit-learn DecisionTreeRegressor
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html)
 * A decision tree regressor
 
@@ -1372,6 +1375,7 @@ dtreeviz
 ```
 
 #### dtreeviz : Decision Tree Visualization
+
 * A python library for decision tree visualization and model interpretation.
 * [GitHub Repository](https://github.com/parrt/dtreeviz)
 * [Blog Post](https://explained.ai/decision-tree-viz/)
@@ -1472,15 +1476,13 @@ m.get_n_leaves()
 12397
 ```
 
-
 ### Categorical Variables
+
 * decision trees do not need embeddings to work with categorical variables
 * can use one-hot encoding to replace a single categorical variable with multiple one-hot-encoded columns
     * use the [pandas.get_dummies()](https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html) method
     * there is not really any evidence that this improves the end result
     * [Splitting on categorical predictors in random forests](https://peerj.com/articles/6339/)
-
-
 
 ## Random Forests
 
@@ -1488,7 +1490,8 @@ m.get_n_leaves()
 * train a a bunch of decision trees, each one on a different random subset of the data, and average the predictions.
 * random forests are not very sensitive to hyperparameter choices
 
-#### [Bagging Predictors](https://www.stat.berkeley.edu/~breiman/bagging.pdf)
+### [Bagging Predictors](https://www.stat.berkeley.edu/~breiman/bagging.pdf)
+
 * Published by retired Berkeley professor Leo Breiman in 1994
 * Procedure
     1. Randomly choose a subset of the rows of your data
@@ -1506,6 +1509,7 @@ m.get_n_leaves()
 ```
 
 ### Creating a Random Forest
+
 * n_estimators: number of decision trees
     * can have as many as you have time to train
 * max_sample: how many rows to sample for training each tree
@@ -1521,8 +1525,8 @@ RandomForestRegressor
 sklearn.ensemble._forest.RandomForestRegressor
 ```
 
-
 #### scikit-learn RandomForestRegressor
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html)
 * A random forest regressor
 
@@ -1578,6 +1582,7 @@ plt.plot([r_mse(preds[:i+1].mean(0), valid_y) for i in range(40)]);
 **Note:** There is a significant diminishing returns after about 30 trees
 
 ### Out-of-Bag Error
+
 * measure the prediction error of trees on data not included in their data subset
 
 -----
@@ -1589,8 +1594,6 @@ r_mse(m.oob_prediction_, y)
 0.210776
 ```
 
-
-
 ## Model Interpretation
 
 * How confident are we in our predictions using a particular row of data?
@@ -1599,6 +1602,7 @@ r_mse(m.oob_prediction_, y)
 * How do predictions vary as we vary these columns?
 
 ### Tree Variance for Prediction Confidence
+
 * use the standard deviation of predictions across the trees, instead of just the mean
 * tells us the relative confidence of predictions
 * we would want to be more cautious of using results for rows where trees give very different results, compared to cases where they are more consistent
@@ -1636,6 +1640,7 @@ array([0.26069358, 0.10409366, 0.09904178, 0.27184634, 0.13110276])
 ```
 
 ### Feature Importance
+
 * helps us learn how the random forest makes its predictions
 #### Steps
 1. loop through each tree
@@ -1734,6 +1739,7 @@ plot_fi(fi[:30]);
 ![](./images/output_129_0.png){fig-align="center"}
 
 ### Removing Low-Importance Variables
+
 * generally, the first step to improving a model is simplifying it
 * a simpler, more interpretable model is often easier to deploy and maintain
 
@@ -1791,6 +1797,7 @@ plot_fi(rf_feat_importance(m, xs_imp));
 ### Removing Redundant Features
 
 #### Determining Similarity
+
 * the most similar pairs are found by calculating the rank correlation
 * rank correlation: all the values are replaced with their rank within the column, and then the correlation is calculated
 
@@ -1891,10 +1898,12 @@ m_rmse(m, xs_final, y), m_rmse(m, valid_xs_final, valid_y)
 **Note:** The accuracy has not really changed after removing the redundant columns
 
 ### Partial Dependence
+
 * If a row varied on nothing other than the feature in question, how would it impact the dependent variable?
 * Example: How does `YearMade` impact sales price, all other things being equal?
 
 #### [THE BOOK OF WHY: THE NEW SCIENCE OF CAUSE AND EFFECT](https://www.amazon.com/Book-Why-Science-Cause-Effect/dp/046509760X)
+
 * Written by JUDEA PEARL AND DANA MACKENZIE
 
 -----
@@ -1928,9 +1937,8 @@ PartialDependenceDisplay.from_estimator
 <bound method PartialDependenceDisplay.from_estimator of <class 'sklearn.inspection._plot.partial_dependence.PartialDependenceDisplay'>>
 ```
 
-
-
 #### sklearn PartialDependenceDisplay.from_estimator
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.inspection.PartialDependenceDisplay.html)
 * Partial Dependence Plot (PDP)
 
@@ -1950,12 +1958,14 @@ PartialDependenceDisplay.from_estimator(m, valid_xs_final, ['YearMade','ProductS
 * Missing values can also indicate data leakage.
 
 ### Data Leakage
+
 * **[Leakage in data mining: formulation, detection, and avoidance](https://dl.acm.org/doi/10.1145/2020408.2020496)**
 * **data leakage:** "the introduction of information about the target of a data mining problem which should not be legitimately available to mine from"
 * data leakage is subtle and can take many forms
 * missing values often represent data leakage
 
 #### Case Study
+
 * A Kaggle competition designed to predict which researchers would end up receiving research grants
 * Using feature importance on a random forest revealed that
     * the model was able to correctly predict who would receive grants 95% of the time
@@ -1968,11 +1978,13 @@ PartialDependenceDisplay.from_estimator(m, valid_xs_final, ['YearMade','ProductS
 * Additionaly, the final processing of applications was often done automatically as a batch at the end of the week, or the end of the year.
 
 #### Identifying Data Leakage
+
 * Check whether the accuracy of the model is too good to be true
 * Look for important predictors that don't make sense in practice
 * Look for partial dependence plot results that don't make sense in practice
 
 ### Tree Interpreter
+
 * Helps answer the question "For predicting widht a particular row of data, what were the most important factors, and how did they influence that prediction"
 
 -----
@@ -1991,6 +2003,7 @@ row = valid_xs_final.iloc[:5]
 ```
 
 #### TreeInterpreter
+
 * [GitHub Repository](https://github.com/andosa/treeinterpreter)
 * Package for interpreting scikit-learn's decision tree and random forest predictions.
 
@@ -2090,6 +2103,7 @@ waterfall
 ```
 
 #### waterfallcharts
+
 * [GitHub Repository](https://github.com/chrispaulca/waterfall)
 * Quickly generates standard waterfall charts, takes two ordered lists as inputs.
 * Waterfall charts are useful for visualizing marginal value contributions to some system
@@ -2105,13 +2119,12 @@ waterfall(valid_xs_final.columns, contributions[0], threshold=0.08,
 **Note:** This kind of information is most useful in production, rather than during model development.
 * Can provide useful information to users of your data product about the underlying reasoning behind the predictions
 
-
-
 ## Extrapolation and Neural Networks
 
 * random forests don't always generalize well to new data
 
 ### The Extrapolation Problem
+
 ```python
 
 np.random.seed(42)
@@ -2166,6 +2179,7 @@ plt.scatter(x_lin, m_lin.predict(xs_lin), color='red', alpha=0.5);
 * Need to make sure our validation set does not contain out of domain data
 
 ### Finding Out-of-Domain Data
+
 * we can use a random forest to find out-of-domain data
     * try to predict whether a row is in the validation set or the training set
 
@@ -2295,7 +2309,9 @@ m_rmse(m, xs_filt, y_filt), m_rmse(m, valid_xs_time, valid_y)
 **Note:** Accuracy is a little bit better.
 
 ### Using a Neural Network
+
 #### fastai's Tabular Classes
+
 * a fastai tabular model is a model that takes columns of continuous or categorical data, and predicts a catefory or a continuous value
 * categorical independent variables are passed through an embedding and concatenated, and then any continuous variables are concatenated as well
 * the model created in [tabular_learner](https://docs.fast.ai/tabular.learner.html#tabular_learner) is an object of class [TabularModel](https://docs.fast.ai/tabular.model.html#TabularModel)
@@ -2637,9 +2653,8 @@ learn.save('nn')
 Path('models/nn.pth')
 ```
 
-
-
 ## Ensembling
+
 * We can average the predictions of models trained using different algorithms
 * The kinds of errors made by the random forest and neural network models are likely quite different
     * The average of their predictions are likely better than either one alone
@@ -2693,9 +2708,11 @@ r_mse(ens_preds,valid_y)
 **Note** The accuracy obtained by averaging the predictions of the random forest and neural network is better than either the random forest or neural network alone
 
 ### Boosting
+
 * Add models instead of averaging them
 
 #### Steps
+
 1. Train a small model that underfits your dataset
 2. Calculate the predictions in the training set for this model
 3. Substract the predictions from the targets
@@ -2708,19 +2725,19 @@ r_mse(ens_preds,valid_y)
 * There is nothing to prevent overfitting when using boosting
 * Gradient boosted trees are extremely sensitive to hyperparameter tuning
     * it is common practice to loop through a range of hyperparameter values to see which works best
-    
+
 #### scikit-learn HistGradientBoostingRegressor
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html)
 * Histogram-based Gradient Boosting Regression Tree.
 
 ### Combining Embeddings with Other Methods
+
 * the embedding learned by a neural network can be used to boost the performance of other machine learning models
 * use the learned embeddings as input features
 * can dramatically improve accuracy over using raw categorical variables
 * allows you to get much of the accuracy of a neural network without having to use a neural network at inference time
 * a set of embeddings can be trained once be used across multiple models
-
-
 
 ## References
 
@@ -2732,11 +2749,5 @@ r_mse(ens_preds,valid_y)
 **Previous:** [Notes on fastai Book Ch. 8](../chapter-8/)
 
 **Next:** [Notes on fastai Book Ch. 10](../chapter-10/)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

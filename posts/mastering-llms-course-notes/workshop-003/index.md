@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Introduction](#introduction)
 * [Types of Evaluations](#types-of-evaluations)
@@ -35,8 +29,6 @@ open-graph:
 * [Shreya Shankar: Scaling Up Vibe Checks for LLMs](#shreya-shankar-scaling-up-vibe-checks-for-llms)
 * [Q&A Session](#qa-session)
 
-
-
 ## Introduction
 
 * **Importance of Evaluation:** Evaluation is crucial for iteratively improving LLMs, whether through prompt engineering, fine-tuning, or other methods.
@@ -44,8 +36,6 @@ open-graph:
   * **Blog Post:** [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/)
 
 * **Applied AI:** Evaluation and data analysis are key components of applied AI, allowing you to measure progress and make informed decisions.
-
-
 
 ## Types of Evaluations
 
@@ -60,7 +50,6 @@ open-graph:
 * **Human Evaluation:** 
   * Direct human assessment of LLM output. 
   * Considered the gold standard, but can be expensive and time-consuming.
-
 
 ### Example: Editing Out Stereotypes In Academic Writing
 
@@ -132,7 +121,6 @@ open-graph:
 
     :::
 
-
 #### Log Results to Database and Visualize
 
 * Use existing tools to systematically track unit test results to monitor progress and identify areas for improvement.
@@ -195,8 +183,6 @@ open-graph:
 | LLM as a judge   | Pretty Good                                  | Not transitive                              |
 | Human Evaluation | Some labor required, aided by LLM as a judge | Labor intensive, which was ok for this task |
 
-
-
 ### Evaluation Workflow
 
 * **Iterative Feedback Loop:** Evaluation enables a fast feedback loop for prompt engineering, fine-tuning, and other improvements.
@@ -211,8 +197,6 @@ open-graph:
 
 * **Solution:** A/B testing can control for changes in human judgment over time by randomly assigning evaluators to different models.
 * **Limitations:** A/B testing requires sufficient data and human labelers, making it impractical for early-stage projects.
-
-
 
 ## Looking At Your Data
 
@@ -252,8 +236,6 @@ open-graph:
 
 * **Off-the-Shelf Solutions:** Leverage existing tools for logging traces and other evaluation tasks to focus on data analysis and model improvement.
 * **Tool Exploration:** Explore the various tools available through workshops, office hours, and other resources to find the best fit for your needs.
-
-
 
 ## Harrison Chase: Langsmith for Logging & Tests
 
@@ -300,8 +282,6 @@ open-graph:
 
 * **Annotation Queues:** Provides annotation queues for efficient human feedback collection, allowing for the review, labeling, and categorization of data points to improve model performance.
 * **Collaborative Features:** Includes features for adding notes, marking completion status, and collaborating on data annotation tasks, fostering teamwork and efficient feedback integration.
-
-
 
 ## Bryan Bischof: Spellgrounds for Prodigious Prestidigitation
 
@@ -358,7 +338,6 @@ open-graph:
   * Establish a solid foundation of traditional evaluations before incorporating LLM-assisted methods.
   * Use multiple judges and periodically check for alignment with human evaluation.
 
-
 ### Moderating Magic: How to build your eval system
 
 #### Magic
@@ -402,8 +381,6 @@ open-graph:
 * Focus on evaluating the most critical and informative aspects of the LLM system, prioritizing evaluations that exhibit variability and potential for improvement.
 * Use bootstrap sampling to efficiently assess performance and identify areas for improvement.
 * Strive for an evaluation suite with a passing rate of 60-70% to ensure sufficient sensitivity to changes and improvements.
-
-
 
 ## Eugene Yan: Evaluating LLM-Generated Summaries with Out-of-Domain Fine-tuning
 
@@ -492,8 +469,6 @@ open-graph:
   * Step 2: Evaluate the factual consistency of extracted information against the transcript (classification using the hallucination detection model).
   * Step 3: Evaluate the quality of the final summary in terms of information density and writing style (potentially using a reward model).
 
-
-
 ## Shreya Shankar: Scaling Up Vibe Checks for LLMs
 
 * **Focus:** Using LLMs to scale up human evaluation and create task-specific assertions or guardrails.
@@ -508,7 +483,6 @@ open-graph:
     * **[homanp/github-code-reviews](https://smith.langchain.com/hub/homanp/github-code-reviews):** This prompt reviews pull request on GitHub.
     * **[matu/customer_satisfaction](https://smith.langchain.com/hub/matu/customer_satisfaction):** This prompt is being use to extract services and sentiments from a customer answer to a survey.
     * **[muhsinbashir/youtube-transcript-to-article:](https://smith.langchain.com/hub/muhsinbashir/youtube-transcript-to-article)** Convert any Youtube Video Transcript into an Article.
-
 
 ### LLMs Make Unpredictable Mistakes
 
@@ -550,8 +524,6 @@ open-graph:
   * Inclusion and exclusion assertions are most common.
   * LLM-generated assertions may be redundant, incorrect, or require further refinement.
 
-
-
 ### EvalGen: A Mixed Initiative Interface for Evaluation
 
 * **Paper:** [Who Validates the Validators? Aligning LLM-Assisted Evaluation of LLM Outputs with Human Preferences](https://arxiv.org/abs/2404.12272)
@@ -579,8 +551,6 @@ open-graph:
 * **LLMs can assist in evaluation:** By leveraging prompt history and human feedback, LLMs can help create effective evaluation metrics.
 * **Evaluation is iterative:** Continuous monitoring, feedback, and refinement are crucial for maintaining LLM accuracy and alignment with user expectations.
 * **Evaluation assistants are valuable:** Tools like EvalGen can significantly streamline the process of developing and refining LLM evaluations.
-
-
 
 ## Q&A Session
 
@@ -652,31 +622,5 @@ open-graph:
 * **Contextual Reasoning:**  Analyze the likelihood of overlap between the evaluation data and the base model's training data based on the nature and recency of the data.
 * **Performance Monitoring:** Be wary of unexpectedly high performance, which could indicate data leakage.
 * **No Foolproof Solution:**  Data contamination is a difficult problem with no universal solution. Careful consideration and context-specific analysis are essential. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -20,7 +20,6 @@ open-graph:
 
 ---
 
-
 * [Key Points](#key-points)
 * [Programming](#programming)
 * [Machine Learning](#machine-learning)
@@ -31,8 +30,6 @@ open-graph:
 * [Workflow](#workflow)
 * [Job Hunting](#job-hunting)
 * [References](#references)
-
-
 
 ## Key Points
 
@@ -54,8 +51,6 @@ open-graph:
 - The second-best projects are creating live ML products, collaborating with people in the industry, and developing ML content with high engagement.
 - Result-based portfolio projects have metrics or testimonials, a context, and third-party validation.
 - Improve promising existing projects instead of coming up with gut project ideas.
-
-
 
 ## Programming
 
@@ -98,8 +93,6 @@ open-graph:
 | [ONNX Runtime Web](https://github.com/microsoft/onnxruntime/tree/master/js/web#readme) | ONNX Runtime Web is a Javascript library for running ONNX models on browsers and on Node.js. |
 | [Eigen (C++)](https://eigen.tuxfamily.org/index.php?title=Main_Page) compiled with [Web Assembly](https://webassembly.org/) | Eigen is a C++ template library for linear algebra: matrices, vectors, numerical solvers, and related algorithms. |
 | [PyScript](https://pyscript.net/)                            | PyScript is a framework that allows users to create rich Python  applications in the browser using HTML's interface and the power of [Pyodide](https://pyodide.org/en/stable/), [WASM](https://webassembly.org/), and modern web technologies. |
-
-
 
 ## Machine Learning
 
@@ -152,8 +145,6 @@ open-graph:
 | Visualize model performance.                                 |
 | Deploy models and understand memory, cost, queries-per-second, and latency. |
 
-
-
 ## A Base Portfolio
 
 ### Weak Portfolio Projects
@@ -202,8 +193,6 @@ open-graph:
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime)     | ONNX Runtime is a cross-platform inference and training machine-learning accelerator. |
 | [Best-of Machine Learning with Python](https://github.com/ml-tooling/best-of-ml-python) | A ranked list of awesome machine learning Python libraries. Updated weekly. |
 
-
-
 ### Industry Portfolio Projects
 
 - Portfolio projects that solve a real problem need someone that vouches for your solution.
@@ -229,8 +218,6 @@ Cheers,
 Bob
 ```
 
-
-
 ## Talent Projects
 
 * Talent projects are 1-4 week open, result-driven projects that help you stand out once in an interview.
@@ -249,8 +236,6 @@ Bob
 
 - Developer advocacy roles focus on engagement through content and can work as a transition into more technical roles.
 - External excitement is an indicator that you made a unique contribution.
-
-
 
 ## Self Evaluation
 
@@ -308,8 +293,6 @@ and seen on Hacker News [link] and recommended by X,
 at Famous company. [link to tweet]
 ```
 
-
-
 ## Ideas
 
 ### Base Portfolio Ideas
@@ -357,8 +340,6 @@ Ideas that appear in any mainstream channel are likely overused.
 - Add models to model platforms like [Huggingface Spaces](https://huggingface.co/spaces), [Replicate](https://replicate.com/), [Modelplace](https://modelplace.ai/), and [Runway models](https://runwayml.com/hosted-models/).
 - Look into using Google's Keyword tool, other mainstream SEO tools, Google's trending topics, and Youtube's Keyword tool to increase search traffic.
 
-
-
 ## Workflow
 
 ### High-effort Focus
@@ -380,14 +361,11 @@ Ideas that appear in any mainstream channel are likely overused.
 - 6:00pm-10:00pm: Mid-effort focus (learning gaps + skimming)
 - Try taking long breaks during lunch for exercise and leisure to reenergize for another high-effort session.
 
-
-
 ## Job Hunting
 
 - The ideal hiring process for self-learners is specialized, practical, or small-scale.
   - This hiring process is more prevalent with smaller organizations, startups, companies with specific cultures, or specialized teams within larger organizations.
   - Hiring managers are technical, and questions cater to each candidate's work are reflect skills for the job.
-
 
 ### High-growth Startups and Small Organizations
 
@@ -449,7 +427,6 @@ Jane
 - Invest a few hours researching the problems companies you like are working on and get data on how they are likely to approach them.
   - Have specific questions and the ability to discuss their problems in detail.
 
-
 ### Plan B
 
 - Apply for software roles closely related to machine learning.
@@ -458,18 +435,8 @@ Jane
 - Apply for product manager and analytic roles related to ML.
 - Bid on ML contracting opportunities or software projects related to ML.
 
-
-
-
-
 ## References
 
 * [No ML Degree: How to Land Your First Machine Learning Job Without a Degree](https://www.nomldegree.com/l/no-ml-degree)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

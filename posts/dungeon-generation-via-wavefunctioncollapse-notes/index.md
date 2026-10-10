@@ -27,12 +27,9 @@ open-graph:
 * [WaveFunctionCollapse Textures and Tiles](#wavefunctioncollapse-textures-and-tiles)
 * [Additional Reading](#additional-reading)
 
-
-
 ## Overview
 
 Here are some notes I took while watching Brian Bucklew's [talk](https://www.youtube.com/watch?v=fnFj3dOKcIQ) covering how to use the WaveFunctionCollapse algorithm to procedurally generate dungeon levels.
-
 
 ## WaveFunctionCollapse
 
@@ -52,7 +49,6 @@ Here are some notes I took while watching Brian Bucklew's [talk](https://www.you
 - Powerful outputs (arbitrarily large output textures that are locally similar to the input)
   
     ![](./images/wfc-texture-mode-example_2.png){fig-align="center"}
-    
 
 ### How it Works
 
@@ -139,10 +135,5 @@ Solution:
 **References:**
 
 * [Brian Bucklew - Dungeon Generation via Wave Function Collapse](https://www.youtube.com/watch?v=fnFj3dOKcIQ)
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

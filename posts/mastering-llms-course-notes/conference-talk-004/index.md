@@ -16,16 +16,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 * [Inspect AI: A Framework for Evaluating LLMs](#inspect-ai-a-framework-for-evaluating-llms)
 * [Hello World Example](#hello-world-example)
@@ -39,10 +33,6 @@ open-graph:
 * [Workflow](#workflow)
 * [Q&A Session](#qa-session)
 
-
-
-
-
 ::: {.callout-tip title="Presentation Resources"}
 
 * **GitHub Repository:** [inspect-llm-workshop](https://github.com/jjallaire/inspect-llm-workshop)
@@ -50,11 +40,7 @@ open-graph:
 
 :::
 
-
-
-
-
-## Inspect AI: A Framework for Evaluating LLMs 
+## Inspect AI: A Framework for Evaluating LLMs
 
 - Inspect AI is a Python package for creating LLM evaluations developed through a collaboration between J.J. Allaire and the [UK AI Safety Institute](https://www.aisi.gov.uk/).
 - Designed to address the limitations of existing evaluation tools for developing more complex evals.
@@ -68,9 +54,6 @@ open-graph:
 - **VS Code Extension:**
   - **Marketplace:** [Inspect AI](https://marketplace.visualstudio.com/items?itemName=ukaisi.inspect-ai)
   - **Source Code:** [inspect-vscode](https://github.com/UKGovernmentBEIS/inspect_ai/tree/main/tools/vscode)
-
-
-
 
 ## Hello World Example
 
@@ -101,8 +84,6 @@ def theory_of_mind():
 2. In this example we are chaining together three standard solver components. It’s also possible to create a more complex custom solver that manages  state and interactions internally.
 3. Since the output is likely to have pretty involved language, we use a model for scoring.
 
-
-
 ## Core Concepts
 
 - **Dataset:** List of inputs for the LLM
@@ -116,9 +97,6 @@ def theory_of_mind():
 - **Scores:** Evaluates the output of solvers
   - Ranges from simple text comparisons to model-graded assessments using custom rubrics.
 
-
-
-
 ## Honeycomb Dataset Example
 
 - **Jupyter Notebook:** [honeycomb/queries.ipynb](https://github.com/jjallaire/inspect-llm-workshop/blob/main/honeycomb/queries.ipynb)
@@ -131,8 +109,6 @@ def theory_of_mind():
   1. Load the dataset.
   2. Define a pipeline that includes prompt engineering, model calling, and evaluation.
   3. Apply a scoring function.
-
-
 
 ### Dataset
 
@@ -157,8 +133,6 @@ dataset = csv_dataset(
 )
 ```
 
-
-
 ### Solver
 
 - **Documentation:** [Solver](https://ukgovernmentbeis.github.io/inspect_ai/solvers.html)
@@ -178,7 +152,6 @@ dataset = csv_dataset(
       1. Running a critique model on the initial output.
       2. Appending the critique to the message history.
       3. Calling the model again to generate a revised answer.
-  
 
 #### Solver: `prompt_with_schema()`
 
@@ -207,8 +180,6 @@ def prompt_with_schema():
     return solve
 
 ```
-
-
 
 ### Scorer
 
@@ -260,10 +231,6 @@ def prompt_with_schema():
   
       :::
 
-
-
-
-
 #### Scorer: `validate_scorer()`
 
 - Extracts and cleans JSON output from the model.
@@ -299,8 +266,6 @@ def validate_scorer():
 * The [`json_completion()`](https://github.com/jjallaire/inspect-llm-workshop/blob/86d00ca6d79b4754266ba36c10be6d5a108a1695/honeycomb/utils.py#L7) function takes care of some details around extracting JSON from a model completion (e.g. removing sorrounding backtick code block emitted by some models)
 
 :::
-
-
 
 ### Validate Task
 
@@ -351,8 +316,6 @@ if __name__ == '__main__':
     ```
 
 :::
-
-
 
 ### Eval View
 
@@ -425,8 +388,6 @@ def critique_scorer(model = "anthropic/claude-3-5-sonnet-20240620"):
     return score
 ```
 
-
-
 #### Honeycomb Eval: `critique()`
 
 - Utilizes the same dataset and plan as `validate()` but employs a critique model for scoring.
@@ -455,8 +416,6 @@ if __name__ == '__main__':
 ```
 
 ![critique-task-1](./images/critique-task-1.png){fig-align="center"}
-
-
 
 ### Critique Eval View
 
@@ -518,8 +477,6 @@ if __name__ == '__main__':
 
   :::
 
-
-
 ## Tool Use
 
 - **Documentation:** [Tools](https://ukgovernmentbeis.github.io/inspect_ai/tools.html)
@@ -533,9 +490,6 @@ if __name__ == '__main__':
         output: ModelOutput
         ...
     ```
-
-    
-
 
 ### Example: Biology QA with Web Search
 
@@ -583,8 +537,6 @@ if __name__ == '__main__':
       cleanup=exit_challenge()
   )
   ```
-
-  
 
 ### Agent: LangChain
 
@@ -778,8 +730,6 @@ if __name__ == '__main__':
   
     :::
 
-
-
 ### Eval Suites:
 
 - **Documentation:** [Eval Suites](https://ukgovernmentbeis.github.io/inspect_ai/eval-suites.html)
@@ -827,8 +777,6 @@ if __name__ == '__main__':
 
   :::
 
-
-
 ## Q&A Session
 
 - **Integration with Posit Products:** Inspect AI is not a Posit project and currently has no plans for integration.
@@ -839,53 +787,5 @@ if __name__ == '__main__':
 - **Shareable Security Tests:** The Inspect AI team anticipates the creation and sharing of security test suites within the community.
 - **Integration with Weights & Biases:** Integration with Weights & Biases is planned to streamline metric tracking and visualization.
 - **Design Philosophy:** Inspired by principles of cleanliness, simplicity, and composability.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

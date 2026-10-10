@@ -20,11 +20,6 @@ open-graph:
 
 ---
 
-
-
-
-
-
 * [Introduction](#introduction)
 * [Examples of Procedural Generation in Games](#examples-of-procedural-generation-in-games)
 * [Map Generation Algorithms](#map-generation-algorithms)  
@@ -32,10 +27,6 @@ open-graph:
 * [Dijkstra Maps](#dijkstra-maps)
 * [Conclusion](#conclusion)
 * [Additional Resources](#additional-resources)
-
-
-
-
 
 ::: {.callout-tip title="Presentation Resources"}
 
@@ -45,18 +36,12 @@ open-graph:
 
 :::
 
-
-
-
-
 ## Introduction
 
 - **Procedural Map Generation:** Using algorithms to create maps for games, and then using additional algorithms to refine and ensure usability. (Source: Speaker's definition)
 - Benefits of Procedural Generation: 
   - **Infinite Replayability:** Creates unique maps each playthrough, preventing memorization and encouraging players to learn game systems. (citing Rogue as an example)
   - **Dynamic Gameplay:** Prevents static level design, enhancing replayability.
-
-
 
 ## Examples of Procedural Generation in Games
 
@@ -73,8 +58,6 @@ open-graph:
 - Key Takeaway: 
   - Randomness in these games is not purely random.
   - Algorithms guide the randomness to create desired outcomes while ensuring variation.
-
-
 
 ## Map Generation Algorithms
 
@@ -217,8 +200,6 @@ open-graph:
   - Wood grain textures.
 - Recommendations: Experiment with different Perlin/Simplex noise tools and variable values to achieve desired results.
 
-
-
 ## Combining Techniques
 
 - **Key Concept:** Rarely use just one algorithm for map generation.
@@ -237,8 +218,6 @@ open-graph:
   - In room-based maps: Find a room large enough to accommodate the prefab.
   - In non-room-based maps: Randomly sample locations and check for fit.
 - Considerations: Use prefabs sparingly to maintain variety and avoid predictability.
-
-
 
 ## Dijkstra Maps
 
@@ -266,15 +245,11 @@ open-graph:
   - Hiding bonus content or challenges in areas off the hot path.
   - Ordering story elements or puzzle placement based on likely player progression. (using examples of grandfather's advice and a locked door puzzle)
 
-
-
 ## Conclusion
 
 - Procedural map generation involves guiding randomness with algorithms to create diverse and engaging maps.
 - Combining multiple techniques and using tools like Dijkstra maps can lead to more complex and interesting results.
 - The choice of algorithms and their parameters should be driven by the desired gameplay experience and the story you want to tell through your map.
-
-
 
 ## Additional Resources
 
@@ -282,13 +257,5 @@ open-graph:
 - Rust Roguelike Tutorial: [https://bfnightly.bracketproductions.com/rustbook/](https://bfnightly.bracketproductions.com/rustbook/)
 - "The Incredible Power of Dijkstra Maps" (Rogue Basin): [http://www.roguebasin.com/index.php?title=The_Incredible_Power_of_Dijkstra_Maps](http://www.roguebasin.com/index.php?title=The_Incredible_Power_of_Dijkstra_Maps)
 - "Hands on Rust, Effective Learning Through 2D Game Development and Play" (PragProg): [https://pragprog.com/](https://pragprog.com/)
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

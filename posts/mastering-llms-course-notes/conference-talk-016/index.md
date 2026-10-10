@@ -15,24 +15,16 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
 
 ::: {.callout-tip title="Presentation Slides"}
 
 * **Slides:** [A Deep Dive on LM Evaluation](https://docs.google.com/presentation/d/1qTaDYqLCgxkUaTfxQkN1it4tx6_jixwv9ZtsbqQgE4U/)
 
 :::
-
-
-
-
 
 ## Introduction
 
@@ -45,7 +37,7 @@ open-graph:
   * Research Scientist at Eleuther AI.
   * Maintainer of the **LM Evaluation Harness**, a widely used open-source library for evaluating LLMs.
 
-### About Eleuther AI: 
+### About Eleuther AI:
 
 * **Website:** [https://eleuther.ai/](https://eleuther.ai/)
 * **Project Page:** [Evaluating LLMs](https://www.eleuther.ai/projects/large-language-model-evaluation)
@@ -68,11 +60,9 @@ open-graph:
   *  Widely used by researchers and practitioners.
   *  Powers the backend for the OpenLLM Leaderboard.
 
-
-
 ## Challenges in LLM Evaluation
 
-#### 1. Scoring Difficulties
+### 1. Scoring Difficulties
 
 * **Core Issue:** Reliably evaluating the correctness of LLM responses in natural language.
 * **Challenges:**
@@ -80,7 +70,7 @@ open-graph:
   * **Hallucination:**  LLMs can generate plausible-sounding but incorrect information, making it challenging to determine accuracy based on surface-level analysis.
   * **Lack of Standardized Metrics:** Absence of universally agreed-upon metrics for evaluating LLM performance across different tasks and domains. 
 
-#### 2. Reproducibility Issues
+### 2. Reproducibility Issues
 
 * **Importance:**  Ensuring that evaluation results are consistent and replicable.
 * **Challenges:**
@@ -88,13 +78,9 @@ open-graph:
   * **Lack of Transparency:**  Limited sharing of evaluation code and detailed methodologies makes it difficult for others to reproduce results.
   * **Data Set Variability:**  Differences in data set composition and quality can lead to inconsistent evaluations.
 
-
-
-
-
 ## Common LLM Evaluation Methods
 
-#### 1. Log Likelihoods: Assessing the Probability of Expected Outputs
+### 1. Log Likelihoods: Assessing the Probability of Expected Outputs
 
 * **Background:**
   * LLMs output a probability distribution over vocabulary for each possible next token.
@@ -131,8 +117,7 @@ open-graph:
     * **Solution:** Implement normalization techniques to account for tokenizer variations.
   * **Limited Information:**  Log likelihoods only consider the probability of a given output, not its overall quality, coherence, or factual accuracy.
 
-
-#### 2.  Perplexity: Measuring How Well a Model Fits a Data Distribution
+### 2.  Perplexity: Measuring How Well a Model Fits a Data Distribution
 
 * **Concept:** Quantifies how well a language model predicts a given text, indicating its familiarity with the data distribution.
 * **Calculation:** Based on the average per-token log probability of the text, with lower perplexity indicating a better fit to the data. 
@@ -148,7 +133,7 @@ open-graph:
   *  **Domain Specificity:** Perplexity on one dataset (e.g., Wikipedia) may not generalize to other domains or tasks. 
   *  **Limited Insight into Downstream Performance:** A low perplexity doesn't guarantee good performance in real-world applications like chatbots or question answering. 
 
-#### 3.  Text Generation: Evaluating Real-World Output but Facing Scoring Challenges
+### 3.  Text Generation: Evaluating Real-World Output but Facing Scoring Challenges
 
 * **Importance:** Crucial for assessing LLMs in tasks involving text generation (e.g., chatbots, story writing).
 * **Challenges:**
@@ -158,8 +143,6 @@ open-graph:
     *  LLM-based judges introduce their own biases and limitations.
   * **Sensitivity to Prompt Details:** Minor variations in prompts (e.g., trailing whitespace) can drastically impact results, hindering reproducibility.
     * **Example:**  In code generation, a trailing tab in the prompt can create syntax errors for models that generate code with specific formatting, leading to artificially lower performance scores.
-
-
 
 ## The Need for Reproducibility and Best Practices
 
@@ -189,11 +172,7 @@ open-graph:
   * **ARC Benchmark:** [https://paperswithcode.com/dataset/arc](https://paperswithcode.com/dataset/arc)
     * ARC focuses on generalization and multi-step reasoning, making it more challenging than benchmarks that rely heavily on memorization.
 
-
-
-
-
-## Conclusion 
+## Conclusion
 
 * **Implementation Details Matter:** LLMs are highly sensitive to minor variations in evaluation procedures.
 * **Transparency and Standardization are Key:** Sharing code, detailed reporting, and using standardized frameworks are crucial for reproducible LLM evaluation.
@@ -202,10 +181,7 @@ open-graph:
   * **Paper:** [*Lessons from the Trenches on Reproducible Evaluation of Language Models*](https://arxiv.org/abs/2405.14782) (Eleuther AI)
   * **Library:** [`lm-evaluation-harness`](https://github.com/EleutherAI/lm-evaluation-harness)  (Eleuther AI)
 
-
-
-
-###  Q&A Highlights: 
+### Q&A Highlights:
 
 *  **Dataset Quality:**  Errors or biases in benchmark datasets can significantly affect evaluation results and limit the usefulness of benchmarks. 
 *  **Overfitting to Evaluations:** Repeatedly optimizing for a specific benchmark can lead to overfitting, where models excel on the benchmark but fail to generalize to other tasks or data.
@@ -219,8 +195,5 @@ open-graph:
   * **Structured Generation:** Use techniques that constrain the model's output to specific formats. 
   * **System Prompts:** Provide clear instructions to the model to only output the answer. 
   * **Log Likelihoods:** Rely on log likelihood-based multiple-choice evaluations if structured generation isn't possible.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

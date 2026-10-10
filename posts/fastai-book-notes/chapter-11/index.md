@@ -26,7 +26,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [Going Deeper into fastai's Layered API](#going-deeper-into-fastai's-layered-api)
 * [TfmdLists and Datasets: Transformed Collections](#tfmdlists-and-datasets-transformed-collections)
 * [Applying the Mid-Level Data API: SiamesePair](#applying-the-mid-level-data-api-siamesepair)
@@ -55,11 +54,8 @@ def print_source(obj):
         print(line)
 ```
 
-
-
-
-
 ## Going Deeper into fastai's Layered API
+
 * fastai is built on a layered API
 
 -----
@@ -110,13 +106,13 @@ path
 Path('/home/innom-dt/.fastai/data/imdb')
 ```
 
-
-
 ### Mide-Level API
+
 * contains functionality for creating DataLoaders
 * Has a *callback* system which allows us to customize the training loop, along with the general optimizer
 
 #### Data Block API
+
 * Allows us to define custom approaches for loading data from datasets
 
 -----
@@ -232,6 +228,7 @@ dls = DataBlock(
 ```
 
 ### Transforms
+
 * A Transform object implements any encoding, setup steps for an inner state, and decoding steps required for a type of data
 * Not every type of Transform needs to implement setup steps
 * Data augmentation transforms do not need a decode method
@@ -481,9 +478,8 @@ tok((txts[0], txts[1]))
  (#562) ['xxbos','xxmaj','jacqueline','xxmaj','susann','wrote','several','novels','all','involving'...])
 ```
 
-
-
 ### Writing Your Own Transform
+
 * easiest way is to write a function
     * specify a type in the function signature so the transform is only applied to the target data types
 * Transforms that require either setup or decode, need to be implemented as a subclass of Transform
@@ -502,15 +498,15 @@ tfm(2),tfm(2.0)
 (3, 2.0)
 ```
 
-
-
 #### Python Decorators
+
 * special syntax for passing a function to another function (or something like a function)
 * used by prepending a callable with a `@` and placing it before a function definition
 * [PEP 318 – Decorators for Functions and Methods](https://peps.python.org/pep-0318/)
 * [Primer on Python Decorators](https://realpython.com/primer-on-python-decorators/)
 
 #### Python typing.Callable
+
 * [Documentation](https://docs.python.org/3/library/typing.html#typing.Callable)
 * Something that can be called
 * a function or something like a function
@@ -559,9 +555,8 @@ tfm.mean,y,z
 (3.0, -1.0, 2.0)
 ```
 
-
-
 ### Pipeline
+
 * compose several transforms together
 * pass in a list of Transforms
 * calls the Transforms in sequential order
@@ -685,12 +680,12 @@ tfms.decode(t)[:100]
 'xxbos xxmaj this xxunk fails so miserably on every level that it is difficult to decide what to say '
 ```
 
-
-
 ## TfmdLists and Datasets: Transformed Collections
+
 * your data is usually a set of raw items to which you want to apply a succession of transformations
 
 ### [TfmdLists](https://docs.fast.ai/data.core.html#TfmdLists)
+
 * groups your pipeline with your raw items
 * use when you have manually written a Transform that performs all your preprocessing at once, which turns raw items into a tuple with inputs and targets
 * pass in items and a list of Transforms
@@ -997,9 +992,8 @@ tls_y[0]
 TensorCategory(0)
 ```
 
-
-
 ### Datasets
+
 * applies two (or more) pipelines in parallel to the same raw object and build a tuple with the result
 * automatically performs the setup steps
 * can index into a Datasets to get a tuple with the results of each pipeline
@@ -1174,9 +1168,8 @@ class Pad_Input(ItemTransform):
         return o[o != pad_idx]
 ```
 
-
-
 ### DataLoader
+
 * fastai's DataLoader expands on the [PyTorch DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) class
 
 * responsible for collating the items from a dataset into batches
@@ -1351,6 +1344,7 @@ dls = dsets.dataloaders(bs=64, before_batch=pad_input)
 ```
 
 #### SortedDL
+
 * constructs batches by putting samples of roughly the same lengths into batches
 
 -----
@@ -1409,11 +1403,10 @@ dsets = Datasets(files, tfms, splits=splits)
 dls = dsets.dataloaders(dl_type=SortedDL, before_batch=pad_input)
 ```
 
-
-
 ## Applying the Mid-Level Data API: SiamesePair
 
 ### Siamese Model
+
 * takes two images and has to determine whether they are of the same class
 
 -----
@@ -1795,11 +1788,6 @@ dls = tls.dataloaders(after_item=[Resize(224), ToTensor],
     after_batch=[IntToFloatTensor, Normalize.from_stats(*imagenet_stats)])
 ```
 
-
-
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1810,9 +1798,5 @@ dls = tls.dataloaders(after_item=[Resize(224), ToTensor],
 **Previous:** [Notes on fastai Book Ch. 10](../chapter-10/)
 
 **Next:** [Notes on fastai Book Ch. 12](../chapter-12/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

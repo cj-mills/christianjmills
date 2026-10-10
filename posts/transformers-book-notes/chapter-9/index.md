@@ -85,7 +85,6 @@ def print_source(obj, exclude_doc=True):
 
 ------
 
-
 ## Dealing with Few to No Labels
 
 * We often have little to no labeled data when starting a new project.
@@ -100,8 +99,6 @@ def print_source(obj, exclude_doc=True):
 * We can use few-shot learning when we only have a small number of labeled examples and no unlabeled data.
 * We can also use the embeddings from a pretrained language model to perform lookups with a nearest-neighbor search.
 
-
-
 ## Project: Build a GitHub Issues Tagger
 
 * Many support teams use issue trackers like [Jira](https://www.atlassian.com/software/jira) or [GitHub](https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues) to assist users by tagging issues with metadata based on the issue's description.
@@ -112,6 +109,7 @@ def print_source(obj, exclude_doc=True):
 * The model will take a title and description as input and predict one or more labels (i.e., multilabel classification).
 
 ### Getting the Data
+
 * We can use the [GitHub REST API](https://docs.github.com/en/rest) to poll the [Issues endpoint](https://docs.github.com/en/rest/reference/issues#list-repository-issues).
 * The Issues endpoint returns a list of JSON objects.
 * Each JSON object includes whether it is open or closed, who opened the issue, the title, the body, and the labels.
@@ -647,10 +645,8 @@ df_issues[df_issues['labels'].apply(lambda x: len(x) == 5)].T
 </div>
 ------
 
-
-
-
 #### `pandas.DataFrame.explode`
+
 * [Documentation](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.explode.html)
 * Transform each element of a list-like into a row, replicating index values.
 
@@ -989,6 +985,7 @@ plt.show()
 * We can use the scikit-multilearn library to approximate a balanced split.
 
 #### scikit-multilearn library
+
 * [Homepage](https://scikit.ml/)
 * A multi-label classification library built on top of the scikit-learn ecosystem.
 
@@ -1173,6 +1170,7 @@ from skmultilearn.model_selection import iterative_train_test_split
 ```
 
 #### `iterative_train_test_split`
+
 * [Documentation](http://scikit.ml/api/skmultilearn.model_selection.iterative_stratification.html)
 
 **Define a function to iteratively generate a balanced train/test split**
@@ -1337,8 +1335,6 @@ print([len(x) for x in train_slices])
 
 ------
 
-
-
 ## Implementing a Naive Bayesline
 
 * A baseline based on regular expressions, handcrafted rules, or a simple model might work well enough to solve a given problem.
@@ -1404,20 +1400,23 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 ------
 
-#### `sklearn.naive_bayes.MultinomialNB`
+### `sklearn.naive_bayes.MultinomialNB`
 
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html)
 * Create a Naive Bayes classifier for multinomial models.
 
-#### `sklearn.metrics._classification.classification_report`
+### `sklearn.metrics._classification.classification_report`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html)
 * Build a text report showing the main classification metrics.
 
-#### `skmultilearn.problem_transform.br.BinaryRelevance`
+### `skmultilearn.problem_transform.br.BinaryRelevance`
+
 * [Documentation](https://scikit.ml/api/skmultilearn.problem_transform.br.html#skmultilearn.problem_transform.BinaryRelevance)
 * Treat each label as a separate single-class classification problem
 
-#### `sklearn.feature_extraction.text.CountVectorizer`
+### `sklearn.feature_extraction.text.CountVectorizer`
+
 * [Documentation](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html)
 * Create a vector where each entry corresponds to the frequency with which a token appeared in the text.
 * Count vectorization is a bag-of-words approach since all information on the order of the words is lost.
@@ -1506,8 +1505,6 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes")
 * The results are slightly noisy since each slice can have a different class distribution.
 
 ------
-
-
 
 ## Working with No Labeled Data
 
@@ -1652,6 +1649,7 @@ for element in output:
 | The house was recently built. | The house is new.                        | entailment    |
 
 #### Zero-shot classification with Text Entailment
+
 * We can use a model trained on the MNLI dataset to build a classifier without needing any labels. 
 * We treat the input text as a premise and formulate a hypothesis as:
 > "This example is about {label}."
@@ -1694,8 +1692,8 @@ inspect.signature(pipe.preprocess).parameters['hypothesis_template']
     <Parameter "hypothesis_template='This example is {}.'">
 ```
 
-
 #### `transformers.pipelines.zero_shot_classification.ZeroShotClassificationPipeline`
+
 * [Documentation](https://huggingface.co/docs/transformers/main/en/main_classes/pipelines#transformers.ZeroShotClassificationPipeline)
 * Create a Natural-Language-Inference (NLI)-based zero-shot classification pipeline.
 * The pipeline takes any combination of sequences and labels.
@@ -1940,25 +1938,25 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Zero Shot")
 * The zero-shot classification pipeline is sensitive to the names of labels and might perform better when using different or several names in parallel and aggregating them.
 * Using a different `hypothesis_template` might improve performance.
 
-
-
 ## Working with a Few Labels
 
 * There are often a few labeled examples available, at least, for most NLP projects.
 * The labels might come directly from a client, a cross-company team, from hand annotating a few examples.
 
 ### Data Augmentation
+
 * We can use data augmentation to generate new training examples from existing ones.
 Perturbing words or characters can completely change the meaning.
 Noise introduced by data augmentation is less likely to change the meaning when the text is more than a few sentences.
 
 #### Back Translation
+
 * Back translation involves translating the original text into one or more target languages and translating it back to the source language.
 * Back translation works best for high-resource languages or corpora that don't contain too many domain-specific words.
 * We can implement back translation models using machine translation models like [MSM100](https://huggingface.co/facebook/m2m100_1.2B).
 
-
 #### Token Perturbations
+
 * Token perturbations involve randomly choosing and performing simple transformations like synonym replacement, word insertion, swap, or deletion.
 * Libraries like [NlpAug](https://github.com/makcedward/nlpaug) and [TextAttack](https://github.com/QData/TextAttack) provide various recipes for token perturbations.
 * [EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://arxiv.org/abs/1901.11196)
@@ -2281,6 +2279,7 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes + Aug")
 ------
 
 ### Using Embeddings as a Lookup Table
+
 * Large language models like GPT-3 are excellent at solving tasks with limited data because they learn representations of text that encode information across many dimensions.
 * We can use embeddings of large language models to develop a semantic search engine, find similar documents or comments, or classify text.
 * This approach does not require fine-tuning models to leverage the few labeled data points.
@@ -2289,6 +2288,7 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Naive Bayes + Aug")
 * [OpenAI API Classification Endopint](https://beta.openai.com/docs/api-reference/classifications)
 
 #### Steps to classify text using embeddings:
+
 1. Use the language model to embed all labeled texts.
 2. Perform a nearest-neighbor search over the stored embeddings.
 3. Aggregate the labels of the nearest neighbors to get a prediction.
@@ -2382,6 +2382,7 @@ embs_test = ds["test"].map(embed_text, batched=True, batch_size=16)
 ------
 
 #### `Dataset.add_faiss_index`
+
 * [Documentation](https://huggingface.co/docs/datasets/master/en/package_reference/main_classes#datasets.Dataset.add_faiss_index)
 * Add a dense index using FAISS for fast retrieval.
 * FAISS is a library for efficient similarity search of dense vectors.
@@ -2638,6 +2639,7 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Embedding")
 * [Guidelines to choose an index](https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index)
 
 ### Fine-Tuning a Vanilla Transformer
+
 * We can fine-tune a pretrained transformer model when we have labeled data.
 * Starting with a pretrained BERT-like model is often a good idea.
 * The target corpus should not be too different from the pretraining corpus.
@@ -2850,8 +2852,6 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (vanilla)")
     * Researchers at Hugging Face found that this approach can be more data-efficient than fine-tuning a custom head.
         * [How Many Data Points is a Prompt Worth?](https://arxiv.org/abs/2103.08493)
 
-
-
 ## Leveraging Unlabeled Data
 
 * Domain adaptation involves continuing the pretraining process of predicting masked words using unlabeled data from the target domain.
@@ -2859,6 +2859,7 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (vanilla)")
 * Domain adaptation can help boost model performance with unlabeled data and little effort.
 
 ### Fine-Tuning a Language Model
+
 * We need to mask the `[CLS]` and `[SEP]` tokens from the loss, so we don't train the model to predict them when doing masked language modeling.
 * We can get a mask when tokenizing by setting `return_special_tokens_mask=True`.
 * We can use a [specialized data collator](https://huggingface.co/docs/transformers/main/en/main_classes/data_collator#transformers.DataCollatorForLanguageModeling) to prepare the elements in a batch for masked language modeling on the fly.
@@ -3502,6 +3503,7 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 ### Advanced Methods
 
 #### Unsupervised data augmentation
+
 * Unsupervised data augmentation (UDA) works off the idea that a model's predictions should be consistent for an unlabeled example and a slightly distorted one.
 * We can introduce distortions using standard data augmentation strategies.
 * We enforce consistency by minimizing the KL divergence between the predictions of the original and distorted examples.
@@ -3512,6 +3514,7 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 * Training takes much longer since it requires multiple forward passes to generate the predicted distributions on the unlabeled and augmented examples.
 
 #### Uncertainty-aware self-training
+
 * Uncertainty-aware self-training (UST) involves training a teacher model on labeled data and using that model to create pseudo-labels for unlabeled data.
 * A student model then trains on the pseudo-labeled data.
 * We get an uncertainty measure of the student model's predictions by feeding it the same input several times with dropout turned on.
@@ -3521,8 +3524,6 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 * UST gets within a few percentages of models trained on datasets with thousands of labeled samples and beats UDA on several datasets.
 * [Uncertainty-aware Self-training for Text Classification with Few Labels](https://arxiv.org/abs/2006.15315)
 
-
-
 ## Conclusion
 
 * Set up an evaluation pipeline to test different approaches for dealing with little to no labeled data.
@@ -3531,9 +3532,6 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 * It might make more sense to create a small high-quality dataset rather than engineering a very complex method to compensate for the lack of data.
 * Annotating a few hundred examples usually takes a couple of hours to a few days.
 * There are many annotation tools available to speed up labeling new data.
-
-
-
 
 ## References
 
@@ -3545,9 +3543,5 @@ plot_metrics(micro_scores, macro_scores, train_samples, "Fine-tune (DA)")
 **Previous:** [Notes on Transformers Book Ch. 8](../chapter-8/)
 
 **Next:** [Notes on Transformers Book Ch. 10](../chapter-10/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

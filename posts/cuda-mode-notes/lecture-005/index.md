@@ -15,14 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
 
 * [Introduction and Overview](#introduction-and-overview)
 * [Resources and Setup](#resources-and-setup)
@@ -31,8 +27,6 @@ open-graph:
 * [Implementing Tiling with Numba](#implementing-tiling-with-numba)
 * [Q&A Session](#qa-session)
 
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 5: Going Further with CUDA for Python Programmers](https://www.youtube.com/watch?v=wVsR-YhaHlM) 
@@ -40,10 +34,6 @@ open-graph:
 * **utils.py:** [utils.py](https://github.com/cuda-mode/lectures/blob/main/utils.py)
 
 :::
-
-
-
-
 
 ## Introduction and Overview
 
@@ -60,8 +50,6 @@ open-graph:
   * **Shared Memory:** Significantly faster than global memory (about 10x). 
     * Accessible only by threads within a specific **block** (on a streaming multiprocessor). 
 * **Importance of Memory Access Speed:** Due to the high processing speed of GPUs, memory access becomes a performance bottleneck. Utilizing shared memory effectively is crucial for optimization. 
-
-
 
 ## Resources and Setup
 
@@ -137,8 +125,6 @@ open-graph:
   <torch._C.Generator at 0x728ffff23630>
   ```
 
-  
-
 ## Matrix Multiplication Example
 
 * **Problem:** Multiplying a 5120x256 matrix (M1) by a 256x5120 matrix (M2). 
@@ -156,8 +142,6 @@ open-graph:
   # Extract the first 4 columns of m2
   m2s = m2[:, :4]
   ```
-
-
 
 ### Previous Approaches (Recap)
 
@@ -388,8 +372,6 @@ open-graph:
   3 ms ± 177 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
   ```
 
-
-
 ## Optimizing with Shared Memory
 
 ### Tiling
@@ -404,8 +386,6 @@ open-graph:
 * **Benefits:**
   * Each input element is read from global memory only once. 
   * Dot products are calculated using much faster shared memory. 
-
-
 
 ### Implementing Tiling in Python
 
@@ -553,8 +533,6 @@ open-graph:
   tensor(True)
   ```
 
-
-
 ### Refactoring the Python Kernel
 
 * **`run_threads` Function:** Introduced to abstract the looping through threads within a tile.
@@ -672,10 +650,6 @@ open-graph:
   ```text
   tensor(True)
   ```
-
-  
-
-
 
 ### CUDA-Like Python Implementation with Threads
 
@@ -859,10 +833,6 @@ open-graph:
   ```text
   tensor(True)
   ```
-
-  
-
-
 
 ### Implementing Tiling in CUDA
 
@@ -1093,10 +1063,6 @@ open-graph:
     2.1 ms ± 23.9 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
     ```
 
-    
-
-
-
 ### Dynamic Shared Memory Performance Issue and Solution (Update from the Future)
 
 * **Cause:** CUDA struggles to optimize dynamic shared memory allocation when the tile width is not known at compile time, leading to slower performance. 
@@ -1238,8 +1204,6 @@ open-graph:
   ```text
   2.06 ms ± 51.2 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
   ```
-
-
 
 ## Implementing Tiling with Numba
 
@@ -1388,12 +1352,6 @@ open-graph:
   2. Disable the simulator to run the code on the GPU. 
   3. Optionally, convert the Numba code to CUDA C/C++ using ChatGPT for deployment. 
 
-
-
-
-
-
-
 ## Q&A Session
 
 * **Shipping Numba Kernels and AOT Compilation:**
@@ -1413,9 +1371,5 @@ open-graph:
 * **Numba vs. Triton:**
   * **Different Purposes:** Numba and Triton were recognized as valuable tools with distinct strengths, suitable for different use cases. Triton's limitations in expressing certain CUDA constructs (e.g., 4-bit discretization) were noted. 
   * **Complementary Tools:** Numba and Triton were seen as complementary, each offering unique advantages.
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

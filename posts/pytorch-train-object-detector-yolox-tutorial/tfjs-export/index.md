@@ -20,7 +20,6 @@ open-graph:
 * [**Training YOLOX Models for Real-Time Object Detection in PyTorch**](/series/tutorials/pytorch-train-object-detector-yolox-series.html)
 :::
 
-
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
 * [Setting Up Your Python Environment](#setting-up-your-python-environment)
@@ -30,7 +29,6 @@ open-graph:
 * [Converting the Model to TensorFlow](#converting-the-model-to-tensorflow)
 * [Exporting the Model to TensorFlow.js](#exporting-the-model-to-tensorflow.js)
 * [Conclusion](#conclusion)
-
 
 ## Introduction
 
@@ -55,10 +53,6 @@ By the end of this tutorial, you will have a TensorFlow.js version of our YOLOX 
 * [Training YOLOX Models for Real-Time Object Detection in Pytorch](../)
 :::
 
-
-
-
-
 ## Getting Started with the Code
 
 As with the previous tutorial, the code is available as a Jupyter Notebook.
@@ -66,10 +60,6 @@ As with the previous tutorial, the code is available as a Jupyter Notebook.
 | Jupyter Notebook                                             | Google Colab                                                 |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [GitHub Repository](https://github.com/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-detector-nobuco-tfjs-export.ipynb) | [Open In Colab](https://colab.research.google.com/github/cj-mills/pytorch-yolox-object-detection-tutorial-code/blob/main/notebooks/pytorch-yolox-object-detector-nobuco-tfjs-export-colab.ipynb) |
-
-
-
-
 
 ## Setting Up Your Python Environment
 
@@ -103,10 +93,6 @@ pip install "keras<3.0.0" "tensorflow<2.16" "tensorflow-decision-forests<1.10.0"
 ```
 :::
 
-
-
-
-
 ## Importing the Required Dependencies
 
 With our environment updated, we can dive into the code. First, we will import the necessary Python dependencies into our Jupyter Notebook.
@@ -134,14 +120,11 @@ from nobuco import pytorch_to_keras, ChannelOrder
 from tensorflowjs import converters, quantization
 ```
 
-
-
 ## Setting Up the Project
 
 In this section, we'll set the folder locations for our project and training session with the PyTorch checkpoint.
 
 ### Set the Directory Paths
-
 
 ```python
 # The name for the project
@@ -191,14 +174,11 @@ pd.Series({
 ::: {.callout-tip title="Those following along on Google Colab can drag the contents of their checkpoint folder into Colab's file browser. "}
 :::
 
-
-
 ## Loading the Checkpoint Data
 
 Now, we can load the colormap and normalization stats used during training and initialize a YOLOX model with the saved checkpoint.
 
 ### Load the Colormap
-
 
 ```python
 # The colormap path
@@ -219,7 +199,6 @@ int_colors = [tuple(int(c*255) for c in color) for color in colormap_dict.values
 ```
 
 ### Load the Normalization Statistics
-
 
 ```python
 # The normalization stats path
@@ -264,10 +243,7 @@ pd.DataFrame(norm_stats)
 </table>
 </div>
 
-
-
 ### Load the Model Checkpoint
-
 
 ```python
 # The model checkpoint path
@@ -277,12 +253,7 @@ checkpoint_path = list(checkpoint_dir.glob('*.pth'))[0]
 model_checkpoint = torch.load(checkpoint_path, map_location='cpu')
 ```
 
-
-
-
-
 ### Load the Trained YOLOX Model
-
 
 ```python
 # Select the YOLOX model configuration
@@ -298,8 +269,6 @@ model.load_state_dict(model_checkpoint)
 ```text
 <All keys matched successfully>
 ```
-
-
 
 ## Converting the Model to TensorFlow
 
@@ -333,11 +302,6 @@ wrapped_model = YOLOXInferenceWrapper(model,
                                      )
 ```
 
-
-
-
-
-
 ### Prepare the Input Tensor
 
 We need a sample input tensor for the conversion process.
@@ -352,9 +316,7 @@ The exported TensorFlow.js model will lock to this input resolution, so pick dim
 
 :::
 
-
-
-### Convert the PyTorch Model to Keras 
+### Convert the PyTorch Model to Keras
 
 We use the `pytorch_to_keras` function included with nobuco to convert the YOLOX model from PyTorch to a [Keras](https://www.tensorflow.org/guide/keras) model. While we can stick with the default channel order for the model input, we need to maintain the output channel order from the original PyTorch model.
 
@@ -367,10 +329,6 @@ keras_model = pytorch_to_keras(
 )
 ```
 
-
-
-
-
 ### Save the Keras Model in SavedModel format
 
 Next, we save the Keras model in TensorFlow's SavedModel format, the recommended format for exporting to TensorFlow.js.
@@ -382,12 +340,6 @@ savedmodel_dir = Path(f"{checkpoint_dir}/{colormap_path.stem.removesuffix('-colo
 # Save the TensorFlow model to disk
 keras_model.save(savedmodel_dir, save_format="tf")
 ```
-
-
-
-
-
-
 
 ## Exporting the Model to TensorFlow.js
 
@@ -423,24 +375,10 @@ converters.convert_tf_saved_model(saved_model_dir=str(savedmodel_dir),
 1. Don't forget to download the archive file containing the TensorFlow.js model files from the Colab Environment's file browser. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#working-with-data)) 
 :::
 
-
-
-
-
-
-
-
-
-
 ## Conclusion
 
 Congratulations on reaching the end of this tutorial! We previously trained a YOLOX model in PyTorch for hand gesture detection, and now we've exported that model to TensorFlow.js. With it, we can deploy our model to the web and run it locally in users' browsers.
 
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

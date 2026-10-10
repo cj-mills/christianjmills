@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
-
-
-
-
 
 ## LangSmith's Position in the Observability Market
 
@@ -44,8 +38,6 @@ open-graph:
     * **Guide:** [Run pairwise evaluations](https://docs.smith.langchain.com/how_to_guides/evaluation/evaluate_pairwise)
   * **Strong Support and Openness:** LangSmith is praised for its excellent support, responsive team, and open APIs that allow integration with other tools. 
 
-
-
 ## LangSmith's Support for Human Annotation and Action Items
 
 * **Question:**  What support does LangSmith offer for human annotation, annotation queues, and taking action on user feedback? 
@@ -58,8 +50,6 @@ open-graph:
     * **Concept:** [Evaluation](https://docs.smith.langchain.com/concepts/evaluation#datasets-and-examples)
   * **Few-Shot Learning:** LangSmith aims to be a platform for gathering few-shot example datasets, which can be used for personalization by pulling down the most similar examples during runtime.
 
-
-
 ## Understanding the LangChain "Lang" Namespace
 
 * **Question:** What's the difference between Langchain, Langsmith, Langgraph, Langflow, and Langserve? 
@@ -69,8 +59,6 @@ open-graph:
   * **[LangServe](https://python.langchain.com/v0.2/docs/langserve/):**  Simplifies deploying LangChain applications by exposing them as [FastAPI](https://fastapi.tiangolo.com/) endpoints.
   * **[LangGraph](https://langchain-ai.github.io/langgraph/):** An extension of LangChain specifically designed for building and managing highly controllable agent-based workflows.
   * **[LangSmith](https://www.langchain.com/langsmith):** A standalone observability and testing tool for LLM apps, usable with or without LangChain.
-
-
 
 ## When to Use LangChain vs. LangGraph
 
@@ -83,8 +71,6 @@ open-graph:
     * Built-in persistence
     * Streaming and background modes
 
-
-
 ## Popularity of TypeScript vs. Python in LLM Tools
 
 * **Question:** How does the usage of TypeScript APIs compare to Python APIs in LangChain and related tools? 
@@ -93,8 +79,6 @@ open-graph:
     * A larger community focused on LLM application prototyping.
     * Stronger ecosystem for data engineering tasks related to retrieval.
   * **TypeScript for Generative UI:** TypeScript is gaining traction, especially for applications involving generative UI, which is more challenging to implement in Python. 
-
-
 
 ## Generative UI Explained
 
@@ -105,17 +89,13 @@ open-graph:
   * **Vercel AI SDK Integration:**  LangChain now integrates with Vercel's AI SDK for easier development of generative UI experiences.
     * **[Vercel AI SDK](https://sdk.vercel.ai/docs/introduction):** TypeScript toolkit designed to help developers build AI-powered  applications with React, Next.js, Vue, Svelte, Node.js, and more.
 
-
-
-## Defining "Agentic" in the Context of LLMs 
+## Defining "Agentic" in the Context of LLMs
 
 * **Question:** What does "agentic" mean in the context of LLMs, and is it a significant distinction?
 * **Answer:**
   * **LLM in Control:** An agentic system is one where the LLM controls the application's control flow and decision-making process.
   * **More Than Function Calling:** While related to function calling, agentic systems go further by enabling LLMs to loop, adapt, and make dynamic decisions about the next steps.
   * **Implications for Development:** This distinction introduces new challenges and considerations in UX design, observability, and testing.
-
-
 
 ## LangChain/LangSmith Features for Agentic Workflows
 
@@ -126,15 +106,11 @@ open-graph:
     * **Persistence and Human-in-the-Loop:** Built-in persistence and easy access to execution history enable checkpointing, resuming from specific states, and human intervention when needed.
   * **LangSmith's Role:** While not agent-specific, LangSmith's observability features are particularly valuable for debugging and understanding complex, agentic applications. 
 
-
-
 ## Multiple LLM Collaboration in Practice
 
 * **Question:** Is the idea of using multiple LLMs with different strengths in a single application realistic? 
 * **Answer:**
   * **Planning and Execution:** A common pattern involves a powerful LLM (e.g., GPT-4) for high-level planning and decision-making, while specialized or more cost-effective models (e.g., specialized code generation models) handle specific tasks.
-
-
 
 ## Building Evaluation Sets with LangSmith
 
@@ -150,8 +126,6 @@ open-graph:
 * **How-to guides:** [Evaluation](https://docs.smith.langchain.com/how_to_guides/evaluation)
 * **Tutorial:** [Evaluate your LLM application](https://docs.smith.langchain.com/tutorials/Developers/evaluation)
 
-
-
 ## Recommended Stack for Full-Stack ML Engineers
 
 * **Question:**  What's a good technology stack for Python-centric ML engineers who want to build and ship full-stack applications? 
@@ -164,9 +138,5 @@ open-graph:
   * **Tips:**
     * Leverage LLMs (like ChatGPT) to assist with JavaScript/TypeScript code generation and understanding.
     * Don't shy away from forking and modifying existing repositories to learn and adapt. 
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

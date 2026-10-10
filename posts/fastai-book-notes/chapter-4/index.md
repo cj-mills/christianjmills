@@ -22,12 +22,10 @@ open-graph:
 
 ---
 
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
-
 
 * [Tenacity and Deep Learning](#tenacity-and-deep-learning)
 * [The Foundations of Computer Vision](#the-foundations-of-computer-vision)
@@ -39,7 +37,6 @@ open-graph:
 * [Putting It All Together](#putting-it-all-together)
 * [Adding a Nonlinearity](#adding-a-nonlinearity)
 * [References](#references)
-
 
 ## Tenacity and Deep Learning
 
@@ -55,8 +52,6 @@ open-graph:
     - Invented backpropagation for neural networks in 1974
         - considered the most important foundation of modern AI
 
-
-
 ## The Foundations of Computer Vision
 
 - [MNIST Database](https://en.wikipedia.org/wiki/MNIST_database)
@@ -66,8 +61,6 @@ open-graph:
     - A convolutional neural network structure proposed by [Yann Lecun](https://en.wikipedia.org/wiki/Yann_LeCun) and his colleagues
     - Demonstrated the first practically useful recognition of handwritten digit sequences in 1998
     - One of the most important breakthroughs in the history of AI
-
-
 
 ## Pixels
 
@@ -116,8 +109,6 @@ path.ls()
 ```text
 (#3) [Path('labels.csv'),Path('train'),Path('valid')]
 ```
-
-
 
 #### fastcore `L` Class
 
@@ -172,8 +163,6 @@ im3
 
 ![](./images/output_10_1.png){fig-align="center"}
 
-
-
 ### PIL Image Module
 
 * [https://pillow.readthedocs.io/en/stable/reference/Image.html](https://pillow.readthedocs.io/en/stable/reference/Image.html)
@@ -207,10 +196,6 @@ array([[  0,   0,   0,   0,   0,   0],
        [  0, 107, 253, 253, 230,  48],
        [  0,   3,  20,  20,  15,   0]], dtype=uint8)
 ```
-
-
-
-
 
 ### NumPy Arrays and PyTorch Tensors
 
@@ -336,10 +321,6 @@ tns*1.5
 tensor([[1.5000, 3.0000, 4.5000],
         [6.0000, 7.5000, 9.0000]])
 ```
-
-
-
-
 
 ### NumPy Array Objects
 
@@ -1609,10 +1590,6 @@ df.style.set_properties(**{'font-size':'6pt'}).background_gradient('Greys')
 </table>
 </div>
 
-
-
-
-
 ## Pixel Similarity
 
 - Establish a baseline to compare against your model
@@ -1640,8 +1617,8 @@ len(three_tensors),len(seven_tensors)
 (6131, 6265)
 ```
 
-
 #### fastai show_image function
+
 * [https://docs.fast.ai/torch_core.html#show_image](https://docs.fast.ai/torch_core.html#show_image)
 * Display tensor as an image
 
@@ -1653,8 +1630,8 @@ show_image(three_tensors[1]);
 
 ![](./images/output_27_0.png){fig-align="center"}
 
-
 #### PyTorch Stack Function
+
 * [https://pytorch.org/docs/stable/generated/torch.stack.html](https://pytorch.org/docs/stable/generated/torch.stack.html)
 * Concatenates a sequence of tensors along a new dimension
 
@@ -1760,6 +1737,7 @@ RMSE: 0.30210891366004944
 > **Note:** The error is larger when comparing the image of a `3` to the average pixel values for the digit `7`
 
 #### `torch.nn.functional`
+
 * [https://pytorch.org/docs/stable/nn.functional.html](https://pytorch.org/docs/stable/nn.functional.html)
 * Provides access to a variety of functions in PyTorch
 
@@ -1773,13 +1751,13 @@ F
 <module 'torch.nn.functional' from '/home/innom-dt/miniconda3/envs/fastbook/lib/python3.9/site-packages/torch/nn/functional.py'>
 ```
 
-
-
 #### PyTorch l1_loss function
+
 * [https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss](https://pytorch.org/docs/stable/generated/torch.nn.functional.l1_loss.html#torch.nn.functional.l1_loss)
 * takes the mean element-wise absolute value difference
 
 #### PyTorch mse_loss function
+
 * [https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss](https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss)
 * Measures the element-wise mean squared error
 * Penalizes bigger mistakes more heavily
@@ -1796,10 +1774,6 @@ print(F.mse_loss(a_3,mean7).sqrt())
 tensor(0.1586)
 tensor(0.3021)
 ```
-
-
-
-
 
 ## Computing Metrics Using Broadcasting
 
@@ -1950,10 +1924,6 @@ Correct 7s: 1013
 Incorrect 7s: 15
 ```
 
-
-
-
-
 ## Stochastic Gradient Descent
 
 - the key to having a model that can improve
@@ -1980,7 +1950,8 @@ def pr_eight(x,w) = (x*w).sum()
 def f(x): return x**2
 ```
 
-#### plot_function
+### plot_function
+
 * [https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70](https://github.com/fastai/fastbook/blob/e57e3155824c81a54f915edf9505f64d5ccdad84/utils.py#L70)
 
 -----
@@ -1999,7 +1970,6 @@ plt.scatter(-1.5, f(-1.5), color='red');
 ```
 
 ![](./images/output_70_0.png){fig-align="center"}
-
 
 ### Calculating Gradients
 
@@ -2040,8 +2010,6 @@ yt
 tensor(9., grad_fn=<PowBackward0>)
 ```
 
-
-
 #### Tensor.grad_fn
 
 * [https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history](https://pytorch.org/tutorials/beginner/former_torchies/autograd_tutorial.html#tensors-that-track-history)
@@ -2056,8 +2024,6 @@ yt.grad_fn
 ```text
 <PowBackward0 at 0x7f91e90a6670>
 ```
-
-
 
 #### Tensor.backward()
 
@@ -2119,7 +2085,6 @@ xt.grad
 tensor([ 6.,  8., 20.])
 ```
 
-
 ### Stepping with a Learning Rate
 
 - nearly all approaches to updating model parameters start with multiplying the gradient by some small number called the learning rate
@@ -2130,9 +2095,8 @@ tensor([ 6.,  8., 20.])
     - picking a learning rate that is too small means more steps are needed to reach the optimal parameter values
     - picking a learning rate that is too big can result in the loss getting worse or bouncing around the same range of values
 
-
-
 ### An End-to-End SGD Example
+
 - Steps to turn function into classifier
     1. Initialize the weights
         - initialize parameters to random values
@@ -2204,6 +2168,7 @@ def mse(preds, targets): return ((preds-targets)**2).mean().sqrt()
 ```
 
 #### Step 1: Initialize the parameters
+
 ```python
 # Initialize trainable parameters with random values
 # Let PyTorch know that we want to track the gradients
@@ -2223,6 +2188,7 @@ orig_params = params.clone()
 ```
 
 #### Step 2: Calculate the predictions
+
 ```python
 preds = f(time, params)
 print(preds.shape)
@@ -2254,8 +2220,8 @@ show_preds(preds)
 
 ![](./images/output_99_0.png){fig-align="center"}
 
-
 #### Step 3: Calculate the loss
+
 * goal is to minimize this value
 
 -----
@@ -2269,9 +2235,8 @@ loss
 tensor(160.6979, grad_fn=<SqrtBackward0>)
 ```
 
-
-
 #### Step 4: Calculate the gradients
+
 ```python
 loss.backward()
 params.grad
@@ -2309,9 +2274,8 @@ params
 tensor([-0.7658, -0.7506,  1.3525], requires_grad=True)
 ```
 
+#### Step 5: Step the weights.
 
-
-#### Step 5: Step the weights. 
 ```python
 # Using a learning rate of 0.0001 for larger steps
 lr = 1e-4
@@ -2353,7 +2317,8 @@ def apply_step(params, prn=True):
     return preds
 ```
 
-#### Step 6: Repeat the process 
+#### Step 6: Repeat the process
+
 ```python
 for i in range(10): apply_step(params)
 ```
@@ -2391,11 +2356,9 @@ plt.tight_layout()
 
 ![](./images/output_116_0.png){fig-align="center"}
 
-
 #### Step 7: Stop
+
 * Watch the training and validation losses and our metrics to decide when to stop
-
-
 
 ### Summarizing Gradient Descent
 
@@ -2409,8 +2372,6 @@ plt.tight_layout()
 
 ![](./images/output_119_0.svg)
 
-
-
 ## The MNIST Loss Function
 
 - Khan Academy: [Intro to Matrix Multiplication](https://www.youtube.com/watch?v=kT4Mp9EdVqs)
@@ -2419,13 +2380,13 @@ plt.tight_layout()
     - its derivative is 0 almost everywhere
 - need a loss function that gives a slightly better loss when our weights result in slightly better prediction
 
-#### torch.cat()
+### torch.cat()
 
 * [https://pytorch.org/docs/stable/generated/torch.cat.html](https://pytorch.org/docs/stable/generated/torch.cat.html)
 * Concatenates a given sequence of tensors in the specified dimension
 * All tensor must have the same shape except in the specified dimension
 
-#### Tensor.view()
+### Tensor.view()
 
 * [https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view](https://pytorch.org/docs/stable/generated/torch.Tensor.view.html#torch.Tensor.view)
 * Returns a new tensor with the same data as the self tensor but of a different shape.
@@ -2510,9 +2471,8 @@ bias = init_params(1)
 tensor([-6.2330], grad_fn=<AddBackward0>)
 ```
 
-
-
 ### Matrix Multiplication
+
 ```python
 # Matrix multiplication using loops
 def mat_mul(m1, m2):
@@ -2732,8 +2692,6 @@ mnist_loss(tensor([0.9, 0.4, 0.8]),trgts)
 tensor(0.2333)
 ```
 
-
-
 ### Sigmoid Function
 
 - always returns a value between 0 and 1
@@ -2781,9 +2739,8 @@ def mnist_loss(predictions, targets):
     return torch.where(targets==1, 1-predictions, predictions).mean()
 ```
 
-
-
 ### SGD and Mini-Batches
+
 - calculating the loss for the entire dataset would take a lot of time
     - the full dataset is also unlikely to fit in memory
 - calculating the loss for single data item would result in an imprecise and unstable gradient
@@ -2897,9 +2854,8 @@ list(dl)
  (tensor([7, 8]), ('h', 'i'))]
 ```
 
-
-
 ## Putting It All Together
+
 ```python
 # Randomly initialize parameters
 weights = init_params((28*28,1))
@@ -2913,7 +2869,8 @@ bias = init_params(1)
 dl = DataLoader(dset, batch_size=256)
 ```
 
-#### fastcore first():
+### fastcore first():
+
 * [https://fastcore.fast.ai/basics.html#first](https://fastcore.fast.ai/basics.html#first)
 * First element of x, optionally filtered by f, or None if missing
 
@@ -3128,8 +3085,6 @@ for i in range(20):
 ```
 
 **Note:** Accuracy improves from 0.7358 to 0.9784
-
-
 
 ### Creating an Optimizer
 
@@ -3443,9 +3398,8 @@ learn.fit(10, lr=lr)
 </table>
 </div>
 
-
-
 ## Adding a Nonlinearity
+
 ```python
 def simple_net(xb): 
     # Linear layer    
@@ -3466,7 +3420,7 @@ w2 = init_params((30,1))
 b2 = init_params(1)
 ```
 
-#### PyTorch F.relu:
+### PyTorch F.relu:
 
 * [https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu](https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html#torch.nn.functional.relu)
 * Applies the rectified linear unit function element-wise.
@@ -3492,7 +3446,7 @@ plot_function(F.relu)
 
 ![](./images/output_220_0.png){fig-align="center"}
 
-#### nn.Sequential:
+### nn.Sequential:
 
 * [https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential](https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential)
 * A sequential container.
@@ -3826,9 +3780,7 @@ learn.fit(40, 0.1)
 </table>
 </div>
 
-
-
-#### matplotlib.pyplot.plot:
+### matplotlib.pyplot.plot:
 
 * [https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html)
 * Plot y versus x as lines and/or markers
@@ -3843,9 +3795,7 @@ plt.plot
 <function matplotlib.pyplot.plot(*args, scalex=True, scaley=True, data=None, **kwargs)>
 ```
 
-
-
-#### fastai learner.Recorder:
+### fastai learner.Recorder:
 
 * [https://docs.fast.ai/learner.html#Recorder](https://docs.fast.ai/learner.html#Recorder)
 * Callback that registers statistics (lr, loss and metrics) during training
@@ -3870,7 +3820,7 @@ Recorder
 fastai.learner.Recorder
 ```
 
-#### fastcore L.itemgot():
+### fastcore L.itemgot():
 
 * [https://fastcore.fast.ai/foundation.html#L.itemgot](https://fastcore.fast.ai/foundation.html#L.itemgot)
 * Create new L with item idx of all items
@@ -3904,9 +3854,8 @@ learn.recorder.values[-1][2]
 0.98233562707901
 ```
 
-
-
 ### Going Deeper
+
 - deeper models: models with more layers
 - deeper models are more difficult to optimize the more layers
 - deeper models require fewer parameters
@@ -4054,9 +4003,8 @@ Sequential(
 )
 ```
 
-
-
 ## Jargon Recap
+
 - neural networks contain two types of numbers
     1. Parameters: numbers that are randomly initialized and optimized
         - define the model
@@ -4079,11 +4027,6 @@ Sequential(
 - Gradient descent: Taking a step in the direction opposite to the gradients to make the model parameters a little bit better
 - Learning rate: The size of the step we take when applying SGD to update the parameters of the model
 
-
-
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -4094,9 +4037,5 @@ Sequential(
 **Previous:** [Notes on fastai Book Ch. 3](../chapter-3/)
 
 **Next:** [Notes on fastai Book Ch. 5](../chapter-5/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,24 +15,14 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**Mastering LLMs Course Notes**](/series/notes/mastering-llms-course-notes.html): My notes from the course **Mastering LLMs: A Conference For Developers & Data Scientists** by **Hamel Husain** and **Dan Becker**.
 :::
 
-
-
-
-
 * [Mistral Overview](#mistral-overview)
 * [Customization](#customization)
 * [Demos](#demos)
-
-
-
-
 
 ## Mistral Overview
 
@@ -61,9 +51,6 @@ open-graph:
   * **Blog Post:** [My Tailor is Mistral](https://mistral.ai/news/customization/)
   * **GitHub Repository:** [mistral-finetune](https://github.com/mistralai/mistral-finetune)
 
-
-
-
 ## Customization
 
 * **Blog Post:** [My Tailor is Mistral](https://mistral.ai/news/customization/)
@@ -85,16 +72,10 @@ open-graph:
 * **Task Alignment:** Tailored to specific tasks and behaviors.
 * **Knowledge Integration:**  Ability to teach new facts and information.
 
-
-
-
-
 ## Demos
 
 * **GitHub Repository:** [Mistral Cookbook](https://github.com/mistralai/cookbook)
 * **GitHub Repository:** [Mistral Inference](https://github.com/mistralai/mistral-inference)
-
-
 
 ### Mistral API
 
@@ -149,8 +130,6 @@ open-graph:
 
   :::
 
-
-
 ### Medical Chatbot Demo
 
 * Trained on the HuggingFace dataset for AI medical chatbots. 
@@ -173,8 +152,6 @@ open-graph:
   ```
 
   :::
-
-
 
 ### News Article Stylist (Economist Style Guide) Demo
 
@@ -244,8 +221,6 @@ open-graph:
 
   :::
 
-
-
 ### Mistral Fine-tune API Walkthrough
 
 * **Documentation:** [https://docs.mistral.ai/guides/finetuning/](https://docs.mistral.ai/guides/finetuning/)
@@ -274,8 +249,6 @@ open-graph:
 6. **Weight & Biases Integration (Optional)**:
    * Configure API key for tracking metrics and visualizations.
 
-
-
 ### Getting Started Fine-Tuning Mistral 7B (Local)
 
 * **Jupyter Notebook:** [tutorials/mistral_finetune_7b.ipynb](https://github.com/mistralai/mistral-finetune/blob/main/tutorials/mistral_finetune_7b.ipynb)
@@ -301,17 +274,5 @@ open-graph:
        ```
    * Load the tokenizer, base model, and fine-tuned LoRA weights.
    * Generate text. 
-
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

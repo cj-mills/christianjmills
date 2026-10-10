@@ -20,7 +20,6 @@ open-graph:
 * [**Testing Intel's Arc A770 GPU for Deep Learning**](/series/notes/arc-a770-testing.html)
 :::
 
-
 * [Introduction](#introduction)
 * [Getting the Extension Running on Windows](#getting-the-extension-running-on-windows)
 * [Training Image Classification Models](#training-image-classification-models)
@@ -29,13 +28,10 @@ open-graph:
 * [Reproducibility Issues on Windows](#reproducibility-issues-on-windows)
 * [Closing Thoughts](#closing-thoughts)
 
-
 ## Tutorial Links
 
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu](../../intel-pytorch-extension-tutorial/native-ubuntu/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows](../../intel-pytorch-extension-tutorial/native-windows/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
-
-
 
 ## Introduction
 
@@ -54,10 +50,6 @@ This post covers my experience getting the extension running on native Windows a
 The results in this post are with version [`2.0.110+xpu`](https://intel.github.io/intel-extension-for-pytorch/xpu/2.0.110+xpu/) of Intel's PyTorch extension.
 
 :::
-
-
-
-
 
 ## Getting the Extension Running on Windows
 
@@ -81,10 +73,6 @@ I provide detailed instructions for setting up the extension on Windows in a ded
 
 - [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows](../../intel-pytorch-extension-tutorial/native-windows/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
 
-
-
-
-
 ## Training Image Classification Models
 
 First, I tested performance with the image classification notebook I used [previously](../part-2/#training-performance-on-native-ubuntu). Training times on Ubuntu were within a few percentage points of version `1.13.120+xpu` of the extension. The new version supports Python 3.11, but there were no notable performance improvements over Python 3.10. On the contrary, training time was consistently slightly slower (a few seconds per epoch) with Python 3.11 compared to Python 3.10.
@@ -101,10 +89,6 @@ The performance gap between Windows and Ubuntu is about the same as what I've co
 
 The final validation accuracy was identical on Windows and Ubuntu.
 
-
-
-
-
 ## Generating Images with 🤗 Diffusers
 
 Next, I tested the inference speed for Stable Diffusion 2.1 with the Hugging Face Diffusers notebook I used in [part 3](../part-3/#generating-images-with-diffusers). Inference speed when using bloat16 is approximately `25%` faster at `7.45 it/s` than with version `1.13.120+xpu`. That is still less than half the speed with the Titan RTX at `15.76 it/s`.
@@ -112,10 +96,6 @@ Next, I tested the inference speed for Stable Diffusion 2.1 with the Hugging Fac
 Using float16 has the same inference speed, but the model produces NaN values. The torch compile() method seems to expect CUDA to be enabled, and the compiled model throws an error when I try to use it.
 
 There was no notable difference in inference speed between Windows and Ubuntu.
-
-
-
-
 
 ## Training YOLOX Object Detection Models
 
@@ -131,10 +111,6 @@ Training time was about 11 minutes for a single pass through the training set on
 
 I needed to replace the same view operations with reshape operations in the loss function for the YOLOX training code on Windows and had the same (lack of) training results as on Ubuntu. The training loop also took several minutes to get going. The extension and Python's multiprocessing seem to contribute to this slow start time.
 
-
-
-
-
 ## Reproducibility Issues on Windows
 
 When I first got the extension working on Windows, I had different results with the YOLOX training notebook and the Stable Diffusion inference notebook.
@@ -145,11 +121,6 @@ However, when I uninstalled and reinstalled everything related to the extension,
 
 I might previously have had something installed that was not part of the setup process for the extension that caused the different behavior. If that is the case, I have been unable to identify it.
 
-
-
-
-
-
 ## Closing Thoughts
 
 I'm glad we now have the option to run PyTorch on Windows with the Arc GPUs without WSL. The performance gap between native Windows and Ubuntu does not seem too bad either.
@@ -157,8 +128,5 @@ I'm glad we now have the option to run PyTorch on Windows with the Arc GPUs with
 However, the fact the YOLOX training notebook does not reach usable performance on the Arc GPU is incredibly disappointing and concerning. That it temporarily worked on Windows only makes it more frustrating. I'd honestly rather it just fail outright and throw an error. That way, I would at least have a better idea of what is causing the problem.
 
 It's quite the opposite of how I expected things to turn out. I thought the first Windows version of the extension would have more problems and that the YOLOX training code would work without issue.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,16 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## These notes are part of the following collection:
 [**Education**](/series/notes/education-notes.html)
 :::
-
-
-
-
 
 * [Executive Summary](#executive-summary)
 * [About the Author: John Taylor Gatto](#about-the-author-john-taylor-gatto)  
@@ -36,18 +30,10 @@ open-graph:
 * [Actionable Recommendations](#actionable-recommendations)
 * [Glossary](#glossary)
 
-
-
 ::: {.callout-note}
 ### Book LInks:
 * [Publisher Page](https://newsociety.com/books/d/dumbing-us-down-25th-anniversary-edition)
 :::
-
-
-
-
-
-
 
 ## Executive Summary
 
@@ -58,8 +44,6 @@ He outlines seven harmful lessons instilled in students: confusion, class positi
 Gatto advocates for a decentralized, community-based approach to education that prioritizes individual growth, self-reliance, and engagement with the real world, drawing inspiration from the successes of homeschooling and the historical model of colonial New England’s congregational principle. 
 
 He calls for radical reform, including decertification of teaching, privatization, and a return to family-centric learning.
-
-
 
 ## About the Author: John Taylor Gatto
 
@@ -91,7 +75,7 @@ He calls for radical reform, including decertification of teaching, privatizatio
   - **Gatto's approach:** Like sculpting, it involves removing barriers that prevent inherent potential from emerging. 
 - He shifted away from seeing himself as the expert filling empty vessels to recognizing the innate abilities within each child.
 
-###  Threats to the System
+### Threats to the System
 
 -  Gatto believes his teaching philosophy poses two major threats:
    - **To the school system:** It challenges the fundamental assumptions that underpin the institution, such as the perceived difficulty of learning.
@@ -103,7 +87,7 @@ He calls for radical reform, including decertification of teaching, privatizatio
 - **Challenging Assumptions:**  Questioning traditional notions of valuable knowledge and a fulfilling life.
 - **Focus on Individual Paths:** Encouraging students to pursue their own unique interests and truths.
 
-###  The Invisible Curriculum and its Consequences
+### The Invisible Curriculum and its Consequences
 
 - Gatto argues that compulsory schooling, despite its stated goals, promotes an "invisible curriculum" that:
   - Reinforces the legitimacy of the institution itself.
@@ -115,10 +99,6 @@ He calls for radical reform, including decertification of teaching, privatizatio
 - Gatto aims to illuminate the flaws of the education system:
   -  **What he does right:** Getting out of the way of students' natural curiosity and providing space, time, and respect.
   -  **What he does wrong:** Unintentionally reinforcing the hidden curriculum and hindering true learning.
-
-
-
-
 
 ## Chapter 1: The Seven-Lesson Schoolteacher
 
@@ -180,8 +160,6 @@ This chapter stems from Gatto’s 1991 New York State Teacher of the Year accept
 
 Gatto argues that these seven lessons create a national curriculum that serves the interests of a centralized, hierarchical society at the expense of individual development and genuine education. He contends that this system is structurally unreformable, calling for a fundamental rethinking of educational approaches.
 
-
-
 ## Chapter 2: The Psychopathic School
 
 ### Introduction
@@ -224,8 +202,6 @@ This chapter originates from Gatto's 1990 New York City Teacher of the Year acce
 - He promotes homeschooling as a viable alternative, advocating for the redirection of funds to family-centric education.
 - He emphasizes the need to reject the mechanical and anti-human aspects of the current system, returning to a philosophy that prioritizes self-knowledge, family, and community.
 
-
-
 ## Chapter 3: The Green Monongahela
 
 ### Introduction
@@ -259,8 +235,6 @@ Gatto reflects on his childhood in Monongahela, Pennsylvania, and how his experi
 
 - Gatto learns years later that Milagros went on to become a successful teacher herself, validating his belief in the transformative power of individual encouragement and recognizing potential.
 - He reflects on the possibility that his intervention served as a catalyst for Milagros, drawing a parallel with the influential figures from his own childhood.
-
-
 
 ## Chapter 4: We Need Less School, Not More
 
@@ -477,7 +451,6 @@ This chapter delves into the detrimental effects of expanding the scope of insti
 - He agrees with Russell's assessment that mass schooling hinders the development of "inner freedom" and creates a shallow, materialistic culture.
   - [The Basic Writings Of Bertrand Russell - The Aims of Education](https://archive.org/stream/in.ernet.dli.2015.139389/2015.139389.The-Basic-Writings-Of-Bertrand-Russell_djvu.txt)
 
-
 ### American National Unity and the Role of Schooling
 
 - Gatto argues that the quest for national unity has led to misguided attempts to homogenize the population through forced schooling.
@@ -494,8 +467,6 @@ This chapter delves into the detrimental effects of expanding the scope of insti
   - Decertifying teaching and allowing anyone to compete in the educational marketplace.
   - Privatizing education and giving families control over their educational choices.
   - Trusting the free market to deliver diverse and effective learning opportunities.
-
-
 
 ## Chapter 5: The Congregational Principle
 
@@ -671,8 +642,6 @@ Gatto explores the history of colonial New England's Congregationalist movement 
 - Gatto calls for the decertification of teaching, breaking the monopoly of certified experts and allowing anyone with a passion for education to compete in a free market.
 - He suggests that this would lead to greater diversity, innovation, and responsiveness to the needs of individual learners.
 
-
-
 ## Actionable Recommendations
 
 - **Decentralize education:** Support initiatives that promote local control, such as charter schools, homeschooling, and community-based learning centers.
@@ -686,8 +655,6 @@ Gatto explores the history of colonial New England's Congregationalist movement 
 - **Join the conversation:** Engage in discussions about education reform with family, friends, community members, and policymakers.
 - **Share Gatto's work:** Spread awareness of Gatto's ideas and his critique of forced schooling, encouraging others to question the dominant educational paradigm.
 
-
-
 ## Glossary
 
 - **Congregational principle:** A system of local self-governance, where communities determine their own affairs without external interference.
@@ -700,8 +667,5 @@ Gatto explores the history of colonial New England's Congregationalist movement 
 - **Social engineering:** The attempt to control and manipulate human behavior through social policies and institutions.
 - **The Seven-Lesson Schoolteacher:** The title of John Taylor Gatto's essay, in which he outlines seven harmful lessons instilled by the compulsory schooling system: confusion, class position, indifference, emotional dependency, intellectual dependency, provisional self-esteem, and constant surveillance. 
 - **The Psychopathic School:** The title of another John Taylor Gatto essay which describes the school system as lacking conscience and serving the interests of a centralized, industrial economy at the expense of individual growth and well-being.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

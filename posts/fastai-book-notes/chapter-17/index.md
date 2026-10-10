@@ -28,7 +28,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [A Neural Net from the Foundations](#a-neural-net-from-the-foundations)
 * [Building a Neural Net Layer from Scratch](#building-a-neural-net-layer-from-scratch)
 * [The Forward and Backward Passes](#the-forward-and-backward-passes)
@@ -51,13 +50,12 @@ def print_source(obj):
         print(line)
 ```
 
-
-
 ## A Neural Net from the Foundations
 
 ## Building a Neural Net Layer from Scratch
 
 ### Modeling a Neuron
+
 * a neuron receives a given number of inputs and has an internal weight for each of them
 * the neuron sums the weighted inputs to produce an output and adds an inner bias
 * $out = \sum_{i=1}^{n}{x_{i}w_{i}+b}$, where $(x_{1},\ldots,x_{n})$ are inputs, $(w_{1},\ldots,w_{n})$ are the weights, and $b$ is the bias
@@ -76,8 +74,9 @@ def print_source(obj):
     * ```python
       sum([x*w for x,w in zip(input,weight)]
       ```
-      
+
 #### The output of a fully connected layer
+
 * $y_{i,j} = \sum_{k=1}^{n}{x_{i,k}w_{k,j}+b_{j}}$
 * ```python
   y[i,j] = sum([a*b for a,b in zip(x[i,:],w[j,:])]) + b[j]
@@ -93,6 +92,7 @@ def print_source(obj):
 * `w.t()`: the transpose matrix of `w`
 
 ### Matrix Multiplication from Scratch
+
 * Need three nested loops
     1. for the row indices
     2. for the column indices
@@ -140,7 +140,6 @@ m2 = torch.randn(784,10)
 
 #### Using nested for-loops
 
-
 ```python
 %time t1=matmul(m1, m2)
 ```
@@ -162,6 +161,7 @@ m2 = torch.randn(784,10)
 **Note:** Using loops is extremely inefficient!!! Avoid loops whenever possible.
 
 #### Using PyTorch's built-in matrix multiplication operator
+
 * written in C++ to make it fast
 * need to vectorize operations on tensors to take advantage of speed of PyTorch
     * use element-wise arithmetic and broadcasting
@@ -189,6 +189,7 @@ m2 = torch.randn(784,10)
 ```
 
 ### Elementwise Arithmetic
+
 * addition: `+`
 * subtraction: `-`
 * multiplication: `*`
@@ -218,8 +219,8 @@ a < b
     tensor([False,  True,  True])
 ```
 
-
 #### Reduction Operators
+
 * return tensors with only one element
 * `all`: Tests if all elements evaluate to `True`.
 * `sum`: Returns the sum of all elements in the tensor.
@@ -308,10 +309,12 @@ def matmul(a,b):
 **Note:** Just replacing one of the for loops with PyTorch element-wise arithmetic dramatically improved performance.
 
 ### Broadcasting
+
 * describes how tensors of different ranks are treated during arithmetic operations
 * gives specific rules to codify when shapes are compatible when trying to do an element-wise operation, and how the tensor of the smaller shape is expanded to match the tensor of bigger shape
 
 #### Broadcasting with a scalar
+
 * the scalar is "virtually" expanded to the same shape as the tensor where every element contains the original scalar value
 
 -----
@@ -338,8 +341,8 @@ m = tensor([[1., 2, 3], [4,5,6], [7,8,9]])
             [ 0.7326,  1.0989,  1.4652]])
 ```
 
-
 #### Broadcasting a vector to a matrix
+
 * the vector is virtually expanded to the same shape as the tensor, by duplicating the rows/columns as needed
 * PyTorch uses the [expand_as](https://pytorch.org/docs/stable/generated/torch.Tensor.expand_as.html) method to expand the vector to the same size as the higher-rank tensor
     * creates a new view on the existing vector tensor without allocating new memory
@@ -702,6 +705,7 @@ m1[0].unsqueeze(-1).expand_as(m2).shape
 **Note:** Even faster still, though the improvement is not as dramatic.
 
 #### Broadcasting rules
+
 * when operating on two tensors, PyTorch compares their shapes element-wise
     * starts with the trailing dimensions and works with its way backward
     * adds `1` when it meets and empty dimension 
@@ -711,6 +715,7 @@ m1[0].unsqueeze(-1).expand_as(m2).shape
 * arrays do not need to have the same number of dimensions
 
 ### Einstein Summation
+
 * a compact representation for combining products and sums in a general way
 * $ik,kj \rightarrow ij$
 * lefthand side represents the operands dimensions, separated by commas
@@ -718,6 +723,7 @@ m1[0].unsqueeze(-1).expand_as(m2).shape
 * a practical way of expressing operations involving indexing and sum of products
 
 #### Notaion Rules
+
 1. Repeated indices are implicitly summed over.
 2. Each index can appear at most twice in any term.
 3. Each term must contain identical nonrepeated indices.
@@ -895,12 +901,9 @@ torch.einsum('bn,anm,bm->ba', l, A, r)
             [ 3.8092,  3.0976,  2.2764]])
 ```
 
-
-
 ## The Forward and Backward Passes
 
 ### Defining and Initializing a Layer
-
 
 ```python
 # Linear layer
@@ -1087,8 +1090,8 @@ x[0:5,0:5]
             [2.1829e-08, 0.0000e+00, 0.0000e+00, 1.1662e-08, 1.0466e-08]])
 ```
 
-
 #### [Delving Deep into Rectifiers: Surpassing Human-Level Performance on ImageNet Classification](https://arxiv.org/abs/1502.01852)
+
 * the article that introduced ResNet
 * Introduced Kaiming initialization:
     * $\sqrt{\frac{2}{n_{in}}}$, where $n_{in}$ is the number of inputs of our model
@@ -1175,6 +1178,7 @@ loss = mse(out, y)
 ```
 
 ### Gradients and the Backward Pass
+
 * the gradients are computed in the backward pass using the chain rule from calculus
 * chain rule: $(g \circ f)'(x) = g'(f(x)) f'(x)$
 * our loss if a big composition of different functions
@@ -1202,7 +1206,6 @@ def mse_grad(inp, targ):
 
 #### Gradient of the ReLU activation function
 
-
 ```python
 def relu_grad(inp, out):
     # grad of relu with respect to input activations
@@ -1210,7 +1213,6 @@ def relu_grad(inp, out):
 ```
 
 #### Gradient of a linear layer
-
 
 ```python
 def lin_grad(inp, out, w, b):
@@ -1221,6 +1223,7 @@ def lin_grad(inp, out, w, b):
 ```
 
 ### [SymPy](https://docs.sympy.org/latest/tutorial/intro.html)
+
 * a library for symbolic computation that is extremely useful when working with calculus
 * Symbolic computation deals with the computation of mathematical objects symbolically
     * the mathematical objects are represented exactly, not approximately, and mathematical expressions with unevaluated variables are left in symbolic form
@@ -1239,7 +1242,6 @@ diff(sx**2, sx)
 
 #### Define Forward and Backward Pass
 
-
 ```python
 def forward_and_backward(inp, targ):
     # forward pass:
@@ -1257,6 +1259,7 @@ def forward_and_backward(inp, targ):
 ```
 
 ### Refactoring the Model
+
 * define classes for each function that include their own forward and backward pass functions
 
 
@@ -1345,7 +1348,6 @@ model.backward()
 
 ### Going to PyTorch
 
-
 ```python
 # Define a base class for all functions in the model
 class LayerFunction():
@@ -1394,6 +1396,7 @@ class Mse(LayerFunction):
 ```
 
 #### [torch.autograd.Function](https://pytorch.org/docs/stable/autograd.html#function)
+
 * In PyTorch, each basic function we need to differentiate is written as a [torch.autograd.Function](https://pytorch.org/docs/stable/autograd.html#function) that has a forward and backward method
 
 -----
@@ -1474,8 +1477,8 @@ help(staticmethod)
      |  __isabstractmethod__
 ```
 
-
 #### [torch.nn.Module](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#module)
+
 * the base structure for all models in PyTorch
 
 **Implementation Steps**
@@ -1537,8 +1540,6 @@ class Model(Module):
     def forward(self, x, targ): return self.loss(self.layers(x).squeeze(), targ)
 ```
 
-
-
 ## Conclusion
 
 * A neural net is a bunch of matrix multiplications with nonlinearities in between
@@ -1548,10 +1549,6 @@ class Model(Module):
 * Properly initializing a neural net is crucial to get training started
     * Use Kaiming initialization when using ReLU
 * The backward pass is the chain rule applied multiple times, computing the gradient from the model output and going back, one layer at a time
-
-
-
-
 
 ## References
 
@@ -1563,9 +1560,5 @@ class Model(Module):
 **Previous:** [Notes on fastai Book Ch. 16](../chapter-16/)
 
 **Next:** [Notes on fastai Book Ch. 18](../chapter-18/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

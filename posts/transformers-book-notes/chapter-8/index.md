@@ -27,7 +27,6 @@ open-graph:
 * [**Natural Language Processing with Transformers**](/series/notes/transformers-book-notes.html)
 :::
 
-
 * [Making Transformers Efficient in Production](#making-transformers-efficient-in-production)
 * [Project: Optimize an Intent Detection Model](#project-optimize-an-intent-detection-model)
 * [Creating a Performance Benchmark](#creating-a-performance-benchmark)
@@ -86,8 +85,6 @@ def print_source(obj, exclude_doc=True):
 
 ------
 
-
-
 ## Making Transformers Efficient in Production
 
 * A state-of-the-art model is not very useful if it is too slow or too large to meet an application's business requirements.
@@ -98,15 +95,18 @@ def print_source(obj, exclude_doc=True):
     * Roblox improved the latency and throughput of their BERT classifier by over 30x by combining knowledge distillation and quantization.
 
 ## Project: Optimize an Intent Detection Model
+
 * The goal is to create a text-based assistant for a call center so customers can request their account balance and make bookings.
 * The assistant must be able to classify a wide variety of natural language text into a set of predefined intents.
 * The classifier must also handle out-of-scope queries and yield fallback responses when they do not belong to any predefined intents.
 
 ### The Model
+
 * The baseline model is a fine-tuned BERT-base model that achieves 94% accuracy on the CLINC150 dataset.
 * [Hugging Face Dataset Card](https://huggingface.co/transformersbook/bert-base-uncased-finetuned-clinc)
 
 ### CLINC150 Dataset
+
 * [Homepage](https://github.com/clinc/oos-eval/)
 * [HuggingFace Dataset Card](https://huggingface.co/datasets/clinc_oos)
 * The CLINC150 dataset includes 22,500 in-scope queries across 150 intents and ten domains.
@@ -146,8 +146,6 @@ pipe(query)
 **Note:** The model correctly detects that the user wants to rent a vehicle.
 
 ------
-
-
 
 ## Creating a Performance Benchmark
 
@@ -1038,7 +1036,7 @@ from time import perf_counter
 
 ------
 
-#### `time.perf_counter`
+### `time.perf_counter`
 
 * [Documentation](https://docs.python.org/3/library/time.html#time.perf_counter)
 * Get the value in fractional seconds of a clock with the highest available resolution to measure a short duration.
@@ -1133,8 +1131,6 @@ perf_metrics = pb.run_benchmark()
 
 ------
 
-
-
 ## Making Models Smaller via Knowledge Distillation
 
 * Knowledge distillation is a general-purpose method for training a smaller student model to mimic the behavior of a slower but better-performing teacher.
@@ -1147,6 +1143,7 @@ perf_metrics = pb.run_benchmark()
 * Knowledge distillation is a popular strategy to compress huge pretrained models and make them more suitable for building practical applications.
 
 ### Knowledge Distillation for Fine-Tuning
+
 * Knowledge distillation for supervised tasks like fine-tuning involves augmenting the ground truth labels with a distribution of "soft probabilities" from the teacher, providing complementary information for the student.
 * If the teacher assigns high probabilities to multiple intents, they might lie close to each other in the feature space.
 * The goal is to train the student to distill some of this "dark knowledge" learned by the teacher.
@@ -1154,27 +1151,33 @@ perf_metrics = pb.run_benchmark()
 * We feed an input sequence $x$ to the teacher to generate a vector of logits $z(x) = \left[ z_{1}(x),\ldots,z_{N}(x) \right]$ and convert these logits into probabilities using the softmax function.
 
 ### $$\frac{exp \left( z_{i}(x) \right)}{\sum_{j}{exp \left( z_{i}(x) \right)}}$$
+
 * The teacher will often assign a high probability to one class, with all other class probabilities close to zero, providing little additional information beyond the ground truth labels.
 * We can "soften" the probabilities by scaling the logits with a temperature hyperparameter $T$ before applying the softmax.
 
 ### $$p_{i}(x) = \frac{exp \left( \frac{ z_{i}(x) }{T} \right)}{\sum_{j}{exp \left( \frac{ z_{i}(x) }{T} \right)}}$$
+
 * Higher temperature values produce a softer probability distribution over the classes and reveal much more information about the decision boundary learned by the teacher for each example.
     * When T = 1, we get the original softmax distribution. 
 * We can use the [Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) to measure the difference between the teacher's probability distribution and the student's probability distribution.
 
 ### $$D_{KL}(p,q) = \sum_{i}{p_{i}(x)\log{\frac{p_{i}(x)}{q_{i}(x)}}}$$
+
 * With the KL divergence, we can calculate how much is lost when we approximate the probability distribution of the teacher with the student.
 * **Kowledge Distillation Loss:**
 
 ### $$L_{KD} = T^{2}D_{KL}$$
+
 * $T_{2}$ is the normalization factor to account for the magnitude of the gradients produced by the soft labels scaling as $1/T^{2}$.
 
 * For classification tasks, the student loss is a weighted average of the distillation loss with the usual cross-entropy loss $L_{CE}$ of the ground truth labels.
 
 ### $$L_{student} = \alpha L_{CE} \ + \left( 1 - \alpha \right)L_{KD}$$
+
 * $\alpha$ is a hyperparameter that controls the relative strength of each loss.
 
 ### Knowledge Distillation for Pretraining
+
 * We can use knowledge distillation during pretraining to create a general-purpose student that we subsequently fine-tune on downstream tasks.
 * The teacher is a pretrained language model like BERT, which transfers its knowledge about masked-language modeling to the student.
 * For DistilBERT, we augment the masked language modeling loss $L_{mlm}$ with a term from knowledge distillation and a cosine embedding loss $L_{cos} = 1 \ - \ \cos \left( h_{s},h_{t} \right)$ to align the directions of the hidden state vectors between the teacher and student.\
@@ -1182,9 +1185,11 @@ perf_metrics = pb.run_benchmark()
 ### $$L_{DistilBERT} = \alpha L_{mlm} \ + \ \beta L_{KD} \ + \ y \ Loss_{cos}$$
 
 ### Creating a Knowledge Distillation Trainer
+
 * We can augment the cross-entropy loss with an $L_{KD}$ term by creating a custom trainer.
 
 #### Additions to the base Trainer Class:
+
 * The new hyperparameters $\alpha$ and $T$.
 * The fine-tuned teacher model
 * A new loss function that combines the the cross-entropy loss with the knowledge distillation loss
@@ -1217,6 +1222,7 @@ class DistillationTrainingArguments(TrainingArguments):
 * Compute the Kullback-Leibler divergence loss.
 
 ### $$L(y_{\text{pred}},\ y_{\text{true}}) = y_{\text{true}} \cdot \log \frac{y_{\text{true}}}{y_{\text{pred}}} = y_{\text{true}} \cdot (\log y_{\text{true}} - \log y_{\text{pred}})$$
+
 * where $y_{\text{pred}}$ is the input and $y_{\text{true}}$ is the target
 
 * The inputs need to be in the form of log probabilities.
@@ -1259,6 +1265,7 @@ class DistillationTrainer(Trainer):
 ------
 
 ### Choosing a Good Student Initialization
+
 * The student model should be smaller to reduce the latency and memory footprint.
 * [FastFormers: Highly Efficient Transformer Models for Natural Language Understanding](https://arxiv.org/abs/2010.13382)
     * Knowledge distillation tends to work best when the teacher and student are of the same model type.
@@ -1618,6 +1625,7 @@ plot_metrics(perf_metrics, optim_type)
 ------
 
 ### Finding Good Hyperparameters with Optuna
+
 * [Optuna: A Next-generation Hyperparameter Optimization Framework](https://arxiv.org/abs/1907.10902)
 * Optuna formulates the hyperparameter search problem in terms of an objective function optimized through multiple trials.
 
@@ -1696,8 +1704,8 @@ import optuna
 * A study corresponds to a set of trials for an optimization task.
 * A study object provides interfaces to run a new [`Trial`](https://optuna.readthedocs.io/en/stable/reference/generated/optuna.trial.Trial.html#optuna.trial.Trial).
 
-
 #### `optuna.create_study()`
+
 * Create a new Study object.
 
 ------
@@ -1967,8 +1975,6 @@ plot_metrics(perf_metrics, optim_type)
 
 ------
 
-
-
 ## A Primer on Floating-Point and Fixed-Point Numbers
 
 * Most transformers pre-train and fine-tune using FP32 or a mix of FP16 and FP32.
@@ -1983,8 +1989,6 @@ plot_metrics(perf_metrics, optim_type)
     * We can represent the floating-point number $137.035$ as the integer $137,035$ scaled by $1/1000$.
     * We control the range and precision of a fixed-point number by adjusting the scaling factor.
 
-
-
 ## Making Models Faster with Quantization
 
 * Quantization makes computation more efficient by representing the weights and activations with low-precision data types like an 8-bit integer (INT8) instead of the usual 32-bit floating-point (FP32).
@@ -1993,6 +1997,7 @@ plot_metrics(perf_metrics, optim_type)
 * We "discretize" the floating-point values $f$ in each tensor by mapping their range $\left[ f_{max}, f_{min} \right]$ into a smaller one $\left[ q_{max}, q_{min} \right]$ of fixed-point numbers $q$ and linearly distributing all tensor values in between.
 
 ### $$f = \left( \frac{f_{max} - f_{min}}{q_{max} - q_{min}} \right)(q-Z) = S(q-Z)$$
+
 * where $S$ is a positive floatin-point number and the constant $Z$ has the same type as $q$ and is called the zero point becaue it corresponds to the quentized value of the floating-point value $f=0$
 
 * The map needs to be affine ($y=Ax+b$) to get back floating-point numbers when we dequantize the fixed-point ones.
@@ -2193,22 +2198,26 @@ sys.getsizeof(weights.storage()) / sys.getsizeof(quantized_weights.storage())
 * There are three main approaches for quantizing deep neural networks.
 
 #### Dynamic Quantization
+
 * Dynamic quantization converts the weights and activations to INT8 after training completes.
 * Dynamic quantization happens on the fly, and we still read and write to memory the activations in floating-point format.
 * The conversion between integer and floating-point can be a performance bottleneck.
 
 #### Static Quantization
+
 * Static quantization precomputes the quantization scheme by observing the activation patterns on a representative sample of the data ahead of inference time.
 * Static quantization enables us to skip the conversion between INT8 and FP32 values and speeds up the computations.
 * Static quantization requires access to an adequate data sample and introduces an additional step in the pipeline.
 * Static quantization does not address the discrepancy between the precision during training and inference, leading to a performance drop in the model's metrics.
 
 #### Quantization-aware training
+
 * Quantization-aware training simulates quantization during training by "fake" quantization of FP32 values.
 * We round the FP32 values to mimic the effect of quantization during the forward and backward passes.
 * Quantization-aware training improves performance in terms of model metrics over static and dynamic quantization.
 
 #### What to choose
+
 * Dynamic quantization is the best approach for transformers as the main bottleneck for running inference is the compute and memory bandwidth associated with the enormous numbers of weights.
 * The limiting factor for smaller compute vision models is the memory bandwidth of the activations, making static quantization or quantization-aware training the best approach.
 
@@ -2267,8 +2276,6 @@ plot_metrics(perf_metrics, optim_type)
 
 ------
 
-
-
 ## Optimizing Inference with ONNX and the ONNX Runtime
 
 * ONNX is an open standard that defines a common set of operators and a common file format to represent deep learning models in different frameworks.
@@ -2280,6 +2287,7 @@ plot_metrics(perf_metrics, optim_type)
 * Constant folding refers to evaluating constant expressions at compile time instead of runtime.
 
 ### Other Accelerators
+
 * [NVIDIA TensorRT](https://developer.nvidia.com/tensorrt)
 * [Apache TVM](https://tvm.apache.org/docs/index.html)
 * [Intel OpenVINO Toolkit](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html)
@@ -2623,8 +2631,6 @@ plot_metrics(perf_metrics, optim_type)
 
 ------
 
-
-
 ## Making Models Sparser with Weight Pruning
 
 * [Neural Networks Block Movement Pruning](https://github.com/huggingface/nn_pruning)
@@ -2638,9 +2644,11 @@ plot_metrics(perf_metrics, optim_type)
 ### Sparsity in Deep Neural Networks
 
 ### Weight Pruning Methods
+
 * Most weight pruning methods calculate a matrix $S$ of importance scores and select the top $k$ percent of weights by importance.
 
 ### $$Top_{k}(S)_{ij} = 1 \text{ if } S_{ij} \text{ in top k percent else } 0$$
+
 * $k$ acts as a new hyperparameter to control the amount of sparsity in the model.
 * Lower values of k correspond to sparser matrices.
 * We can use these scores to define a mask matrix $M$ that masks weights $W_{ik}$ during the forward pass with some input and effectively creates a sparse network of activations $a_{i}$.
@@ -2656,13 +2664,13 @@ plot_metrics(perf_metrics, optim_type)
 * How can such network pruning be done in a computationally efficient way?
 
 #### Magnitude pruning
+
 * Magnitude pruning calculates the scores according to the magnitude of the weights $$S = \left( \left \vert W_{ij} \right \vert \right)_{1 \ \le \ j, j \ \le \ n}$$ and then derives the masks $$M = Top_{k}(S)$$.
 * It is common to apply magnitude iteratively by first training the model to learn which connections are important and pruning weights of least importance.
   * [Learning both Weights and Connections for Efficient Neural Networks](https://arxiv.org/abs/1506.02626)
 
 * It is generally better to gradually increase the initial sparsity $s_{i}$ to a final value $s_{f}$ after $N$ steps.
   * [To prune, or not to prune: exploring the efficacy of pruning for model compression](https://arxiv.org/abs/1710.01878)
-
 
 ### $$s_{t} = s_{f} + \left( s_{i} - s_{f} \right) \left( 1 - \frac{t - t_{0}}{N\Delta t} \right)^{3} for t \in \left\{ t_{0},t_{0} + \Delta t, \ldots, t_{0} + N\Delta t \right\}$$
 
@@ -2707,9 +2715,6 @@ plt.show()
 * The weights moving the most from zero are the most important ones to keep.
 * There is also a soft version of movement pruning where we use a global threshold $\tau$ to define the binary mask: $M = \left( S \gt \tau \right)$.
 
-
-
-
 ## References
 
 * [Natural Language Processing with Transformers Book](https://transformersbook.com/)
@@ -2722,9 +2727,5 @@ plt.show()
 **Previous:** [Notes on Transformers Book Ch. 7](../chapter-7/)
 
 **Next:** [Notes on Transformers Book Ch. 9](../chapter-9/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

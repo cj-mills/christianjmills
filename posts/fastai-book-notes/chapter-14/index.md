@@ -26,7 +26,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [ResNets](#resnets)
 * [Going Back to Imagenette](#going-back-to-imagenette)
 * [Building a Modern CNN: ResNet](#building-a-modern-cnn-resnet)
@@ -56,17 +55,12 @@ def print_source(obj):
         print(line)
 ```
 
-
-
 ## ResNets
 
 * [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
     * introduced the concept of residual (skip) connections
 
-
-
 ## Going Back to Imagenette
-
 
 ```python
 def get_data(url, presize, resize):
@@ -103,8 +97,8 @@ dls.show_batch(max_n=4)
 ```
 ![](./images/output_8_0.png){fig-align="center"}
 
-
 ### Average Pooling
+
 * take the average of activations across a convolutional grid
 * an alternative to the approach of using stride-2 layers to downscale input dimensions to the a single output vector
 * used in fully convolutional networks to allow the model to be used on image sizes other than what the model was trained on
@@ -179,9 +173,8 @@ class ConvLayer(nn.Sequential):
         super().__init__(*layers)
 ```
 
-
-
 #### Adaptive Average Pooling
+
 * averages a grid of activations into whatever sized destination you require
 
 -----
@@ -481,11 +474,10 @@ learn.fit_one_cycle(10, 0.03)
 
 **Note:** Needed to train for more epochs to achieve the same accuracy.
 
-
-
 ## Building a Modern CNN: ResNet
 
 ### Skip Connections
+
 * skip connections make the network easier to train with SGD
     * `x + conv2(conv1(x))`
 * Identity Mapping: returning the input without changing it at all
@@ -801,17 +793,19 @@ learn.fit_one_cycle(5, 3e-3)
 </table>
 </div>
 
-
 ### A State-of-the-Art ResNet
+
 * [Bag of Tricks for Image Classification with Convolutional Neural Networks](https://arxiv.org/abs/1812.01187)
     * studies variations of the ResNet architecture that come at almost no additional cost in terms of number of parameters or computation
     * used a tweaked ResNet-50 architecture and Mixup to achieve a 94.6% top-5 accuracy on ImageNet compared to 92.2% with a regular ResNet-50 without Mixup
 
 #### Top-5 Accuracy
+
 * a metric testing how often the label we want is in the top-5 predictions of our model
 * used in ImageNet competition because many of the images contained multiple objects, or objects that could be easily confused or were mislabeled
 
 #### Stem
+
 * the first few layers of a CNN
 * the stem has a different structure than the main body of the CNN
 * the vast majority of computation in a deep convolutional network occurs in the early layers
@@ -947,6 +941,7 @@ learn.fit_one_cycle(5, 3e-3)
 **Note:** The optimized stem kept training time just as fast as before despite the model having more channels.
 
 ### Bottleneck Layers
+
 * instead of stacking two convolutions with a kernel size of 3, bottleneck layers use three convolutions
     * two $1x1$ (at the beginning and the end) and one $3x3$ 
 * $1x1$ convolutions are much faster so the block executes faster than the earlier type of ResNet block above
@@ -1756,13 +1751,6 @@ learn.fit_one_cycle(100, 1e-3)
 </table>
 </div>
 
-
-
-
-
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1773,9 +1761,5 @@ learn.fit_one_cycle(100, 1e-3)
 **Previous:** [Notes on fastai Book Ch. 13](../chapter-13/)
 
 **Next:** [Notes on fastai Book Ch. 15](../chapter-15/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

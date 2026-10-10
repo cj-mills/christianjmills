@@ -94,21 +94,15 @@ def print_source(obj, exclude_doc=True):
 
 ------
 
-
-
 ## Introduction
 
 * Text summarization requires the model to understand long passages, reason about the contents, and produce fluent text that incorporates the main topics from the original document.
-
-
 
 ## Project: Summarize Dialogues Between Several People
 
 * Text summarization requires the model to understand long passages, reason about the contents, and produce fluent text that incorporates the main topics from the original document.
 * Text summarization is a classic sequence-to-sequence task with an input text and a target text.
 * The goal is to build an encoder-decoder model to condense dialogues between several people into a crisp summary.
-
-
 
 ## The CNN/DailyMail Dataset
 
@@ -184,8 +178,6 @@ print(f'\nThe article is {(article_len/highlights_len):.2f} times longer than th
 
 ------
 
-
-
 ## Text Summarization Pipelines
 
 **Get a 2,000 character excerpt from an article**
@@ -208,17 +200,18 @@ from nltk.tokenize import sent_tokenize
 
 ------
 
-#### The Natural Language Tookit (NLTK)
+### The Natural Language Tookit (NLTK)
 
 * [Homepage](https://www.nltk.org/)
 * The toolkit provides easy-to-use interfaces and a suite of text processing libraries.
 
+### `sent_tokenize`
 
-#### `sent_tokenize`
 * [Documentation](https://www.nltk.org/api/nltk.tokenize.html?highlight=sent_tokenize#nltk.tokenize.sent_tokenize)
 * Get a sentence-tokenized copy of a text.
 
 ### `nltk.tokenize.punkt`
+
 * [Documentation](https://www.nltk.org/api/nltk.tokenize.punkt.html?highlight=punkt#module-nltk.tokenize.punkt)
 * The Punkt sentence tokenizer divides a text into a list of sentences. 
 * An unsupervised algorithm builds a model of abbreviation words, collocations, and words that start sentences.
@@ -352,12 +345,12 @@ summaries["gpt2"]
 
 ------
 
-
-
 ### T5
+
 * We can perform several tasks using the text prompts from the training process.
 
 #### Text-to-Text Prompts:
+
 * **Translation:** "translate {source-language} to {target-languge}: {text}"
 * **Linguistic Acceptability:** "cola sentence: {text}"
 * **Semantic Similarity:** "stsb sentence 1: {text1} sentence 2: {text2}"
@@ -397,8 +390,6 @@ summaries["t5"]
 
 ------
 
-
-
 ### BART
 
 * The "facebook/bart-large-cnn" model checkpoint is fine-tuned specifically on the CNN/DailyMail dataset.
@@ -436,8 +427,6 @@ summaries["bart"]
 ```
 
 ------
-
-
 
 ### PEGASUS
 
@@ -478,10 +467,7 @@ summaries["pegasus"]
 
 ------
 
-
-
 ## Comparing Different Summaries
-
 
 ```python
 print("GROUND TRUTH")
@@ -538,8 +524,6 @@ for model_name in summaries:
 
 ------
 
-
-
 ## Measuring the Quality of Generated Text
 
 * Conventional metrics like accuracy do not reflect the quality of the generated text.
@@ -548,6 +532,7 @@ for model_name in summaries:
 * Human judgment is still the best measure.
 
 ### Bilingual Evaluation Understudy (BLEU)
+
 * [BLEU: a method for automatic evaluation of machine translation](https://dl.acm.org/doi/10.3115/1073083.1073135)
 * BLEU is a precision-based metric where we count the number of words or n-grams in the generated text that occur in the reference text and divide it by the length of the reference.
 * We only count a word as many times as it occurs in the reference text.
@@ -555,19 +540,23 @@ for model_name in summaries:
 * Given one generated sentence, $snt$, that we to compare against a reference sentence, $snt^{\prime}$, we extract all possible n-grams of degree $n$ and do the accounting to get the precision $P_{n}$.
 
 ### $$P_{n} = \frac{\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}$$
+
 * We clip the occurrence count of an n-gram at how many times it appears in the reference sentence to avoid repetitive generations.
 * We sum over all the examples in the corpus $C$.
 
 ### $$P_{n} = \frac{\sum_{snt \ \in \ C}\sum_{n-gram \ \in \ snt}{Count_{clip}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}$$
+
 * The precision score favors short sentences.
 * The authors of BLEU introduce a brevity penalty to account for this.
 
 ### $$BR = min \left(1,e^{\frac{1 - \ell_{ref}}{\ell_{gen}}} \right)$$
+
 * By taking the minimum, we ensure that this penalty never exceeds $1$, and the exponential term becomes exponentially small when the length of the generated text is smaller than the reference text.
 * We don't use recall because it would incentivize translations that used all the words from all reference texts.
 * The equation for the BLEU score:
 
 ### $$\text{BLEU-N} = BR \times \left( \prod^{N}_{n=1}{P_{n}} \right)^{\frac{1}{N}}$$
+
 * The last term is the geometric mean of the modified precision up to n-gram $N$.
 * The BLEU score does not account for synonyms and uses fragile heuristics.
 * [Evaluating Text Output in NLP: BLEU at your own risk](https://towardsdatascience.com/evaluating-text-output-in-nlp-bleu-at-your-own-risk-e8609665a213)
@@ -786,11 +775,13 @@ pd.DataFrame.from_dict(results, orient="index", columns=["Value"])
 * We check how many n-grams in the reference text also occur in the generated text.
 
 ### $$\text{ROUGE-N} = \frac{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count_{match}(n-gram)}}{\sum_{snt^{\prime} \ \in \ C}\sum_{n-gram \ \in \ snt^{\prime}}{Count(n-gram)}}$$
+
 * There is a separate score to measure the longest common substring (LCS) called ROUGE-L.
 * We can calculate the LCS for any pair of strings.
 * We need to normalize the LCS value when comparing two samples of different lengths.
 
 ### $$F_{LCS} = \frac{\left( 1 + \beta^{2} \right)R_{LCS}P_{LCS}}{R_{LCS} + \beta P_{LCS}} \text{, where } \beta = \frac{P_{LCS}}{R_{LCS}}$$
+
 * The Hugging Face Datasets implementation calculates two variants of ROUGE.
 * ROUGE-L calculates the score per sentence and averages it for the summaries.
 * ROUGE-Lsum calculates the score per sentence directly over the whole summary.
@@ -930,10 +921,7 @@ pd.DataFrame.from_records(records, index=summaries.keys())
 
 ------
 
-
-
 ## Evaluating PEGASUS on the CNN/DailyMail Dataset
-
 
 ```python
 import matplotlib.pyplot as plt
@@ -1119,11 +1107,10 @@ pd.DataFrame(rouge_dict, index=["pegasus"])
 
 ------
 
-
-
 ## Training a Summarization Model
 
 ### The SAMSum Dataset
+
 * [Hugging Face Dataset Card](https://huggingface.co/datasets/samsum)
 * The SAMSum dataset contains about 16k messenger-like conversations with summaries.
 * These dialogues could represent the interactions between a customer and the support center in an enterprise setting.
@@ -1746,11 +1733,7 @@ pd.DataFrame(seq2seq_rouge_dict, index=[f"pegasus"])
 </div>
 ------
 
-
-
-
 ### Generating Dialogue Summaries
-
 
 ```python
 gen_kwargs = {"length_penalty": 0.8, "num_beams":8, "max_length": 128}
@@ -1818,15 +1801,11 @@ print(pipe(custom_dialogue, **gen_kwargs)[0]["summary_text"])
 
 ------
 
-
-
 ## Conclusion
 
 * It is still an open question regarding the best way to summarize texts longer than the model's content size.
 * [Recursively Summarizing Books with Human Feedback](https://arxiv.org/abs/2109.10862)
     * OpenAI scaled summarization by applying the model recursively to long documents and using human feedback.
-
-
 
 ## References
 
@@ -1838,9 +1817,5 @@ print(pipe(custom_dialogue, **gen_kwargs)[0]["summary_text"])
 **Previous:** [Notes on Transformers Book Ch. 5](../chapter-5/)
 
 **Next:** [Notes on Transformers Book Ch. 7](../chapter-7/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

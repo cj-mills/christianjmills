@@ -20,20 +20,16 @@ open-graph:
 * [**Testing Intel's Arc A770 GPU for Deep Learning**](/series/notes/arc-a770-testing.html)
 :::
 
-
 * [Introduction](#introduction)
 * [Training Style Transfer Models](#training-style-transfer-models)
 * [Generating Images with 🤗 Diffusers](#generating-images-with-diffusers)
 * [No Luck Fine-tuning LLMs](#no-luck-fine-tuning-llms)
 * [Closing Thoughts](#closing-thoughts)
 
-
 ## Tutorial Links
 
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Ubuntu](../../intel-pytorch-extension-tutorial/native-ubuntu/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Ubuntu to train models with Arc GPUs
 * [Getting Started with Intel’s PyTorch Extension for Arc GPUs on Windows](../../intel-pytorch-extension-tutorial/native-windows/): This tutorial provides a step-by-step guide to setting up Intel’s PyTorch extension on Windows to train models with Arc GPUs.
-
-
 
 ## Introduction
 
@@ -50,8 +46,6 @@ Once I knew that this baseline scenario worked, I wanted to try something slight
 The results in this post are with version [`1.13.120+xpu`](https://intel.github.io/intel-extension-for-pytorch/xpu/1.13.120+xpu/) of Intel's PyTorch extension.
 
 :::
-
-
 
 ## Training Style Transfer Models
 
@@ -92,8 +86,6 @@ The output images are similar in quality to those generated with the original no
 
 There is a more significant percentage gap in total training time than with the image classification notebook at approximately `18.6%`. I'll need to conduct further testing to see if that difference is due to calculating the perceptual loss or some other part of the training process.
 
-
-
 ## Generating Images with 🤗 Diffusers
 
 Next, I modified one of my [text-to-image notebooks](https://github.com/cj-mills/fastai-2022p2-notes/blob/main/notebooks/inference-sd-text2img.ipynb) to try running Stable Diffusion 2.1 with Intel's PyTorch extension.
@@ -128,26 +120,14 @@ I compared the performance of the A770 and Titan RTX by generating `512x512` ima
 
 Even without model compilation, the Titan RTX is over twice as fast as the A770. With model compilation, it's over `3x` faster. Still, the A770's performance is far from unusable. I'll rerun the comparison once Intel's extension supports PyTorch `>=2.0`.
 
-
-
-
-
 ## No Luck Fine-tuning LLMs
 
 I've been excited about the recent developments for fine-tuning LLMs on local machines, and I think the relatively affordable A770 16GB card has a lot of potential for that use case. Unfortunately, projects like [Alpaca-LoRA](https://github.com/tloen/alpaca-lora) and [QLoRA](https://github.com/artidoro/qlora) have dependencies, such as the [`bitsandbytes`](https://github.com/TimDettmers/bitsandbytes) package, that require CUDA devices. The `bitsandbytes` package provides the quantization capability that lowers the memory requirements to run LLMs. It provides this functionality using custom CUDA functions. I don't know of any plans to add support for Intel GPUs to the `bitsandbytes` package, so perhaps Intel will provide an alternative.
-
-
-
-
-
 
 ## Closing Thoughts
 
 At the end of Part 2, I stated that I believe Arc GPUs are now credible options for deep learning. My experience testing the A770 on some more complicated use cases mostly reaffirms that. Running the style transfer and Diffusers notebooks with Intel's PyTorch extension only took a couple of changes.
 
 However, Nvidia GPUs have been dominant for a long time and will likely continue to get priority for cutting-edge developments like the quantization methods used in QLoRA. Anyone considering an Arc GPU for deep learning should keep that in mind and verify the dependencies needed for their target use case support Arc GPUs.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

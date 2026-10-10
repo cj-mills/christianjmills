@@ -26,7 +26,6 @@ open-graph:
 * [**Deep Learning for Coders with fastai & PyTorch**](/series/notes/fastai-book-notes.html)
 :::
 
-
 * [A fastai Learner from Scratch](#a-fastai-learner-from-scratch)
 * [Data](#data)
 * [Module and Parameter](#module-and-parameter)
@@ -57,16 +56,9 @@ def print_source(obj):
         print(line)
 ```
 
-
-
-
-
 ## A fastai Learner from Scratch
 
-
-
 ## Data
-
 
 ```python
 print_source(untar_data)
@@ -91,8 +83,8 @@ print_source(fastai_cfg)
             data = 'data', archive = 'archive', storage = 'tmp', model = 'models'))
 ```
 
+### fastdownload library
 
-#### fastdownload library
 * [Documentation](https://fastdownload.fast.ai/)
 * easily download, verify, and extract archives
 
@@ -663,9 +655,7 @@ v2i = lbls.val2idx(); v2i
      'n02979186': 9}
 ```
 
-
 ### Dataset
-
 
 ```python
 # Define a dataset that returns tuples of inputs and targets from a list filenames
@@ -905,8 +895,8 @@ print_source(parallelable)
         return True
 ```
 
-
 #### Python ProcessPoolExecutor
+
 * [Documentaion](https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ProcessPoolExecutor)
 * executes calls asynchronously using a pool of processes
 
@@ -983,10 +973,7 @@ t.mean((0,2,3)),t.std((0,2,3))
     (tensor([-0.1890, -0.2993, -0.4721]), tensor([0.6051, 0.5759, 0.7124]))
 ```
 
-
-
 ## Module and Parameter
-
 
 ```python
 # The parameter class just sets requires_grad_ to True for its tensor
@@ -1264,9 +1251,7 @@ t.l.w.device
     device(type='cuda', index=0)
 ```
 
-
 ### Simple CNN
-
 
 ```python
 class Sequential(Module):
@@ -1338,10 +1323,7 @@ r.shape
     torch.Size([128, 10])
 ```
 
-
-
 ## Loss
-
 
 ```python
 def nll(input, target): return -input[range(target.shape[0]), target].mean()
@@ -1379,8 +1361,8 @@ x.exp().sum().log() == a + (x-a).exp().sum().log()
     tensor(False)
 ```
 
-
 ### LogSumExp Trick
+
 * [Explanation](https://blog.feedly.com/tricks-of-the-trade-logsumexp/)
 * a more stable way (for computers) to compute the log of the sum of exponentials
 $$\log{\left( \sum^{n}_{j=1}{e^{x_{j}}} \right)} = \log{\left(e^{a} \sum^{n}_{j=1}{e^{x_{j}-a}} \right)} = a + \log{\left(\sum^{n}_{j=1}{e^{x_{j}-a}} \right)}$$
@@ -1433,10 +1415,7 @@ sm = log_softmax(r); sm[0][0]
 def cross_entropy(preds, yb): return nll(log_softmax(preds), yb).mean()
 ```
 
-
-
 ## Learner
-
 
 ```python
 class SGD:
@@ -1584,10 +1563,7 @@ class Learner:
         for cb in self.cbs: getattr(cb,name,noop)()
 ```
 
-
-
 ### Callbacks
-
 
 ```python
 # Automatically pass requests to change attributes that don't exist to the `_default`
@@ -1762,9 +1738,7 @@ learn.fit(1)
     0 False 2.206350766321656 0.2140127388535032
 ```
 
-
 ### Scheduling the Learning Rate
-
 
 ```python
 class LRFinder(Callback):
@@ -1886,12 +1860,6 @@ plt.plot(onecyc.lrs);
 
 ![](./images/output_144_0.png){fig-align="center"}
 
-
-
-
-
-
-
 ## References
 
 * [Deep Learning for Coders with fastai & PyTorch](https://www.oreilly.com/library/view/deep-learning-for/9781492045519/)
@@ -1902,9 +1870,5 @@ plt.plot(onecyc.lrs);
 
 
 **Previous:** [Notes on fastai Book Ch. 18](../chapter-18/)
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

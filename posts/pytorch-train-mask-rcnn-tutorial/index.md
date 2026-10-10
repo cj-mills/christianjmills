@@ -24,8 +24,6 @@ open-graph:
 * [**Training Mask R-CNN Models with PyTorch**](/series/tutorials/pytorch-train-mask-rcnn-series.html)
 :::
 
-
-
 * [Introduction](#introduction)
 * [Getting Started with the Code](#getting-started-with-the-code)
 * [Setting Up Your Python Environment](#setting-up-your-python-environment)
@@ -37,7 +35,6 @@ open-graph:
 * [Fine-tuning the Model](#fine-tuning-the-model)
 * [Making Predictions with the Model](#making-predictions-with-the-model)
 * [Conclusion](#conclusion)
-
 
 ## Introduction
 
@@ -60,10 +57,6 @@ This tutorial is suitable for anyone with rudimentary PyTorch experience. If you
 I updated the tutorial code for torchvision [`0.16.0`](https://github.com/pytorch/vision/releases/tag/v0.16.0).
 
 :::
-
-
-
-
 
 ## Getting Started with the Code
 
@@ -99,15 +92,9 @@ The tutorial code is available as a [Jupyter Notebook](https://jupyter.org/), wh
 
 {{< include /_python-multiprocessing-warning.qmd >}}
 
-
-
-
-
 ## Setting Up Your Python Environment
 
 Before diving into the code, we'll cover the steps to create a local Python environment and install the necessary dependencies. The dedicated Colab Notebook includes the code to install the required dependencies in Google Colab.
-
-
 
 ### Creating a Python Environment
 
@@ -135,10 +122,6 @@ mamba activate pytorch-env
 ```
 
 :::
-
-
-
-
 
 ### Installing PyTorch
 
@@ -175,10 +158,6 @@ pip install torch torchvision torchaudio
 
 :::
 
-
-
-
-
 ### Installing Additional Libraries
 
 We also need to install some additional libraries for our project.
@@ -209,10 +188,6 @@ Run the following commands to install these additional libraries:
 pip install distinctipy jupyter matplotlib pandas pillow torchtnt==0.2.0 tqdm tabulate
 ```
 
-
-
-
-
 ### Installing Utility Packages
 
 We'll also install some utility packages I made to help us handle images, interact with PyTorch, and work with Pandas DataFrames. These utility packages provide shortcuts for routine tasks and keep our code clean and readable.
@@ -239,10 +214,6 @@ Run the following commands to install the utility packages:
 # Install additional utility packages
 pip install cjm_pandas_utils cjm_pil_utils cjm_psl_utils cjm_pytorch_utils cjm_torchvision_tfms
 ```
-
-
-
-
 
 ## Importing the Required Dependencies
 
@@ -314,8 +285,6 @@ from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from tqdm.auto import tqdm
 ```
 
-
-
 ## Setting Up the Project
 
 In this section, we set up some basics for our project, such as initializing random number generators, setting the PyTorch device to run the model, and preparing the folders for our project and datasets.
@@ -346,8 +315,6 @@ device, dtype
 ```text
 ('cuda', torch.float32)
 ```
-
-
 
 ### Setting the Directory Paths
 
@@ -395,8 +362,6 @@ pd.Series({
 </div>
 Double-check the project and dataset directories exist in the specified paths and that you can add files to them before continuing. At this  point, our project is set up and ready to go. In the next section, we  will download and explore the dataset.
 
-
-
 ## Loading and Exploring the Dataset
 
 Now that we set up the project, we can start working with our dataset. The dataset is originally from the following GitHub repository:
@@ -414,8 +379,6 @@ The segmentation masks for this dataset uses the [LabelMe](https://github.com/la
 * [Working with LabelMe Segmentation Annotations in Torchvision](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)
 
 :::
-
-
 
 ### Setting the Dataset Path
 
@@ -455,9 +418,6 @@ pd.Series({
 </table>
 </div>
 
-
-
-
 ### Downloading the Dataset
 
 We can now clone the repository to the dataset directory we defined earlier.
@@ -467,8 +427,6 @@ We can now clone the repository to the dataset directory we defined earlier.
 # Clone the dataset repository from GitHub
 !git clone {f'https://github.com/{gh_repo}.git'} {dataset_dir/dataset_name}
 ```
-
-
 
 ### Getting the Image and Annotation Files
 
@@ -526,7 +484,6 @@ pd.DataFrame({"Image File": [file.name for file in img_file_paths],
 </table>
 </div>
 
-
 ### Get Image File Paths
 
 Each image file has a unique name that we can use to locate the corresponding annotation data. Let’s make a dictionary that maps image names to file paths. The dictionary will allow us to retrieve the file path for a given image more efficiently.
@@ -579,7 +536,6 @@ Number of Images: 150
   </tbody>
 </table>
 </div>
-
 
 ### Get Image Annotations
 
@@ -700,14 +656,11 @@ annotation_df.head()
 
 The `shapes` column contains the point coordinates to draw the segmentation masks. We will also use this information to generate the associated bounding box annotations.
 
-
-
 ### Inspecting the Class Distribution
 
 Now that we have the annotation data, we can extract the unique class names and inspect the class distribution. This small sample dataset only has one object class, but reviewing the class distribution is still good practice for other datasets.
 
 #### Get image classes
-
 
 ```python
 # Explode the 'shapes' column in the annotation_df dataframe
@@ -743,10 +696,7 @@ pd.DataFrame(class_names)
 </table>
 </div>
 
-
-
 #### Visualize the class distribution
-
 
 ```python
 # Get the number of samples for each object class
@@ -762,8 +712,6 @@ plt.show()
 ```
 
 ![](./images/output_27_0.png){fig-align="center"}
-
-
 
 #### Add a background class
 
@@ -799,7 +747,6 @@ pd.DataFrame(class_names)
 </table>
 </div>
 
-
 ### Visualizing Image Annotations
 
 Lastly, we will visualize the segmentation masks and bounding boxes for one of the sample images to demonstrate how to interpret the annotations.
@@ -822,8 +769,6 @@ distinctipy.color_swatch(colors)
 
 ![](./images/output_32_0.png){fig-align="center"}
 
-
-
 #### Download a font file
 
 The [`draw_bounding_boxes`](https://pytorch.org/vision/stable/generated/torchvision.utils.draw_bounding_boxes.html) function included with torchvision uses a pretty small font size. We  can increase the font size if we use a custom font. Font files are  available on sites like [Google Fonts](https://fonts.google.com/), or we can use one included with the operating system.
@@ -837,8 +782,6 @@ font_file = 'KFOlCnqEu92Fr1MmEU9vAw.ttf'
 download_file(f"https://fonts.gstatic.com/s/roboto/v30/{font_file}", "./")
 ```
 
-
-
 #### Define the bounding box annotation function
 
 Let’s make a partial function using `draw_bounding_boxes` since we’ll use the same box thickness and font each time we visualize bounding boxes.
@@ -848,14 +791,11 @@ Let’s make a partial function using `draw_bounding_boxes` since we’ll use th
 draw_bboxes = partial(draw_bounding_boxes, fill=False, width=2, font=font_file, font_size=25)
 ```
 
-
-
 ### Selecting a Sample Image
 
 We can use the unique ID for an image in the image dictionary to get the image’s file path and the associated annotations from the annotation DataFrame.
 
 #### Load the sample image
-
 
 ```python
 # Get the file ID of the first image file
@@ -877,11 +817,7 @@ Image Dims: (640, 480)
 
 ![](./images/output_39_1.png){fig-align="center"}
 
-
-
-
 #### Inspect the corresponding annotation data
-
 
 ```python
 # Get the row from the 'annotation_df' DataFrame corresponding to the 'file_id'
@@ -940,11 +876,7 @@ annotation_df.loc[file_id].to_frame()
 
 The lists of point coordinates in the shapes column are the vertices of a polygon for the individual segmentation masks. We can use these to generate images for each segmentation mask.
 
-
-
-
 #### Define a function to convert segmentation polygons to images
-
 
 ```python
 def create_polygon_mask(image_size, vertices):
@@ -969,8 +901,6 @@ def create_polygon_mask(image_size, vertices):
     # Return the image with the drawn polygon
     return mask_img
 ```
-
-
 
 #### Annotate sample image
 
@@ -1018,10 +948,6 @@ tensor_to_pil(annotated_tensor)
 
 We have explored the dataset and visualized the annotations for a sample image. In the next section, we will load and prepare our model.
 
-
-
-
-
 ## Loading the Mask R-CNN Model
 
 TorchVision provides [checkpoints](https://pytorch.org/vision/stable/models/generated/torchvision.models.detection.maskrcnn_resnet50_fpn_v2.html#torchvision.models.detection.MaskRCNN_ResNet50_FPN_V2_Weights) for the Mask R-CNN model trained on the [COCO](https://cocodataset.org/) (Common Objects in Context) dataset. We can initialize a model with these pretrained weights using the [`maskrcnn_resnet50_fpn_v2`](https://pytorch.org/vision/stable/models/generated/torchvision.models.detection.maskrcnn_resnet50_fpn_v2.html#torchvision.models.detection.maskrcnn_resnet50_fpn_v2) function. We must then replace the bounding box and segmentation mask predictors for the pretrained model with new ones for our dataset.
@@ -1053,8 +979,6 @@ model.name = 'maskrcnn_resnet50_fpn_v2'
 ```
 
 The model internally normalizes input using the mean and standard deviation values used during the pretraining process, so we do not need to keep track of them separately.
-
-
 
 ### Summarizing the Model
 
@@ -1099,8 +1023,6 @@ summary_df.drop(['In size', 'Out size', 'Contains Uninitialized Parameters?'], a
 The above table shows the model has approximately `45.7` million trainable parameters. It takes up `183` Megabytes and performs around `331` billion floating point operations for a single `256x256` RGB image. This model internally resizes input images and executes the same number of floating point operations for different input resolutions.
 
 That completes the model setup. In the next section, we will prepare our dataset for training.
-
-
 
 ## Preparing the Data
 
@@ -1154,9 +1076,6 @@ pd.Series({
 </table>
 </div>
 
-
-
-
 ### Data Augmentation
 
 Next, we can define what data augmentations to apply to images during training. I created a few custom image transforms to help streamline the code.
@@ -1207,8 +1126,6 @@ pad_square = PadSquare(shift=True, fill=0)
 We must use a scalar value for the `fill` parameter when applying the `PadSquare` transform to images with segmentation masks.
 
 :::
-
-
 
 #### Test the transforms
 
@@ -1314,7 +1231,6 @@ pd.Series({
 </table>
 </div>
 
-
 ### Training Dataset Class
 
 Now, we can define a custom dataset class to load images, extract the segmentation masks, generate the bounding box annotations, and apply the image transforms during training.
@@ -1409,8 +1325,6 @@ class StudentIDDataset(Dataset):
         return image, {'masks': masks,'boxes': bboxes, 'labels': labels}
 ```
 
-
-
 ### Image Transforms
 
 We'll add additional data augmentations with the IoU crop transform to help the model generalize.
@@ -1471,8 +1385,6 @@ We do not need to include a `Normalize` transform as the model internally normal
 Always use the [`SanitizeBoundingBoxes`](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.SanitizeBoundingBoxes.html#torchvision.transforms.v2.SanitizeBoundingBoxes) transform to clean up annotations after using data augmentations that alter bounding boxes (e.g., cropping, warping, etc.).
 :::
 
-
-
 ### Initialize Datasets
 
 Now, we can create our training and validation dataset objects using the dataset splits and transforms.
@@ -1510,15 +1422,11 @@ pd.Series({
 </table>
 </div>
 
-
-
-
 ### Inspect Samples
 
 Let’s verify the dataset objects work correctly by inspecting the first samples from the training and validation sets.
 
 #### Inspect training set sample
-
 
 ```python
 dataset_sample = train_dataset[0]
@@ -1547,11 +1455,7 @@ tensor_to_pil(annotated_tensor)
 
 ![](./images/output_69_0.png){fig-align="center"}
 
-
-
-
 #### Inspect validation set sample
-
 
 ```python
 dataset_sample = valid_dataset[0]
@@ -1579,8 +1483,6 @@ tensor_to_pil(annotated_tensor)
 ```
 
 ![](./images/output_71_0.png){fig-align="center"}
-
-
 
 ### Initialize DataLoaders
 
@@ -1634,8 +1536,6 @@ pd.Series({
 </table>
 </div>
 That completes the data preparation. Now, we can finally train our Mask R-CNN model.
-
-
 
 ## Fine-tuning the Model
 
@@ -1789,8 +1689,6 @@ def train_loop(model,
         getattr(torch, device.type).empty_cache()
 ```
 
-
-
 ### Set the Model Checkpoint Path
 
 Before we proceed with training, let’s generate a timestamp for the training session and create a directory to save the checkpoints during training.
@@ -1820,10 +1718,7 @@ pytorch-mask-r-cnn-instance-segmentation/2023-09-19_15-17-57/maskrcnn_resnet50_f
 
 Let’s also save a copy of the colormap for the current dataset in the training folder for future use.
 
-
-
 ### Save the Color Map
-
 
 ```python
 # Create a color map and write it to a JSON file
@@ -1838,8 +1733,6 @@ print(f"{checkpoint_dir}/{dataset_path.name}-colormap.json")
 ```text
 pytorch-mask-r-cnn-instance-segmentation/2023-09-19_15-17-57/student-id-colormap.json
 ```
-
-
 
 ### Configure the Training Parameters
 
@@ -1861,8 +1754,6 @@ lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,
                                                    max_lr=lr, 
                                                    total_steps=epochs*len(train_dataloader))
 ```
-
-
 
 ### Train the Model
 
@@ -1976,8 +1867,6 @@ Eval: 100%|██████████| 8/8 [00:00<00:00, 11.66it/s, loss=0.0
 
 At last, we have our fine-tuned Mask R-CNN model. To wrap up the tutorial, we can test our model by performing inference on individual images.
 
-
-
 ## Making Predictions with the Model
 
 In this final part of the tutorial, we will cover how to perform inference on individual images with our Mask R-CNN model and filter the predictions.
@@ -2043,9 +1932,7 @@ pd.Series({
 </table>
 </div>
 
-
 #### Get the target annotation data
-
 
 ```python
 # Extract the polygon points for segmentation mask
@@ -2061,8 +1948,6 @@ target_masks = Mask(torch.concat([Mask(transforms.PILToTensor()(mask_img), dtype
 target_labels = [shape['label'] for shape in annotation_df.loc[file_id]['shapes']]
 target_bboxes = BoundingBoxes(data=torchvision.ops.masks_to_boxes(target_masks), format='xyxy', canvas_size=test_img.size[::-1])
 ```
-
-
 
 #### Pass the input data to the model
 
@@ -2113,8 +1998,7 @@ pred_masks = F.interpolate(model_output[0]['masks'][scores_mask], size=test_img.
 pred_masks = torch.concat([Mask(torch.where(mask >= threshold, 1, 0), dtype=torch.bool) for mask in pred_masks])
 ```
 
-#### Annotate the image using the model predictions 
-
+#### Annotate the image using the model predictions
 
 ```python
 # Get the annotation colors for the targets and predictions
@@ -2189,27 +2073,15 @@ The segmentation mask has a few rough spots, but the model appears to have learn
 2. Once you finish training and download the files, turn off hardware acceleration for the Colab Notebook to save GPU time. ([tutorial link](https://christianjmills.com/posts/google-colab-getting-started-tutorial/#using-hardware-acceleration))
 :::
 
-
-
-
 ## Conclusion
 
 Congratulations on completing this tutorial for training Mask R-CNN models in PyTorch! The skills and knowledge you’ve acquired here serve as a solid foundation for future projects.
-
-
 
 ## Recommended Tutorials
 
 - [**Exporting Mask R-CNN Models from PyTorch to ONNX**](./onnx-export/)**:** Learn how to export Mask R-CNN models from PyTorch to ONNX and perform inference using ONNX Runtime.
 - [**Working with LabelMe Segmentation Annotations in Torchvision**](/posts/torchvision-labelme-annotation-tutorials/segmentation-polygons/)**:** Learn how to work with LabelMe segmentation annotations in torchvision for instance segmentation tasks.
 
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

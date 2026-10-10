@@ -28,13 +28,9 @@ open-graph:
 * [Test it Out](#test-it-out)
 * [Conclusion](#conclusion)
 
-
-
 ## Introduction
 
 In this post, we cover how to create a square crop of an image in Unity without using a shader. You can also adapt the approach described in this tutorial to crop other parts of images.
-
-
 
 ## Create a 2D Unity Project
 
@@ -42,17 +38,11 @@ Open the Unity Hub and create a new 2D project. I'm using `Unity 2019.4.20f1`, b
 
 ![](./images/unity-hub-create-new-project.png){fig-align="center"}
 
-
-
-
-
 ## Create `Crop` Script
 
 In Unity, right-click an empty space in the Assets folder and select `C# Script` in the `Create` submenu. Name the new script, `Crop` and open it in your code editor.
 
 ![](./images/unity-create-flip-script.png){fig-align="center"}
-
-
 
 ### Define Variables
 
@@ -74,10 +64,6 @@ public class Crop : MonoBehaviour
     // Start is called before the first frame update
     void Start()
 ```
-
-
-
-
 
 ### Define `Start()` Method
 
@@ -101,10 +87,6 @@ void Start()
     mainCamera.GetComponent<Camera>().orthographicSize = image.height / 2;
 }
 ```
-
-
-
-
 
 ### Define `Update()` Method
 
@@ -199,10 +181,6 @@ void Update()
 }
 ```
 
-
-
-
-
 ## Create Screen GameObject
 
 Back in Unity, right-click an empty space in the `Hierarchy` tab and select `Quad` from the `3D Object` submenu. Name the new object `Screen`. The size will be updated automatically by the `Crop.cs` script.
@@ -222,8 +200,6 @@ With the `ImageCropper` selected drag and drop the `Crop.cs` script into the `In
 Drag and drop the `Screen` object from the `Hierarchy` tab onto the `Screen` parameter in the `Inspector` tab.
 
 ![](./images/unity-inspector-tab-assign-screen.png){fig-align="center"}
-
-
 
 ## Test it Out
 
@@ -262,8 +238,6 @@ Now we can click the Play button and toggle the `Crop Image` checkbox to confirm
 
 ![](./images/crop_image_on_gpu_unity_2.gif){fig-align="center"}
 
-
-
 ## Conclusion
 
 That is one method to efficiently crop images on the GPU in Unity. As mentioned earlier, this method can be adapted to crop different parts of the image. You can do so by changing the values for the `Graphics.CopyTexture()` method to adjust what part of the source image gets copied and where in the target image it gets copied to.
@@ -271,11 +245,5 @@ That is one method to efficiently crop images on the GPU in Unity. As mentioned 
 
 
 **Project Resources:** [GitHub Repository](https://github.com/cj-mills/Crop-Image-on-GPU-Unity)
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,15 +15,10 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
-
-
-
 
 * [Introduction](#introduction)  
 * [The Performance Challenge of Sparsity](#the-performance-challenge-of-sparsity)  
@@ -35,22 +30,12 @@ open-graph:
 * [Future Directions and Research Areas](#future-directions-and-research-areas)  
 * [Conclusion](#conclusion)
 
-
-
-
-
 ::: {.callout-tip title="Resource Links:"}
 
 * **YouTube Recording:** [Lecture 11: Sparsity](https://www.youtube.com/watch?v=mGDnOLcfE8g)
 * **Slides:** [GPU Sparsity](https://github.com/cuda-mode/lectures/blob/main/lecture_011/sparsity.pptx)
 
 :::
-
-
-
-
-
-
 
 ## Introduction
 
@@ -71,8 +56,6 @@ open-graph:
 - The concept of pruning dates back to the ["Optimal Brain Damage" paper](https://proceedings.neurips.cc/paper_files/paper/1989/file/6c9882bbac1c7093bd25041881277658-Paper.pdf) from 1989.
 - Renewed interest emerged with the rise of deep learning and large models like AlexNet in 2012.
 - The increasing size of modern models, especially in the context of LLMs and Gen AI, has further intensified the need for sparsity and pruning techniques.
-
-
 
 ## The Performance Challenge of Sparsity
 
@@ -96,8 +79,6 @@ open-graph:
     - **PyTorch:** [torchao/sparsity/prototype/superblock](https://github.com/pytorch/ao/tree/main/torchao/sparsity/prototype/superblock)
     - **Paper:** [DRESS: Dynamic REal-time Sparse Subnets](https://arxiv.org/abs/2207.00670)
 
-
-
 ## Unstructured Sparsity and Its Limitations on GPUs
 
 ### Sparse Representations and Kernels
@@ -117,8 +98,6 @@ open-graph:
   - This makes it even harder for unstructured sparsity to achieve speedups on GPUs, as the parallelization benefits are lost with highly irregular sparsity patterns.
 
 - **Need for Structure:** To achieve performance gains on GPUs, some form of structure in the sparsity pattern is necessary to enable efficient parallelization.
-
-
 
 ## Semi-structured Sparsity (2:4 Sparsity)
 
@@ -195,8 +174,6 @@ def apply_sparse(model):
 - **Torch.compile Mitigation:**  Torch.compile can fuse the transpose with subsequent operations (e.g., ReLU) to reduce overhead. 
 - **Current Fusion Limitations:** Torch.compile cannot currently fuse operations directly into the sparse matrix multiplication kernel (cuSPARSELt). This limits potential performance gains.
 
-
-
 ## Block Sparsity
 
 * **PyTorch:** [torchao/sparsity/prototype/superblock](https://github.com/pytorch/ao/tree/main/torchao/sparsity/prototype/superblock)
@@ -218,8 +195,6 @@ def apply_sparse(model):
 
 - **Accuracy Recovery:** Finding effective methods to recover accuracy after block sparsity pruning remains an active research area. 
 - **Limited Research:** Compared to 2:4 sparsity, block sparsity on GPUs has received less attention, and optimal solutions are still being explored.
-
-
 
 ## Composing Sparsity with Quantization
 
@@ -250,8 +225,6 @@ def apply_sparse(model):
 - **Research is ongoing** to find the optimal balance between sparsity, quantization levels, and accuracy.
 - **Sparse GPT:**  One example of research in this area, exploring one-shot calibration methods to recover accuracy without retraining, which is particularly challenging for large LLMs due to memory constraints.
 
-
-
 ## Sparse Training
 
 ### Accelerating the Training Process
@@ -277,8 +250,6 @@ def apply_sparse(model):
 - **Fused Transpose Requirement:** 
   - **Training:**  Fused transpose operations are crucial for performance. Currently, this functionality is only available in cuSPARSELt, making it essential for sparse training.
   - **Inference:** Fused transpose is less critical as it can be handled by Torch.compile.
-
-
 
 ## Future Directions and Research Areas
 
@@ -310,8 +281,6 @@ def apply_sparse(model):
 - **Specialized hardware architectures** could be designed to directly support sparse representations and operations, potentially leading to significant performance improvements.
 - **NVIDIA's Tensor Cores:**  Semi-structured sparsity support in Tensor Cores suggests that hardware vendors are exploring such directions.
 
-
-
 ## Conclusion
 
 - **Sparsity and pruning are promising techniques** for improving the efficiency of large neural networks, especially in the context of LLMs and Gen AI.
@@ -319,10 +288,5 @@ def apply_sparse(model):
 - **Performance gains are demonstrable:**  Especially with semi-structured and block sparsity on GPUs, significant speedups can be achieved.
 - **Ongoing research and development:**  The field is actively evolving, with new sparsity patterns, algorithms, and hardware support being explored.
 - **Potential for breakthroughs:**  As the research progresses and new tools become available, sparsity is likely to play an increasingly important role in making large models more practical and accessible.
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

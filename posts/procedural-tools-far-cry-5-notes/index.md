@@ -23,8 +23,6 @@ open-graph:
 
 ---
 
-
-
 * [Introduction and Challenges](#introduction-and-challenges)
 * [Objectives of the Procedural Pipeline](#objectives-of-the-procedural-pipeline)
 * [Procedural Tools Developed](#procedural-tools-developed)
@@ -35,18 +33,12 @@ open-graph:
 * [Lessons Learned](#lessons-learned)
 * [Conclusion](#conclusion)
 
-
-
-
-
 ::: {.callout-tip title="Source Material"}
 
 * **Video:** [Procedural World Generation of Ubisoft’s Far Cry 5](https://www.youtube.com/watch?v=NfizT369g60)
 * **Slides:** [Far Cry 5: Procedural World Generation](https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2018/presentations/ProceduralWorldGeneration.pdf)
 
 :::
-
-
 
 ## Introduction and Challenges
 
@@ -55,8 +47,6 @@ open-graph:
     * Manual content placement (e.g., forests) becomes incoherent with each terrain iteration.
     * Repainting content manually after each terrain change is tedious and difficult to maintain consistency across a large world with multiple users.
     * Locking terrain early is unrealistic as iterations are crucial for game quality.
-
-
 
 ## Objectives of the Procedural Pipeline
 
@@ -72,8 +62,6 @@ open-graph:
 * **User-Friendliness:**
     * Provide in-editor tools for on-demand procedural generation alongside the nightly builds.
 
-
-
 ## Procedural Tools Developed
 
 * Expanded beyond the initial mandate of biome distribution to include:
@@ -83,8 +71,6 @@ open-graph:
     * **Biome Tool:** Spawns vegetation throughout the world.
     * **Fog Density Map Generation:** Creates a 2D map based on terrain topology and content placement to influence the fog shader.
     * **Wall Map Terrain Generation:** Generates a low-detail terrain representation for the world map, including miniature trees.
-
-
 
 ## User Workflow: Filling an Empty Map
 
@@ -114,8 +100,6 @@ open-graph:
     * Power lines connect electric poles placed at spline control points.
     * System supports multiple power line types and automatically handles snapping and transformer placement.
     * Biome tool automatically clears vegetation obstructing power lines.
-
-
 
 ## Under the Hood: Houdini Engine and Data Exchange
 
@@ -149,8 +133,6 @@ open-graph:
 * **Tool Interconnectivity:**
     * Procedural generation is sequential (freshwater, cliffs, biomes, etc.).
     * Tools export data to influence subsequent tools (e.g., freshwater generates a water mask used by the biome tool).
-
-
 
 ## Cliff Tool: Detailed Breakdown
 
@@ -204,8 +186,6 @@ open-graph:
 * Terrain texture IDs.
 * Cliff color layer for the terrain.
 * Cliff mask.
-
-
 
 ## Biome Tool: Populating the World with Life
 
@@ -343,8 +323,6 @@ open-graph:
 * Terrain color.
 * Forest mask (used by fog and wall map tools).
 
-
-
 ## Lessons Learned
 
 * **Responsibility:**
@@ -365,24 +343,11 @@ open-graph:
     * Find the right balance between control and automation.
     * Excessive automation can lead to issues, while excessive manual control can be time-consuming and difficult to manage.
 
-
-
 ## Conclusion
 
 * The procedural pipeline significantly enhanced Far Cry 5's development, providing efficiency, control, and natural-looking environments.
 * Houdini played a crucial role in achieving the project's goals.
 * Collaboration and iteration were key to the pipeline's success.
 * The modular and flexible design allows for future adaptation and reuse in other projects. 
-
-
-
- 
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

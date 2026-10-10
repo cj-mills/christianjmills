@@ -16,10 +16,6 @@ open-graph:
 
 ---
 
-
-
-
-
 * [Author’s Note](#authors-note)
 * [Introduction](#introduction)
 * [Part 1: The Fantasy](#part-1-the-fantasy) 
@@ -27,19 +23,10 @@ open-graph:
 * [Part 3: The Paradox](#part-3-the-paradox)  
 * [Epilogue: The Radioactive Park](#epilogue-the-radioactive-park)
 
-
-
-
-
-
 ::: {.callout-tip title="Book Links"}
 - [Publisher Page](https://www.simonandschuster.com/books/Atomic-Awakening/James-Mahaffey/9781605982038)
 
 :::
-
-
-
-
 
 ## Author's Note
 
@@ -75,10 +62,6 @@ open-graph:
     - Pakistan Atomic Energy Commission
     - Atomic Energy Commission of India
     - Commissariat à l'énergie atomique of France
-
-
-
-
 
 ## Introduction
 
@@ -159,16 +142,11 @@ open-graph:
     *   A willingness to entertain "impossible" ideas and challenge conventional wisdom is essential for scientific breakthroughs.
     *   The development of nuclear power, from a theoretical fantasy to a practical reality, exemplifies the power of human imagination and scientific inquiry.
 
-
 ### Conclusion
 
 *   The paradox of nuclear power – its immense potential for both good and harm – remains a central challenge.
 *   Understanding the history, the science, and the complexities of nuclear technology is crucial for making informed decisions about its role in our future.
 *   This book aims to provide the reader with the knowledge and context necessary to navigate this complex and vital issue, as nuclear power awakens from its decades-long coma and becomes an increasingly important part of the global energy landscape. 
-
-
-
-
 
 ## Part 1: The Fantasy
 
@@ -248,10 +226,6 @@ open-graph:
 - The Oklo discovery revealed that Earth has experienced both **fusion (in the Sun) and fission (at Oklo)** as natural sources of energy production and conversion.
 - This understanding of energy's origins was not developed until the late 19th century. 
 
-
-
-
-
 ### Chapter 1: Invisible Demons
 
 #### The Need for a New Power Source
@@ -316,7 +290,6 @@ open-graph:
         *   Atoms combine to form compounds.
         *   Atoms cannot be created, destroyed, or broken down by chemical reactions.
 *   **Impact:**  Solidified the atomic theory and influenced chemistry for centuries.
-
 
 #### Brownian Motion and the Electromagnetic Revolution
 
@@ -394,10 +367,6 @@ open-graph:
 *   Röntgen's discovery of X-rays and Becquerel's discovery of radioactivity opened up new frontiers in physics and paved the way for the exploration of the atom's nucleus.
 *   These "invisible demons" - X-rays and radioactivity - would reshape science and technology in the 20th century. 
 
-
-
-
-
 ### Chapter 2: A Couple of Remaining Questions
 
 #### The End of the Century and Fantastical Discoveries (1897)
@@ -420,7 +389,7 @@ open-graph:
   * **Cathode rays were streams of energy observed in vacuum tubes when high voltage was applied across electrodes.**
   * Wilhelm Röntgen had used cathode rays to produce X-rays, but their nature remained a mystery.
 
-##### Thompson's Cathode Ray Experiments 
+##### Thompson's Cathode Ray Experiments
 
 * Thompson conducted **three sequential experiments to determine the nature of cathode rays.**
   * **Experiment 1:**
@@ -601,10 +570,6 @@ open-graph:
 * Rutherford's model, although iconic, would eventually be found to be inaccurate.
   * The orbiting electrons would not be stable due to electromagnetic radiation.
 * The nature of the atom would require a radical shift in understanding, moving beyond classical physics. 
-
-
-
-
 
 ### Chapter 3: Einstein Drops a Bomb
 
@@ -856,22 +821,18 @@ open-graph:
 *   **Paved the way for new and strange theories**, preparing the world for the quantum revolution.
 *   **Bridged the gap between science and the public**, making complex scientific concepts accessible to a wider audience.
 
-
-
-
-
-
-
 ### Chapter 4: The Other End of the Universe
 
-#### The Bohr Medal Story 
+#### The Bohr Medal Story
 
 ##### The Story's Premise
+
 - **Niels Bohr**, the originator of quantum mechanics and Nobel Prize winner in 1922, faced a dilemma during World War II.
 - German occupation of Denmark meant he couldn't take his **Nobel Prize medal** (made of 200 grams of 23-carat gold) with him when escaping.
 - The story claims Bohr **dissolved the medal in aqua regia** (a mixture of hydrochloric and nitric acids), carried it out in a bottle, and later recast it in the United States.
 
 ##### Reasons for Doubt
+
 - Bohr's escape was clandestine, involving a fishing boat and a nighttime journey to Sweden, making it unlikely he went through customs.
 - The author finds it improbable that Bohr would have declared the aqua regia to border guards.
 - The author concludes that the story is likely a **myth**, highlighting the fuzzy nature of history.
@@ -879,6 +840,7 @@ open-graph:
 #### The Fuzzy Nature of Atoms and Quantum Mechanics
 
 ##### Einstein's Relativity and its Limitations
+
 - Einstein's **theory of special relativity** explained the immense energy released during nuclear decay (e.g., radium's decay produces 10 billion calories per gram).
   - It showed that this energy comes from a tiny loss of mass (0.00047 grams per gram of radium).
 - Special relativity, however, doesn't explain the mechanisms of nuclear decay or how it can be controlled.
@@ -887,6 +849,7 @@ open-graph:
 - The **atomic world** is fundamentally different, characterized by **jerky movements, sudden jumps, and random, unpredictable behavior**.
 
 ##### Quantum Mechanics: A Parallel Development
+
 - **Quantum mechanics**, developed alongside relativity, offered an alternative explanation for nuclear physics.
 - It became the last major physical theory synthesized in Europe before World War II.
 - It resolved many questions unanswered by relativity but created a **conflict with relativity** that persisted even after Einstein's death.
@@ -894,18 +857,21 @@ open-graph:
 #### Einstein's Quantum Contribution and Bohr's Atomic Model
 
 ##### Einstein's Photoelectric Effect and Quantization
+
 - In 1905, Einstein published a paper on the **photoelectric effect**, showing that **light consists of discrete packets of energy called quanta**.
 - He concluded that light cannot be divided below a limit defined by **Planck's constant**.
 - This concept challenged classical physics and Maxwell's equations, which assumed light as a continuous wave.
 - Subsequent research revealed that **quantization** applies to various phenomena, not just light.
 
 ##### Quantization Example: Cobalt-60
+
 - **Cobalt-60**, a radioactive metal, has a **half-life** of 5.3 years (its radiation output halves in that time).
 - Repeatedly halving a block of cobalt-60 eventually leads to a single atom, which is the **quantum cutoff**.
 - At the macroscopic level, decay is predictable (half-life); at the quantum level, it's probabilistic (50% chance of decay in 5.3 years).
 - This demonstrates the shift from **certainty in the macro world to uncertainty in the quantum world**.
 
 ##### Niels Bohr and the Quantum Leap
+
 - **Niels Bohr**, a brilliant physicist, recognized the connection between Einstein's light quanta and atomic structure.
 - Bohr worked with **Rutherford**, whose **solar system model of the atom** had limitations:
   - Electrons orbiting the nucleus should repel each other.
@@ -923,6 +889,7 @@ open-graph:
 #### The Bohr Model and the Periodic Table
 
 ##### Bohr's Atomic Model: Shells and Ground States
+
 - Bohr's model defined the **ground state** of an atom as a sphere at a specific distance from the nucleus.
 - **Ground state energies are quantized** (occur in integer steps).
 - Higher ground states correspond to larger spheres that can hold more electrons.
@@ -932,11 +899,13 @@ open-graph:
 - **Chemical reactivity** depends on the ability to fill the outermost shell with electrons.
 
 ##### Impact on Chemistry and the Periodic Table
+
 - Bohr's model clarified the **periodic table of the elements**, invented by **Mendeleev** in 1869.
 - Elements in the same column (e.g., alkali metals) have similar chemical properties because they have the same number of electrons in their outermost shell.
 - Electron shells fill from the inner to outer shells, with no gaps below the top level.
 
 ##### Bohr's Continued Work and the Copenhagen Interpretation
+
 - Bohr became a professor in Copenhagen and director of the **Institute of Theoretical Physics**.
 - His refined theories became known as the **Copenhagen Interpretation**.
 - Bohr predicted that element 72 (later named **Hafnium**) would have four electrons in its outer shell and behave chemically like zirconium, a prediction confirmed shortly after he received his Nobel Prize in 1922.
@@ -944,11 +913,13 @@ open-graph:
 #### Heisenberg's Uncertainty Principle
 
 ##### Heisenberg and Quantum Mechanics
+
 - **Werner Heisenberg**, a German physicist, collaborated with Bohr on quantum mechanics.
 - In 1927, they struggled with the **wave-particle duality of light**, its behavior as both particles and waves.
 - Inspired by **Einstein's statement, "It is the theory which decides what we can observe,"** Heisenberg developed his **Uncertainty Principle**.
 
 ##### The Uncertainty Principle: Limits of Measurement
+
 - Heisenberg proposed that at the atomic level, there are **fundamental limits to the precision of measurement**.
 - **The act of measuring a quantity inevitably disturbs the system**, leading to a loss of information about other quantities.
 - **Example:**
@@ -959,6 +930,7 @@ open-graph:
 - Bohr summarized this as **"nothing exists until it is measured"**.
 
 ##### Implications for Atomic Models
+
 - Heisenberg's work showed that visual models of the atom, with electrons in specific orbits, are inaccurate.
 - Electrons are better represented as a **cloud of uncertainty** around the nucleus.
 - Heisenberg's **Uncertainty Principle** revolutionized atomic physics, earning him the Nobel Prize in 1929.
@@ -966,27 +938,32 @@ open-graph:
 #### The Double-Slit Experiment and Wave-Particle Duality
 
 ##### Young's Double-Slit Experiment
+
 - **Thomas Young**, in 1801, conducted the **double-slit experiment** to demonstrate the **wave nature of light**.
 - A light beam passing through two narrow slits creates an **interference pattern** on a screen behind the slits, with alternating light and dark bands.
 - This pattern arises from the **wavefronts interfering with each other**.
 
 ##### The Double-Slit Experiment with Electrons
+
 - The experiment has been repeated with various types of waves and even particles.
 - In 1961, it was done with a beam of electrons, and in 1989, with a **single electron**.
 - The **interference pattern still appeared**, even with a single electron, suggesting it somehow passed through both slits simultaneously.
 
 ##### Wave-Particle Duality Paradox
+
 - These results contradicted the particle nature of electrons established by Bohr and Compton.
 - **How could a single electron interfere with itself as if it were a wave?**
 - Experiments attempting to measure both wave and particle properties simultaneously have shown that **light can behave as either a wave or a particle, but not both at the same time**.
 
 ##### The Role of Theory
+
 - **Einstein's statement about theory influencing observation becomes relevant**.
 - The choice of experiment and the theory it's based on determine whether light appears as a wave or a particle.
 
 #### De Broglie's Matter Waves
 
 ##### De Broglie's Hypothesis
+
 - **Louis de Broglie**, in 1924, proposed that **matter, like light, can exhibit both wave and particle properties**.
 - He based this on the **symmetry of nature** and the established wave-particle duality of light.
 - He expressed this with the equation: **λ = h/p**
@@ -995,6 +972,7 @@ open-graph:
   - **p** is the momentum of the particle (mass x velocity).
 
 ##### Implications and Significance
+
 - De Broglie's equation showed that **any particle with momentum has a corresponding wavelength**.
 - This provided a theoretical basis for the wave-like behavior of electrons in the double-slit experiment.
 - De Broglie's work earned him the Nobel Prize in Physics in 1929.
@@ -1002,11 +980,13 @@ open-graph:
 #### Schrödinger's Wave Mechanics
 
 ##### Schrödinger's Approach
+
 - **Erwin Schrödinger**, inspired by de Broglie, developed **wave mechanics** as an alternative model of the atom.
 - He treated electrons as **standing waves** rather than particles.
 - These waves, confined around the nucleus, can only vibrate at specific **integer frequencies (harmonics)**.
 
 ##### Confirmation of Quantization
+
 - Schrödinger's model, like Bohr's, explained the **quantized energy levels of electrons**.
 - **Electrons can only jump between specific energy levels** corresponding to integer multiples of the fundamental frequency.
 - This independently confirmed the quantization inherent in Bohr's model.
@@ -1015,17 +995,20 @@ open-graph:
 #### Understanding Atomic Models
 
 ##### The Concept of Physical Models
+
 - The **Bohr model** (electrons in energy shells) and the **Schrödinger model** (standing waves) are both **physical models** of the atom.
 - The value of a model lies in its ability to **accurately describe known phenomena and predict new ones**.
 - Both models are successful in this regard.
 
 ##### The "Real" Picture of the Atom
+
 - **There is no single "real" picture of the atom**.
 - Both models are useful representations that highlight different aspects of atomic behavior.
 
 #### The Fates of Bohr and Schrödinger
 
 ##### Bohr's Escape from Denmark
+
 - Bohr delayed leaving Nazi-occupied Denmark until it became critical.
 - He escaped to Sweden in a fishing boat, avoiding German minefields.
 - Fearing assassination, the British flew him to England in a **Mosquito bomber**, stripped of armaments and adapted for a passenger in the bomb bay.
@@ -1033,23 +1016,20 @@ open-graph:
 - The pilots descended to avoid endangering him, and Bohr survived the flight, reportedly getting his best sleep in months.
 
 ##### Schrödinger in Ireland
+
 - Schrödinger spent World War II in Dublin, Ireland, at the **Institute for Advanced Studies**, directing the School for Theoretical Physics.
 - His unconventional lifestyle (living with both his wife and mistress) was tolerated by the Irish.
 
 #### Conclusion
+
 - The chapter highlights the development of quantum mechanics, its key figures, and its profound implications for understanding the atom.
 - It emphasizes the shift from classical physics to a quantum world where uncertainty and wave-particle duality are fundamental.
 - The story of Bohr's escape and Schrödinger's wartime refuge adds a human element to the scientific narrative. 
 
-
-
-
-
-
-
 ### Chapter 5: Breaking Open the Atom
 
 #### The Dichotomy of Physics
+
 - **Physics**, like many disciplines, frequently divides into opposing schools of thought.
   - Examples:
     - Arabic Spagyrus vs. Indian Chrysopaeus.
@@ -1061,6 +1041,7 @@ open-graph:
 - Quantum mechanically, both perspectives hold some truth.
 
 #### The Rise of Theoretical Physics
+
 - **1920s:** Theorists seemingly held the dominant position in physics.
 - **Albert Einstein's impact:**
   - **Theories of relativity:** Revolutionized physics, challenged Newtonian concepts, and popularized complex scientific ideas among the general public.
@@ -1070,6 +1051,7 @@ open-graph:
 - **Need for experimental validation:** As quantum mechanics delved into uncharted territory, experimental physics was crucial for grounding these theories in a semblance of reality.
 
 #### The Search for the Neutron
+
 - **1920s:** The structure of the **atomic nucleus** remained an enigma, as experimental physics entered a period of contemplation. 
 - **Lord Ernest Rutherford's Bakarian lecture (June 3rd, 1920):**
   - Topic: **Transmutation of nitrogen atoms** using **alpha particles**.
@@ -1095,6 +1077,7 @@ open-graph:
   - **Failed attempts:** Efforts to create neutrons by bombarding hydrogen with electrons proved unsuccessful.
 
 #### James Chadwick and the Discovery of the Neutron
+
 - **James Chadwick (1891-):**
   - Born in Bullington, Cheshire, England.
   - Studied physics at the University of Manchester, inspired by Rutherford's lecture.
@@ -1128,6 +1111,7 @@ open-graph:
   - **Impact:** Chadwick's discovery transformed physics and the world.
 
 #### Leo Szilard and the Concept of Nuclear Chain Reaction
+
 - **Leo Szilard (1898-1964):**
   - A genius with a passion for physics and politics.
   - Born in Budapest, Hungary.
@@ -1149,6 +1133,7 @@ open-graph:
   - Became disillusioned and wrote to the Admiralty to withdraw his patent application.
 
 #### Otto Hahn, Lise Meitner, and the Discovery of Nuclear Fission
+
 - **Otto Hahn (1879-1968):**
   - Born in Frankfurt, Germany.
   - Studied chemistry and became a pioneer in **radiochemistry**.
@@ -1178,12 +1163,6 @@ open-graph:
   - Nuclear power transitioned from a theoretical concept to a tangible possibility.
   - Experimentalists had validated Einstein's prediction of mass-energy conversion.
 - **The Remaining Question:** The specific mechanism of how uranium converts mass into energy remained to be elucidated. 
-
-
-
-
-
-
 
 ## Part 2: The Puzzle
 
@@ -1267,10 +1246,6 @@ open-graph:
 *   **The Flash:** The intense light from the explosion, even in daylight, burned out the black spades on the cards.
 *   **The Shockwave:** The ground-traveling shockwave distorted the earth significantly, making it impossible to see the end of the trench.
 *   **"The very planet, indeed, quivered with implications":** A powerful statement reflecting the immense power and impact of the nuclear test.
-
-
-
-
 
 ### Chapter 1: A Fortuitous Condensation of Genius
 
@@ -1435,12 +1410,6 @@ open-graph:
 *   **Principle:** Used a moderator to slow down neutrons and sustain a chain reaction of fission with low-grade uranium.
 *   **Patent:** Fermi and Szilard shared the patent for the nuclear reactor.
 
-
-
-
-
-
-
 ### Chapter 2: An Implied Threat from the Fatherland
 
 #### The Iraqi Situation (2003)
@@ -1537,7 +1506,6 @@ open-graph:
     * Four days later, Germany declared war on the US.
     * These events led to the acceleration of the atomic bomb project.
 
-
 #### The Berkeley Effort: Plutonium
 
 * **A Parallel Threat:** Another line of nuclear physics research was developing at the University of California, Berkeley.
@@ -1566,7 +1534,6 @@ open-graph:
 * **Enrico Fermi and the First Nuclear Reactor:**
     * **Enrico Fermi** and his team at the University of Chicago built the first nuclear reactor in late 1942.
     * This reactor provided a neutron source for plutonium production and proved that nuclear reactions could be harnessed for power.
-
 
 #### Chicago Pile 1 (CP-1): The First Self-Sustaining Nuclear Reaction
 
@@ -1602,7 +1569,6 @@ open-graph:
     * The pile was shut down, having produced power at a rate of half a watt.
     * The experiment marked a major milestone in nuclear physics and paved the way for the development of nuclear weapons and power plants.
 
-
 #### The Alsace Mission and the German Nuclear Program
 
 * **The Alsace Mission:**
@@ -1615,10 +1581,6 @@ open-graph:
     * Upon learning of the approaching American forces, the German scientists hid the uranium and fled.
 * **The Legacy of Heigerloch:**
     * The Heigerloch reactor site is now a tourist attraction.
-
-
-
-
 
 ### Chapter 3: A Jolt in the Dark
 
@@ -1862,10 +1824,6 @@ open-graph:
 - Both paths to the atomic bomb, uranium (Little Boy) and plutonium (Fat Man), achieved success. 
 - The Manhattan Project, driven by the urgency of war and the brilliance of its scientists and engineers, had overcome numerous technical challenges to create the world's first atomic bombs. 
 
-
-
-
-
 ### Chapter 4: A Light at the Mouth of the Tunnel
 
 #### The Manhattan Project's Security Blanket and Its Holes
@@ -2051,10 +2009,6 @@ open-graph:
 *   The subsequent decades witnessed rapid advancements in nuclear science, technology, and applications, along with significant funding and research efforts.
 *   Nuclear power's development was unconventional, starting with a powerful demonstration before peaceful applications were fully explored.
 *   The analogy of gasoline's first use being napalm highlights the potential for destructive applications to overshadow the beneficial ones.
-
-
-
-
 
 ### Chapter 5: Post-War Planning
 
@@ -2282,12 +2236,6 @@ open-graph:
     * The Demon Core, destroyed in Operation Crossroads, would no longer pose a direct threat.
     * However, the legacy of the atomic bomb and the potential for future accidents remained. 
 
-
-
-
-
-
-
 ## Part 3: The Paradox
 
 ### The Hatch Nuclear Plant Field Trip (1973)
@@ -2347,7 +2295,7 @@ open-graph:
 - **Conservative approach:** Innovative power production concepts relied on well-established component technologies.
 - **Limited computer use:** Only slide rules were used for calculations at Plant Hatch.
 
-###  Mil-Spec Computers and the LOFT Reactor (1979-1981)
+### Mil-Spec Computers and the LOFT Reactor (1979-1981)
 
 #### Post-Graduate Work and Research
 
@@ -2387,7 +2335,7 @@ open-graph:
 - **Research focus:** Hardening data collection computers against seismic shocks.
 - **Final report:** "Reactor Safety System Design Using Hardened Computers" (NUREG CR-2118, April 1981).
 
-####  Impact of the Three Mile Island Incident
+#### Impact of the Three Mile Island Incident
 
 - **Three Mile Island (TMI) incident:** Disastrous reactor meltdown in Pennsylvania (March 1979).
 - **NRC's response:** Published NUREG-0696, "Functional Criteria for Emergency Response Facilities" (February 1981).
@@ -2395,7 +2343,7 @@ open-graph:
   - Did not address earthquake survivability requirements (specified in a separate regulation).
 - **Author's research relevance:** Provided a solution to the earthquake hardness requirement using mil-spec computers.
 
-###  Upgrading Plant Hatch and Navigating the Nuclear Power World 
+### Upgrading Plant Hatch and Navigating the Nuclear Power World
 
 #### Securing the Contract and Returning to Plant Hatch
 
@@ -2412,7 +2360,7 @@ open-graph:
 - **Importance of white hat:**  Commanded more respect and better treatment.
 - **Resolution:** Hart arranged for the author to receive a white hard hat.
 
-####  Plant Hatch Revisited and the Hazards of a White Hat
+#### Plant Hatch Revisited and the Hazards of a White Hat
 
 - **Plant Hatch changes:** Undergoing significant renovations, with scaffolding and workers throughout.
 - **Portal encounter:** Stopped at a control deck entrance by a worker who noticed the white hard hat.
@@ -2420,7 +2368,7 @@ open-graph:
 - **Demonstration:** A pipe fitter in a yellow hard hat on the scaffolding smiled and waved menacingly.
 - **Realization:** The nuclear power environment had its own unique social dynamics and potential hazards.
 
-###  Implementing the Safety Parameter Display System
+### Implementing the Safety Parameter Display System
 
 #### The Safety Parameter Display System (SPDS)
 
@@ -2458,12 +2406,10 @@ open-graph:
 - **Revelation:** The operator spit a stream of tobacco juice into a nearby wastebasket.
 - **Unpleasant realization:** The brown liquid was not Coca-Cola, but a collection of spit.
 
-####  Paradox within Paradox
+#### Paradox within Paradox
 
 - **Control room contrast:** The pristine, quiet, and orderly control room environment juxtaposed with the unsanitary practice of spitting tobacco juice into wastebaskets.
 - **Conclusion:** This incident exemplified the paradoxical nature of the nuclear power industry, where advanced technology and strict regulations coexisted with unexpected and sometimes unsanitary practices. 
-
-
 
 ### Chapter 1: A Quest for Power
 
@@ -2662,10 +2608,6 @@ open-graph:
 - The success of the Nautilus led the US Navy to adopt nuclear power for a wide range of vessels, including aircraft carriers, cruisers, and submarines.
 - Rickover's **PWR design**, though not the cheapest or simplest, became the **most widely used reactor design** globally due to its compactness and safety features.
 
-
-
-
-
 ### Chapter 2: Digging Canals, Curing Cancer, and Flying to Jupiter
 
 #### Radiation and Nuclear Power
@@ -2863,10 +2805,6 @@ open-graph:
 - **Lead-210 Contamination:** Freshly mined lead contains radioactive lead-210, hindering sensitive nuclear experiments.
 - **Old Lead Solution:** Lead used in Notre Dame Cathedral's roof (circa 1250) was free of lead-210 due to its age.
 - **AEC's Offer:** Replaced the cathedral's roof and acquired the old lead for radiation shielding. 
-
-
-
-
 
 ### Chapter 3: The Graphites on Fire
 
@@ -3469,12 +3407,6 @@ open-graph:
 *   The authors observed the effects of the transistor failure on the SPDS display:
     *   The core temperature graph transitioned from green to red, exceeding
 
-
-
-
-
-
-
 ### Chapter 4: Nuclear Rockets and Nuclear Airplanes
 
 #### Introduction
@@ -3645,15 +3577,12 @@ open-graph:
 *   Nuclear-powered transportation systems were technically feasible but ultimately unnecessary and ahead of their time.
 *   The demise of these programs foreshadowed the fate of nuclear power in general.
 
-
-
-
-
 ### Chapter 5: The Building Boom, the Bust, and a Resurgence
 
 #### The Nuclear Rocket Program & Environmental Concerns
 
 ##### Operational Safety & Environmental Impact
+
 - **The NRX-A5 nuclear rocket engine test** in June 1966 demonstrated successful temperature control and simulated space cool-down.
 - **A bird incident** during the NRX-A5 test highlighted the growing emphasis on operational safety in nuclear experiments.
 - **Increased awareness of environmental impact**:  The need to minimize the release of radioactive dust into the atmosphere was recognized.
@@ -3661,12 +3590,14 @@ open-graph:
 - **Extensive contamination in Nevada**: Prior nuclear weapons tests and uranium mining had left Southern Nevada heavily contaminated with radioactive materials.
 
 ##### The BREN Tower & Test Ban Treaty
+
 - **The BREN (Bear Reactor Experiment Nevada) Tower**, also known as the BRIN Tower, was a 1,527-foot tall structure used to simulate the effects of an atomic bomb explosion.
 - **Purpose**: To study the impact of radiation from a nuclear detonation.
 - **The Nuclear Test Ban Treaty**, signed in 1963, halted above-ground nuclear testing, including experiments at the BREN Tower.
 - **Atmospheric radiation levels** peaked in 1963 and began to decline following the treaty.
 
 ##### Public Distrust & Anti-Nuclear Movements
+
 - **Nevada's experience with nuclear testing** fostered public distrust in the nuclear science establishment due to secrecy, misdirection, and perceived lack of government concern.
 - **Anti-nuclear movements** emerged in the 1960s, fueled by concerns about nuclear armaments and later encompassing civilian nuclear power.
 - **Challenges for the nuclear power industry**:
@@ -3677,10 +3608,12 @@ open-graph:
 #### Nuclear Waste Disposal
 
 ##### The Challenge of Long-Term Storage
+
 - **Anti-nuclear groups strategically focused on the issue of radioactive waste disposal** to hinder the nuclear power industry.
 - **The need for permanent storage solutions**: Existing nuclear plants could only store spent fuel temporarily.
 
 ##### Transportation and Safety
+
 - **Safe transportation of nuclear fuel**: Despite public perception, nuclear fuel had been transported safely for decades using various methods.
 - **Regulations and testing**: 
     - The Code of Federal Regulations, Title X, Part 71 mandates the use of approved spent nuclear fuel shipping casks.
@@ -3688,6 +3621,7 @@ open-graph:
 - **The Howard Street Tunnel fire in Baltimore (2001)** served as a real-world test case for evaluating the resilience of spent fuel casks in extreme conditions.
 
 ##### Regulatory Changes and the DOE
+
 - **Abolition of the Atomic Energy Commission (AEC) in 1974**: The AEC was replaced by two new agencies:
     - **The Energy Research and Development Agency (ERDA)**: Focused on research and development of nuclear technologies.
     - **The United States Nuclear Regulatory Commission (NRC)**: Responsible for regulations, licensing, and safety oversight.
@@ -3695,6 +3629,7 @@ open-graph:
 - **Focus on deep geological repositories**: The DOE initiated studies for long-term storage of nuclear waste in geologically stable formations.
 
 ##### International Efforts and the Waste Isolation Pilot Plant (WIPP)
+
 - **Deep geological repositories were being considered internationally**: Several countries, including Germany, Belgium, and Canada, explored this approach for nuclear waste disposal.
 - **The Waste Isolation Pilot Plant (WIPP)**:
     - Opened in 1999 in New Mexico.
@@ -3702,6 +3637,7 @@ open-graph:
     - Designed for the disposal of nuclear waste from weapons production, not civilian power plants. 
 
 ##### Yucca Mountain and the "Screw Nevada Bill"
+
 - **The Nuclear Waste Policy Act of 1982** mandated the construction of a larger repository for high-level waste from commercial power plants.
 - **Yucca Mountain, Nevada**, was selected as the site for the repository after extensive study.
 - **Congressional mandate ("Screw Nevada Bill")**: Congress designated Yucca Mountain as the repository site despite opposition from Nevada.
@@ -3711,15 +3647,18 @@ open-graph:
 #### Fuel Reprocessing
 
 ##### Composition of Nuclear Waste
+
 - **Spent nuclear fuel is primarily composed of uranium-238**, which does not undergo fission but can convert to plutonium-239.
 - **Fission products constitute a small portion (3%) of spent fuel** but are highly radioactive.
 - **Decay rates**: Many fission products decay quickly, while others, like strontium-90 and cesium-137, remain dangerous for decades.
 
 ##### Benefits of Reprocessing
+
 - **Fuel reprocessing can significantly reduce the volume and mass of radioactive waste**.
 - **Comparison with coal waste**: Nuclear waste from a lifetime of electricity use would be much smaller than the waste from coal-fired power generation.
 
 ##### The PUREX Process and Early Reprocessing Plants
+
 - **Fuel reprocessing was developed during the Manhattan Project**.
 - **The PUREX (Plutonium and Uranium Recovery by Extraction) process**: Developed in 1949, it became the standard method for separating radioactive and non-radioactive components of nuclear waste.
 - **The West Valley Reprocessing Plant**:
@@ -3728,6 +3667,7 @@ open-graph:
     - The DOE later took over the site for cleanup and vitrification (encasing waste in glass).
 
 ##### The Barnwell Nuclear Fuel Reprocessing Plant
+
 - **Construction began in 1970 in South Carolina**.
 - **Advanced design**: Incorporating lessons from West Valley, it was designed for automation, high capacity, and compliance with NRC regulations.
 - **Successful test run in 1973**.
@@ -3735,16 +3675,19 @@ open-graph:
 - **Consequences of the veto**: The decision halted reprocessing in the US, increased the volume of nuclear waste, and made the country reliant on foreign sources for medical isotopes.
 
 ##### Reprocessing in Other Countries
+
 - **Fuel reprocessing is common practice in several countries**, including France, the UK, India, Japan, and Russia.
 - **Impact of the Barnwell veto**: Anti-nuclear forces effectively made waste disposal more complex and discouraged investment in reprocessing in the US.
 
 #### Terrorism and Nuclear Power Plants
 
-#####  Likelihood of Terrorist Attacks
+##### Likelihood of Terrorist Attacks
+
 - **The author considers the likelihood of a successful terrorist attack on a nuclear power plant to be low** due to the complexity of plant operations and security measures.
 - **Stealing plutonium would be difficult** due to strict regulations and tracking.
 
 ##### The Superphénix Attack
+
 - **The 1982 attack on the Superphénix reactor in France** is cited as the only example of a foreign terrorist attack on a nuclear power plant.
 - **Background**: France relies heavily on nuclear power and developed a plutonium economy to reduce dependence on foreign uranium supplies.
 - **The attack**: Anti-nuclear terrorists fired rocket-propelled grenades at the Superphénix containment building, causing minor damage but not breaching the reactor core.
@@ -3753,6 +3696,7 @@ open-graph:
 #### The Global Nuclear Landscape
 
 ##### Nuclear Power Around the World
+
 - **Nuclear power plants are operational in numerous countries**.
 - **Reactor types**: PWRs, BWRs, CANDUs, and RBMKs are among the reactor designs used globally.
 - **Japan**, despite being the only country attacked with nuclear weapons, has a significant number of nuclear power plants.
@@ -3761,11 +3705,13 @@ open-graph:
 #### The Nuclear Power Bust
 
 ##### Economic Factors
+
 - The decline of nuclear power plant construction in the US was primarily driven by economic factors, not anti-nuclear protests or safety concerns.
 - **Rising construction costs, high interest rates, and a surplus of generating capacity** contributed to the slowdown.
 - The technology had matured, but societal demand for clean energy had not yet caught up.
 
-##### The Uranium Mill Tailings Radiation Control Act 
+##### The Uranium Mill Tailings Radiation Control Act
+
 - **Passed in 1978, this act mandated the cleanup of abandoned uranium mines and tailings** to address radon gas and uranium dust contamination.
 - **Current status of uranium mining**: There are no active uranium mines in the US due to low uranium prices.
 - **Shift from enrichment to dilution**: The US now down-blends highly enriched uranium for use in power reactors.
@@ -3773,10 +3719,12 @@ open-graph:
 #### The Three Mile Island Accident
 
 ##### Background
+
 - **The Three Mile Island Unit 2 (TMI-2) reactor meltdown occurred on March 28, 1979**.
 - **Context**: The accident coincided with the release of the movie "The China Syndrome," which portrayed a nuclear disaster, amplifying public anxiety.
 
 ##### The Accident Sequence
+
 - **A minor mechanical failure in the secondary cooling loop** initiated a chain of events.
 - **Operator actions**:
     - The operators responded to alarms and attempted to manage the situation.
@@ -3785,6 +3733,7 @@ open-graph:
 - **Emergency response**: A site emergency was declared, and notifications were made to the NRC, Congress, and the President.
 
 ##### Aftermath and Consequences
+
 - **No significant radiation release**: The containment building prevented a major release of radioactive material, and the only release was a controlled venting of inert gases.
 - **Public perception and impact**: The accident caused widespread fear and distrust of nuclear power, despite the lack of significant health consequences.
 - **Babcock and Wilcox, the reactor manufacturer, did not sell any more reactors**.
@@ -3795,16 +3744,19 @@ open-graph:
 #### The Chernobyl Disaster
 
 ##### Background
+
 - **The Chernobyl disaster occurred on April 27, 1986, in the Soviet Union**.
 - **Detection**: The accident was first detected in Sweden when a worker was found to be contaminated with radioactive fallout.
 
 ##### The Accident Sequence
+
 - **The Chernobyl Unit 4 reactor was an RBMK-1000 graphite-moderated reactor**, a design considered obsolete and unsafe.
 - **A flawed safety test**: The accident occurred during a test of the reactor's ability to run on emergency power.
 - **Operator errors and unstable conditions**: The reactor was in an unstable state due to withdrawn control rods and a xenon build-up.
 - **Power surge and explosion**: Shutting off steam to the turbines during the test led to a power surge, fuel melting, and explosions that destroyed the reactor and released radioactive material into the atmosphere.
 
 ##### Aftermath and Consequences
+
 - **Evacuation and casualties**: The nearby town of Pripyat was evacuated, and there were numerous casualties from radiation exposure.
 - **Widespread fallout**: The radioactive cloud spread across Europe.
 - **Impact on the Soviet Union**: The disaster damaged the Soviet Union's reputation and may have contributed to its collapse.
@@ -3813,23 +3765,28 @@ open-graph:
 #### Lessons Learned and Improvements
 
 ##### Post-TMI Changes
+
 - The TMI accident led to improvements in reactor design, instrumentation, and operator training.
 - **Enhanced safety features**:  Precision core water level instruments, computer-based displays, and improved safety systems were implemented.
 
 ##### Post-Chernobyl Impact
+
 - The Chernobyl disaster reinforced the need to avoid graphite-moderated reactor designs.
 - The Fort St. Vrain graphite reactor in the US was shut down.
 
 #### The Nuclear Power Resurgence
 
 ##### A Period of Dormancy
+
 - **The nuclear power industry entered a period of stagnation in the 1980s** due to economic factors and the negative public perception following TMI and Chernobyl.
 - **Safety improvements led to a decrease in excitement and perceived risk** associated with nuclear power.
 
 ##### Factors Driving the Resurgence
+
 - **Increased demand for electricity and concerns about global warming** have renewed interest in nuclear power as a clean and reliable energy source.
 
 ##### New Reactor Designs and Projects
+
 - **The first application for a new nuclear power plant in 30 years was filed in 2007**.
 - **Advanced Boiling Water Reactors (ABWRs)** are being planned for the South Texas project.
 - **Westinghouse AP-1000 reactors** are being planned for projects in Alabama, Georgia, and Florida.
@@ -3841,24 +3798,24 @@ open-graph:
 #### The Future of Nuclear Power
 
 ##### The Need for Continued Innovation
+
 - **The author emphasizes that despite the maturity of nuclear technology, there is always room for improvement and innovation**.
 - **The analogy of a PhD in nuclear physics**:  True understanding of a subject comes from questioning and challenging existing knowledge.
 - **The evolution of scientific models**:  Rutherford's model of the atom was replaced by more accurate theories, demonstrating the continuous refinement of scientific understanding.
 
 ##### The Quest for Simple and Cheap Reactors
+
 - The author challenges the notion that nuclear power plants must be complex and expensive.
 - The goal is to simplify and reduce the cost of nuclear power while maintaining safety.
 
 ##### The Paradox of Nuclear Power
+
 - Nuclear power is a well-established technology that has become incredibly safe, yet it will always require a degree of experimentation and innovation.
 
 ##### The Lesson of the SPDS Project
+
 - **The author recounts an experience with a Safety Parameter Display System (SPDS) project** that highlighted the importance of thorough testing and the potential for unexpected errors even in seemingly perfect systems.
 - **The "March Zero" bug**: A leap year date caused an unforeseen error in the SPDS software, demonstrating that even rigorous testing cannot guarantee absolute perfection.
-
-
-
-
 
 ## Epilogue: The Radioactive Park
 
@@ -3953,17 +3910,5 @@ open-graph:
 * **The Enduring Power of Biology:** The author suggests that biology, with its adaptability and persistence, will ultimately outlast even nuclear processes.
   * Life and nuclear processes have coexisted throughout Earth's history. 
   * Despite human interventions and challenges, this balance persists.
-
-
-
-
-
-
-
-
-
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

@@ -15,24 +15,14 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
-
-
-
-
 ::: {.callout-tip}
 ## This post is part of the following series:
 * [**GPU MODE Lecture Notes**](/series/notes/cuda-mode-notes.html): My notes from the **GPU MODE** reading group lectures run by **Andreas Kopf** and **Mark Saroufim**.
 :::
 
-
-
 * [**Compute Architecture and Scheduling**](#compute-architecture-and-scheduling)
 * [**Memory Architecture and Data Locality**](#memory-architecture-and-data-locality)  
 * [**Conclusions and Key Takeaways**](#conclusions-and-key-takeaways)
-
-
 
 ::: {.callout-tip title="Resource Links:"}
 
@@ -41,8 +31,6 @@ open-graph:
 * **Paper:** [GA102 Whitepaper](https://www.nvidia.com/content/PDF/nvidia-ampere-ga-102-gpu-architecture-whitepaper-v2.pdf)
 
 :::
-
-
 
 ## **Compute Architecture and Scheduling**
 
@@ -58,8 +46,6 @@ open-graph:
     * Each thread has its own program counter in newer GPUs (e.g., Volta and later).
     * Older GPUs shared program counters among threads in a warp.
       ![](./images/gpu-sm.png){fig-align="center"}
-
-
 
 ### GPU Architecture Details (RTX 3090 Example)
 
@@ -103,8 +89,6 @@ open-graph:
 *   **L1 Cache and Shared Memory:**
     *   128KB of on-chip memory per SM, split between L1 cache and shared memory.
 
-
-
 ### **Threads, Warps, and Blocks**
 
 *   **Kernel Launch:** Defined by block layout (threads per block) and grid layout (number of blocks).
@@ -129,8 +113,6 @@ open-graph:
 *   **AMD Terminology:**
     *   **Wavefronts:** AMD's term for warps.
     *   Typically 64 threads, but can be reduced to 32 via compiler options.
-
-
 
 ### **Multi-Dimensional Thread Grids**
 
@@ -263,10 +245,6 @@ open-graph:
           [7, 3, 0]], device='cuda:0', dtype=torch.int32)
   ```
 
-  
-
-
-
 ### **Warp Divergence and Control Flow**
 
 *   **Traditional GPUs (Single Program Counter per Warp):**
@@ -285,8 +263,6 @@ open-graph:
         *   Reconvergence of threads after divergence is not automatic.
         *   Requires explicit synchronization using `__syncwarp()` to ensure all threads are at the same point before continuing.
 *   **Loop Divergence:** Similar divergence occurs in loops with variable iteration counts across threads in a warp.
-
-
 
 ### **Achieving Good Occupancy**
 
@@ -311,14 +287,10 @@ open-graph:
     *   **Previously:** Excel sheets.
     *   **Currently:** NVIDIA Nsight Compute provides occupancy analysis.
 
-
-
 ### **Querying GPU Properties**
 
 *   **PyTorch:** `torch.cuda.get_device_properties(device)` provides basic properties (name, compute architecture, memory, processor count, registers per SM, max threads per SM).
 *   **CUDA C API:** More detailed properties are available through the CUDA Runtime API.
-
-
 
 ## **Memory Architecture and Data Locality**
 
@@ -348,8 +320,6 @@ open-graph:
     over head is single digit percentages.
 
   * Algorithms also matter (parallel algorithms in the following chapters)
-
-
 
 ### **Memory Access as a Bottleneck**
 
@@ -766,8 +736,6 @@ open-graph:
 *   **Measured Kernel Time:** ~26-27 microseconds.
 *   **Efficiency:** Achieves about 75% of the theoretical maximum speed.
 
-
-
 ### **Roofline Model**
 
 ![](./images/roofline-model.png){fig-align="center"}
@@ -1009,10 +977,6 @@ open-graph:
 
 * **Performance Improvement:** Reduces memory accesses and improves performance (e.g., from 426 microseconds to 323 microseconds in the example).
 
-  
-
-  
-
 ### **Future Considerations**
 
 *   **Thread Coarsening:** 
@@ -1023,9 +987,6 @@ open-graph:
 *   **Flash Attention Implementation:**
     *   **Exercise:** Implement the original Flash Attention algorithm from scratch based on the pseudocode.
     *   **Key Aspect:** Blocking of inputs and output for efficient kernel fusion.
-
-
-
 
 ## **Conclusions and Key Takeaways**
 
@@ -1046,8 +1007,5 @@ open-graph:
 ### **Next Steps:**
 
 *   The next chapter will focus on **coalesced memory access**, a technique to optimize global memory reads and writes for maximum efficiency.
-
-
-
 
 {{< include /_about-author-cta.qmd >}}

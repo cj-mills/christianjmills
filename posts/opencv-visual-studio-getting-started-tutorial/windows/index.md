@@ -15,8 +15,6 @@ open-graph:
   image: /images/default-preview-image-black.png
 ---
 
-
-
 * [Introduction](#introduction)
 * [Obtaining OpenCV: GitHub Download](#obtaining-opencv-github-download)
 * [Creating a Console App Project](#creating-a-console-app-project)
@@ -27,9 +25,6 @@ open-graph:
 * [Incorporating OpenCV in Our C++ Code](#incorporating-opencv-in-our-c-code)
 * [Building and Running the Project](#building-and-running-the-project)
 * [Conclusion](#conclusion)
-
-
-
 
 ## Introduction
 
@@ -42,8 +37,6 @@ I'll guide you step-by-step, from downloading the latest OpenCV release from Git
 ::: {.callout-important}
 This post assumes [Visual Studio](https://visualstudio.microsoft.com/downloads/) is present on your system and has the `Desktop Development with C++` workload installed.
 :::
-
-
 
 ## Obtaining OpenCV: GitHub Download
 
@@ -64,8 +57,6 @@ On the release page, click `opencv-4.8.1-windows.exe` in the Assets list to down
 
 Run the executable once it finishes downloading. 
 
-
-
 ### Windows Defender SmartScreen Warning
 
 You might get a warning from Windows that the executable is an unrecognized app. We can bypass this by clicking the `More info` text, then the `Run anyway` button.
@@ -78,15 +69,11 @@ You might get a warning from Windows that the executable is an unrecognized app.
 
 ![](./images/windows-defender-smartscreen-warning-run-anyway.png){fig-align="center"}
 
-
-
 ### Select Extraction Location
 
 After bypassing the security warning, the executable will prompt us to select a location to extract the opencv folder. We must give Visual Studio this location to access OpenCV's functionality. I tend to place my C++ dependencies in a dedicated folder for consistency.
 
 ![](./images/opencv-select-extraction-location.png){fig-align="center"}
-
-
 
 ### Verify the Extraction
 
@@ -100,13 +87,9 @@ Once the extraction is complete, navigate to the chosen directory to ensure the 
 
 You've successfully downloaded and extracted OpenCV from GitHub. Now, we can integrate this library into a Visual Studio project.
 
-
-
 ## Creating a Console App Project
 
 In this section, we'll create a simple C++ Console Application project.
-
-
 
 ### Launching Visual Studio
 
@@ -116,8 +99,6 @@ Begin by opening Visual Studio. On the welcome screen, locate the `Get started` 
 
 ![](./images/visual-studio-create-new-project.png){fig-align="center"}
 
-
-
 ### Selecting the Project Type
 
 We'll use the C++ `Console App` template for our project. Select the template from the list and click `Next` to proceed.
@@ -125,8 +106,6 @@ We'll use the C++ `Console App` template for our project. Select the template fr
 
 
 ![](./images/visual-studio-new-c++-console-app-project.png){fig-align="center"}
-
-
 
 ### Naming and Locating Your Project
 
@@ -136,29 +115,15 @@ Choose an appropriate name and location for the project and click the `Create` b
 
 ![](./images/visual-studio-choose-opencv-project-name-and-location.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Configuring for Release Build in Visual Studio
 
 Once the project opens in Visual Studio, we must configure it for Release build. At the top of the window, open the Solution Configurations dropdown menu and select `Release`.
 
 ![](./images/visual-studio-opencv-switch-to-release.png){fig-align="center"}
 
-
-
-
-
-
-
 ## Setting Up Include Directories
 
 For our Visual Studio project to leverage OpenCV, it must be aware of the OpenCV library locations. By setting up include directories, we inform Visual Studio of OpenCV's whereabouts, allowing us to access its API.
-
-
 
 ### Navigating to the Project Properties
 
@@ -172,8 +137,6 @@ Then, select the `Properties` option in the popup menu.
 
 ![](./images/visual-studio-open-properties.png){fig-align="center"}
 
-
-
 ### Accessing the Include Directories
 
 In the Properties Window, open on the `C/C++` dropdown. Select the `Additional Include Directories` section and click `<Edit..>` in the dropdown.
@@ -181,8 +144,6 @@ In the Properties Window, open on the `C/C++` dropdown. Select the `Additional I
 
 
 ![](./images/visual-studio-opencv-open-additional-include-directories.png){fig-align="center"}
-
-
 
 ### Incorporating OpenCV Path
 
@@ -198,15 +159,9 @@ Add the path for the following folder, replacing `<parent-folder-path>` with the
 
 With this setup, Visual Studio now knows where to find OpenCV.
 
-
-
-
-
 ## Integrating Linker Dependencies
 
 Now that we've directed Visual Studio to the OpenCV includes, we must specify the necessary linker dependencies. These dependencies ensure the compiler knows which library files to consider during the build process.
-
-
 
 ### Navigating to Linker Dependencies
 
@@ -215,8 +170,6 @@ Open the Linker dropdown in the Properties window and select Input. Select Addit
 
 
 ![](./images/visual-studio-opencv-linker-additional-dependencies.png){fig-align="center"}
-
-
 
 ### Specifying the OpenCV Library Path
 
@@ -238,10 +191,6 @@ The path to the `.lib` files can change between OpenCV versions. Verify the libr
 
 With this configuration in place, Visual Studio has all the necessary references to incorporate OpenCV functionality into our project.
 
-
-
-
-
 ## Defining Post-Build Events
 
 Post-build events are crucial for automating specific tasks that should occur right after a successful build. In our case, we must ensure that the necessary DLL files from OpenCV get copied to the project's build directory. Setting this up will save you the manual effort of copy-pasting files after every build.
@@ -259,7 +208,6 @@ Our executable file will depend on the following DLL file included with OpenCV.
 The name and path of the `.dll` file can change between OpenCV versions. Verify the DLL file path for the specific OpenCV version you are using.
 :::
 
-
 ### Setting up Post-Build Events
 
 We can add a post-build event in Visual Studio to automatically copy these DLL files to the build folder for the project at compile time. Open the Build Events dropdown in the Properties window and select Post-Build Event. Select Command Line and click `<Edit..>`.
@@ -267,8 +215,6 @@ We can add a post-build event in Visual Studio to automatically copy these DLL f
 
 
 ![](./images/visual-studio-opencv-post-build-event-edit-command-line-events.png){fig-align="center"}
-
-
 
 ### Inputting the Xcopy Command
 
@@ -303,9 +249,8 @@ Remove the default headers in the C++ file and add the OpenCV header:
 #include <opencv2/opencv.hpp>
 ```
 
-
-
 ### Basic Program Structure
+
 Our `main` function begins by checking if the user provided an image path as an argument:
 
 ```c++
@@ -316,9 +261,8 @@ if (argc < 2) // Check if an argument is provided
 }
 ```
 
-
-
 ### Loading the Image
+
 We load the image from the provided path using the [`cv::imread`](https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56) function:
 
 ```c++
@@ -336,9 +280,8 @@ if (image.empty()) // Check if the image was loaded successfully
 }
 ```
 
-
-
 ### Displaying the Image
+
 Once our image is successfully loaded, we create a window and display the image using OpenCV functions. We use [`cv::namedWindow`](https://docs.opencv.org/4.x/d7/dfc/group__highgui.html#ga5afdf8410934fd099df85c75b2e0888b) to create a window with the given name and [`cv::imshow`](https://docs.opencv.org/4.x/d7/dfc/group__highgui.html#ga453d42fe4cb60e5723281a89973ee563) to display our image in that window:
 
 ```c++
@@ -346,16 +289,13 @@ cv::namedWindow("OpenCV Test", cv::WINDOW_AUTOSIZE);
 cv::imshow("OpenCV Test", image);
 ```
 
-
-
 ### Await User Interaction
+
 Finally, we use the [`cv::waitKey(0)`](https://docs.opencv.org/4.x/d7/dfc/group__highgui.html#gafa15c0501e0ddd90918f17aa071d3dd0) function to pause the program and wait indefinitely for the user to press a key. That ensures our image window remains open until we choose to close it:
 
 ```c++
 cv::waitKey(0);
 ```
-
-
 
 ### Complete Code
 
@@ -390,27 +330,15 @@ int main(int argc, char** argv)
 }
 ```
 
-
-
-
-
-
-
-
-
 ## Building and Running the Project
 
 Having integrated OpenCV into our code, we are ready to build and test our project. Follow the steps below to compile, run, and validate the Visual Studio C++ project.
-
-
 
 ### Compiling the Code
 
 Open the Build menu at the top of the Visual Studio window and click `Build Solution`. This action will compile the project and generate the necessary output files in the project directory. Visual Studio will create a new `x64` folder in the project directory containing the executable file and the DLL file it depends on.
 
 ![](./images/visual-studio-opencv-build-solution.png){fig-align="center"}
-
-
 
 ### Accessing the Build Output
 
@@ -424,8 +352,6 @@ In the new File Explorer window, go to the parent folder and open the x64 → Re
 
 ![](./images/visual-studio-opencv-project-folder-x64-release-folder.png){fig-align="center"}
 
-
-
 ### Preparing an Image
 
 Next, we'll need an image to test the application. I'll use this photo of the polar nights from Pexels, a free stock photo site.
@@ -435,8 +361,6 @@ Next, we'll need an image to test the application. I'll use this photo of the po
 
 
 ![](./images/pexels-tobias-bjørkli-1559817.jpg){fig-align="center"}
-
-
 
 ### Running the Application
 
@@ -468,8 +392,6 @@ OpenCVSimpleConsoleApp.exe pexels-tobias-bjørkli-1559817.jpg
 
 ![](./images/cmd-enter-executable-name-and-image-file-path.png){fig-align="center"}
 
-
-
 ### Viewing the Result
 
 After executing the command, the selected image should materialize in a new window, validating that the program runs as intended and that the OpenCV integration was successful.
@@ -478,23 +400,10 @@ After executing the command, the selected image should materialize in a new wind
 
 Congratulations! You've successfully set up, built, and run a C++ project in Visual Studio integrated with OpenCV.
 
-
-
 ## Conclusion
 
 In this tutorial, we've walked through the process of integrating OpenCV with a Visual Studio C++ project, from obtaining the library to displaying an image using the OpenCV API. This foundational knowledge will be instrumental as you delve deeper into computer vision projects leveraging OpenCV's capabilities. With your new skills, a plethora of advanced applications await exploration.
 
-
-
-
-
-
-
-
-
 {{< include /_tutorial-cta.qmd >}}
-
-
-
 
 {{< include /_about-author-cta.qmd >}}
