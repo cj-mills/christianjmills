@@ -36,7 +36,7 @@ open-graph:
 ::: {.callout-tip title="Source Material"}
 
 * **Video:** [Procedural World Generation of Ubisoft’s Far Cry 5](https://www.youtube.com/watch?v=NfizT369g60)
-* **Slides:** [Far Cry 5: Procedural World Generation](https://ubm-twvideo01.s3.amazonaws.com/o1/vault/gdc2018/presentations/ProceduralWorldGeneration.pdf)
+* **Slides:** [Far Cry 5: Procedural World Generation](https://media.gdcvault.com/gdc2018/presentations/ProceduralWorldGeneration.pdf)
 
 :::
 
