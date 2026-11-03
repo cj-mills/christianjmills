@@ -46,7 +46,7 @@ export function deliverablesLoader(): Loader {
           digest = sha256(Buffer.concat([...files].flatMap(([k, v]) => [Buffer.from(k), v])));
           watcher?.add(dir);
         } else {
-          const base = buckets[pin.bucket];
+          const base = buckets[pin.bucket].url;
           if (!base) throw new Error(`${id}: no URL configured for the ${pin.bucket} bucket`);
           const url = new URL(pin.key, base);
           const archive = await fetchBytes(url);

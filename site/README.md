@@ -25,6 +25,21 @@ exists yet, so the `public` bucket is a local stand-in folder (`deliverables.con
 `node ../deliverables-prototype/cellular-automata-caves/build.mjs --publish`. The bundle is
 deterministic, so it gets the same hash the lockfile pins.
 
+## Cloudflare
+
+Commands that touch Cloudflare run through `tools/cloudflare.sh`, which has 1Password inject a
+scoped API token and the account ID for the length of one command (see the script's header for
+the env file it reads). Wrangler is pinned in `package.json`, and its telemetry is off.
+
+```bash
+npm run cf -- npx wrangler whoami                       # check the credentials
+npm run deploy:preview                                  # build, check, deploy dist/ to workers.dev
+sh tools/cloudflare.sh node tools/publish-deliverable.ts <deliverable-dir> --r2
+```
+
+The site deploys as an assets-only Worker (`wrangler.jsonc`): no Worker script runs, and no route
+or custom domain points at it.
+
 ## Write and preview
 
 ```bash

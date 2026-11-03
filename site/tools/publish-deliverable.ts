@@ -2,20 +2,25 @@
 // site's spec, pack it into a deterministic bundle, put it in the bucket, and pin it in the
 // site's lockfile.
 //
-//   node tools/publish-deliverable.ts <deliverable-dir>
+//   node tools/publish-deliverable.ts <deliverable-dir>              to a local stand-in bucket
+//   sh tools/cloudflare.sh node tools/publish-deliverable.ts <deliverable-dir> --r2
+//                                                                     to the R2 bucket, by wrangler
 //
-// PROTOTYPE: the bucket is the local stand-in folder named in deliverables.config.ts. Uploading to
-// R2 waits for a bucket and credentials the user creates.
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+// Keys are content addresses, so uploading the same bundle again writes the same object.
+import { execFileSync } from 'node:child_process';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pack, readBundleDir, sha256, unpack, verify } from '../spec/bundle.ts';
 import { FORMAT_VERSION, lockfile as lockfileSchema } from '../spec/manifest.ts';
 import { assetBase, buckets, lockfilePath } from '../deliverables.config.ts';
 
-const dir = process.argv[2];
+const args = process.argv.slice(2);
+const toR2 = args.includes('--r2');
+const dir = args.find((a) => !a.startsWith('--'));
 if (!dir) {
-  console.error('usage: node tools/publish-deliverable.ts <deliverable-dir>');
+  console.error('usage: node tools/publish-deliverable.ts <deliverable-dir> [--r2]');
   process.exit(2);
 }
 
@@ -31,12 +36,33 @@ if (back.size !== files.size || [...files].some(([k, v]) => Buffer.compare(Buffe
 }
 
 const bucket = manifest.tier.access === 'free' ? 'public' : 'private';
-const base = buckets[bucket];
-if (!base?.startsWith('file:')) throw new Error(`no local stand-in configured for the ${bucket} bucket; R2 upload is not implemented yet`);
 const key = `sha256/${hash}.tar.gz`;
-const target = new URL(key, base);
-await mkdir(dirname(fileURLToPath(target)), { recursive: true });
-await writeFile(target, archive);
+let stored: string;
+if (toR2) {
+  if (!process.env.CLOUDFLARE_API_TOKEN) throw new Error('--r2 needs Cloudflare credentials; run it through tools/cloudflare.sh');
+  const tmp = await mkdtemp(join(tmpdir(), 'deliverable-'));
+  try {
+    const file = join(tmp, 'bundle.tar.gz');
+    await writeFile(file, archive);
+    const wrangler = fileURLToPath(new URL('../node_modules/.bin/wrangler', import.meta.url));
+    const object = `${buckets[bucket].name}/${key}`;
+    execFileSync(
+      wrangler,
+      ['r2', 'object', 'put', object, '--remote', '--file', file, '--content-type', 'application/gzip', '--cache-control', 'public, max-age=31536000, immutable'],
+      { stdio: 'inherit' },
+    );
+    stored = `r2://${object}`;
+  } finally {
+    await rm(tmp, { recursive: true, force: true });
+  }
+} else {
+  const base = buckets[bucket].url;
+  if (!base?.startsWith('file:')) throw new Error(`the ${bucket} bucket is not a local stand-in; publish with --r2`);
+  const target = new URL(key, base);
+  await mkdir(dirname(fileURLToPath(target)), { recursive: true });
+  await writeFile(target, archive);
+  stored = target.href;
+}
 
 const lock = lockfileSchema.parse(JSON.parse(await readFile(lockfilePath, 'utf8').catch(() => '{"lockfileVersion":1,"deliverables":{}}')));
 const prior = lock.deliverables[manifest.id];
@@ -49,5 +75,5 @@ await writeFile(lockfilePath, JSON.stringify(lock, null, 2) + '\n');
 
 console.log(`published ${manifest.id}@${manifest.version}`);
 console.log(`  ${files.size} files, ${archive.byteLength} bytes, sha256 ${hash}`);
-console.log(`  ${bucket} bucket: ${target.href}`);
+console.log(`  ${bucket} bucket: ${stored}`);
 console.log(`  pinned in ${fileURLToPath(lockfilePath)}`);

@@ -24,10 +24,11 @@ const TYPES: Record<string, string> = {
   '.pf_index': 'application/octet-stream',
 };
 
-/** Site paths of every built HTML page, e.g. "/", "/search/". Pagefind's own files are excluded. */
+/** Site paths of every built HTML page, e.g. "/", "/search/", "/404.html". Pagefind's own files are excluded. */
 export async function pages(): Promise<string[]> {
   const out: string[] = [];
   for (const entry of await readdir(DIST, { recursive: true, withFileTypes: true })) {
+    if (entry.isFile() && entry.name === '404.html' && entry.parentPath.replace(/\/$/, '') === DIST.replace(/\/$/, '')) out.push('/404.html');
     if (!entry.isFile() || entry.name !== 'index.html') continue;
     const rel = relative(DIST, entry.parentPath).split(sep).join('/');
     if (rel.startsWith('pagefind')) continue;

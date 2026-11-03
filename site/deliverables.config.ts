@@ -1,13 +1,23 @@
-// Where the build finds deliverable bundles. Each bucket maps to a base URL that bundle keys
-// (sha256/<hash>.tar.gz) resolve against.
+// Where deliverable bundles live. Each bucket has an R2 name (for publishing) and a base URL the
+// build fetches bundle keys (sha256/<hash>.tar.gz) from.
 //
-// PROTOTYPE: no R2 bucket exists yet. Until the user creates one, a local folder laid out exactly
-// like the bucket stands in for it, so its contents can be uploaded to R2 unchanged. Set
+// PROTOTYPE: the R2 buckets don't exist yet. Until they do, a local folder laid out exactly like
+// the public bucket stands in for it, so its contents can be uploaded to R2 unchanged. Set
 // DELIVERABLES_PUBLIC_URL to the bucket's public URL (or another stand-in) to override.
-export const buckets: Record<'public' | 'private', string | undefined> = {
-  public: process.env.DELIVERABLES_PUBLIC_URL ?? 'file:///mnt/projects/scratch/christianjmills-r2-standin/public/',
+export interface Bucket {
+  /** The R2 bucket name. */
+  name: string;
+  /** Base URL the build reads from: https: for R2, file: for a local stand-in. */
+  url: string | undefined;
+}
+
+export const buckets: Record<'public' | 'private', Bucket> = {
+  public: {
+    name: 'christianjmills-deliverables-public',
+    url: process.env.DELIVERABLES_PUBLIC_URL ?? 'file:///mnt/projects/scratch/christianjmills-r2-standin/public/',
+  },
   // Paid bundles never enter a public build; a private bucket is read only by a gated build.
-  private: process.env.DELIVERABLES_PRIVATE_URL,
+  private: { name: 'christianjmills-deliverables-private', url: process.env.DELIVERABLES_PRIVATE_URL },
 };
 
 export const lockfilePath = new URL('./deliverables.lock.json', import.meta.url);
