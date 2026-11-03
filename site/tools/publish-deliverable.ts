@@ -2,9 +2,10 @@
 // site's spec, pack it into a deterministic bundle, put it in the bucket, and pin it in the
 // site's lockfile.
 //
-//   node tools/publish-deliverable.ts <deliverable-dir>              to a local stand-in bucket
 //   sh tools/cloudflare.sh node tools/publish-deliverable.ts <deliverable-dir> --r2
 //                                                                     to the R2 bucket, by wrangler
+//   DELIVERABLES_PUBLIC_URL=file:///some/dir/ node tools/publish-deliverable.ts <deliverable-dir>
+//                                                                     to a local folder laid out like the bucket
 //
 // Keys are content addresses, so uploading the same bundle again writes the same object.
 import { execFileSync } from 'node:child_process';

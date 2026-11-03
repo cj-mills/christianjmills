@@ -93,8 +93,9 @@ refused: bump the version and add a revision.
 ## Publishing and previews
 
 `node site/tools/publish-deliverable.ts <deliverable-dir>` verifies the working tree, packs it,
-writes it to the bucket and pins it. Without flags it writes to a local stand-in bucket; with
-`--r2`, run through `site/tools/cloudflare.sh`, it uploads to the R2 bucket with wrangler. A project wraps it in its own build (see
+writes it to the bucket and pins it. With `--r2`, run through `site/tools/cloudflare.sh`, it
+uploads to the R2 bucket with wrangler; without it, it writes to the local folder that
+`DELIVERABLES_PUBLIC_URL` names as a `file:` URL. A project wraps it in its own build (see
 `deliverables-prototype/cellular-automata-caves/build.mjs`).
 
 For previews, `site/deliverables.local.json` (not committed) maps an id to a local working tree:
