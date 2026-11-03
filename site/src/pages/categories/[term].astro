@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import { categoryGroups, deliverables, formatDate } from '../../lib/site.ts';
+
+// One page per term that at least one deliverable uses, generated from the manifests.
+export async function getStaticPaths() {
+  const all = await deliverables();
+  const used = new Set(all.flatMap((d) => d.data.categories));
+  return [...used].map((term) => ({
+    params: { term },
+    props: {
+      term,
+      group: categoryGroups.find((g) => g.terms.includes(term))!.label,
+      items: all.filter((d) => d.data.categories.includes(term)),
+    },
+  }));
+}
+
+const { term, group, items } = Astro.props;
+---
+
+<Base title={term} description={`Everything on the site in ${term}.`}>
+  <p class="meta">{group}</p>
+  <h1>{term}</h1>
+  <ul class="listing">
+    {
+      items.map((d) => (
+        <li>
+          <h2><a href={d.data.urls.canonical}>{d.data.title}</a></h2>
+          <p>{d.data.summary}</p>
+          <p class="meta"><time datetime={d.data.published}>{formatDate(d.data.published)}</time></p>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

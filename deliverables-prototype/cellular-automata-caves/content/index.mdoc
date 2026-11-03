@@ -1,0 +1,50 @@
+Fill a grid with random rock, then repeat one rule on every tile: count the rock around it and decide what it becomes. After a few rounds the noise settles into caves, with winding passages, open chambers and the odd pillar. Herbert Wolverson's talk on procedural map generation sums the idea up as making a random map, applying cell life rules to each tile, and repeating {% ref source="wolverson-slides" page="9" /%}. This page builds that loop and lets you step through it.
+
+## The rule
+
+Every tile looks at its eight neighbours. It becomes rock if more than four of them are rock, or if none of them are; otherwise it becomes open floor. Each generation reads the previous grid and writes a new one, so every tile sees the same moment {% ref source="this" path="assets/caves.js" lines="40-50" /%}:
+
+```javascript
+export function step(grid, width, height) {
+  const out = grid.slice();
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const n = rockNeighbours(grid, width, x, y);
+      out[y * width + x] = n > 4 || n === 0 ? 1 : 0;
+    }
+  }
+  return out;
+}
+```
+
+The first half of the rule does the smoothing. A tile in a mostly rocky neighbourhood fills in, and a tile in a mostly open one clears, so the noise clumps into solid walls and open space. The second half, rock when no neighbour is rock, puts single-tile pillars in the middle of wide-open areas.
+
+Note that the rule ignores a tile's own state. Only its neighbours count.
+
+## Try it
+
+{% interactive id="caves" caption="An 80 × 50 cave map. Change the starting rock, step through the generations, or try another seed." %}
+{% figure src="assets/caves-fallback.png" alt="Three 80 by 50 tile maps side by side, all from seed 1 with 55% starting rock. Left, generation 0: evenly scattered noise. Middle, generation 3: the noise has clumped into connected open areas bounded by rock. Right, generation 10: smoother caves with a few single-tile pillars in the open areas." caption="Without JavaScript: seed 1 with 55% starting rock, at generations 0, 3 and 10." /%}
+
+At seed 1 with 55% starting rock, 41.6% of the map is open at generation 0, 48.8% after three generations and 52.1% after ten. The outer ring is always rock, which counts toward the starting share.
+{% /interactive %}
+
+## It never settles
+
+Step past the third generation and the overall shape holds, but tiles never stop flipping. At 55% starting rock, about 1,040 of the 4,000 tiles still change between generations 9 and 10, averaged over seeds 1 to 50. Without the "none are rock" half of the rule the churn dies down: at seed 1 it falls to 200 changed tiles by generation 10. The talk's demo runs a fixed number of iterations {% ref source="wolverson-code" path="c03-cellular/src/main.rs" lines="31-34" /%}, so when to stop is a choice, not something the rule decides.
+
+The starting share decides whether the caves connect. Over the same 50 seeds after ten generations, the largest open region holds 98% of the floor at 55% starting rock. At 60% it holds 63%, spread over about 10 regions. At 65% it holds 31%, over about 15.
+
+## Reading the talk's code
+
+The talk's demo runs the same loop on an 80 × 50 map: random tiles, then ten iterations, each one recorded as a frame {% ref source="wolverson-code" path="c03-cellular/src/main.rs" lines="17-34" /%}. Its rule is written in terms of `.` tiles: count the `.` neighbours; a tile with none becomes `.`, a tile with fewer than five becomes `#`, and any other tile becomes `.` {% ref source="wolverson-code" path="c03-cellular/src/main.rs" lines="40-70" /%}.
+
+That looks like the opposite of the rule above until you check which glyph is rock. The shared map code finds a tile's exits only through neighbours that are not `.` {% ref source="wolverson-code" path="backend/src/lib.rs" lines="47-68" /%}, and the demo labels its 55% `.` noise "55% Walls" {% ref source="wolverson-code" path="c03-cellular/src/main.rs" lines="19-29" /%}. So `.` is solid and `#` is floor, and the demo's rule is the same rule.
+
+{% callout type="note" title="Where this version differs" %}
+The talk's demo leaves the outer ring of tiles as the random roll left them, because its loop only visits interior tiles {% ref source="wolverson-code" path="c03-cellular/src/main.rs" lines="56-59" /%}. This version makes the outer ring rock before the first generation, so the caves are always closed.
+{% /callout %}
+
+## What it doesn't do
+
+The rule says nothing about connectivity. Even at 55% starting rock, some seeds leave pockets of floor that no path reaches, and a game has to fill them or tunnel to them before it places anything there. The talk's own animation of these steps is on the slide after the rule {% ref source="wolverson-slides" page="10" /%}.

@@ -1,0 +1,74 @@
+---
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { deliverables, formatDate, slugOf, updatedOf, type Deliverable } from '../lib/site.ts';
+
+export async function getStaticPaths() {
+  return (await deliverables()).map((entry) => ({ params: { slug: slugOf(entry) }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: Deliverable };
+const d = entry.data;
+const { Content } = await render(entry);
+const updated = updatedOf(entry);
+const cited = new Map<string, number>();
+for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
+---
+
+<Base title={d.title} description={d.summary} markdown={`${d.urls.canonical}index.md`}>
+  <article data-pagefind-body>
+    <header>
+      <h1>{d.title}</h1>
+      <p class="standfirst">{d.summary}</p>
+      <div class="meta">
+        <p>
+          Published <time datetime={d.published}>{formatDate(d.published)}</time>
+          {updated !== d.published && <>, updated <time datetime={updated}>{formatDate(updated)}</time></>}
+          {' · '}version {d.version}
+        </p>
+        <ul aria-label="Categories" data-pagefind-ignore>
+          {d.categories.map((c) => <li><a href={`/categories/${c}/`}>{c}</a></li>)}
+        </ul>
+      </div>
+    </header>
+
+    <Content />
+
+    {
+      d.sources.length > 0 && (
+        <section class="sources" aria-labelledby="sources">
+          <h2 id="sources">Sources</h2>
+          <ol>
+            {d.sources.map((s) => (
+              <li id={`source-${s.id}`}>
+                <a href={'url' in s ? s.url : 'repo' in s ? `${s.repo}/tree/${s.commit}` : s.path}>{s.citation}</a>
+                {s.kind === 'code' && <> At commit <code>{s.commit.slice(0, 7)}</code>.</>}
+                <br />
+                <span class="meta">
+                  {s.rights} {cited.get(s.id) ? `Cited ${cited.get(s.id)} times on this page.` : 'Background; not cited inline.'}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
+
+    <footer class="meta" data-pagefind-ignore>
+      <p>
+        Prose: {d.licenses.prose.url ? <a href={d.licenses.prose.url}>{d.licenses.prose.spdx}</a> : d.licenses.prose.spdx}.
+        Code: {d.licenses.code.spdx}.{' '}
+        {d.testedAgainst.length > 0 && <>Tested against {d.testedAgainst.map((t) => `${t.name} ${t.version} (${t.date})`).join(', ')}.{' '}</>}
+        <a href={`${d.urls.canonical}index.md`}>Markdown copy</a>.
+      </p>
+      {d.revisions.length > 1 && (
+        <details>
+          <summary>Revisions</summary>
+          <ul>{d.revisions.map((r) => <li><time datetime={r.date}>{r.date}</time>, {r.version}: {r.note}</li>)}</ul>
+        </details>
+      )}
+    </footer>
+  </article>
+
+  {d.interactives.length > 0 && <script src="../scripts/interactives.ts"></script>}
+</Base>
