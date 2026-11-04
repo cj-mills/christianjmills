@@ -38,9 +38,29 @@ if (back.size !== files.size || [...files].some(([k, v]) => Buffer.compare(Buffe
 
 const bucket = manifest.tier.access === 'free' ? 'public' : 'private';
 const key = `sha256/${hash}.tar.gz`;
-let stored: string;
+
+// Everything that can refuse runs before anything is uploaded or written: the lockfile, the pin,
+// and where the bundle goes.
+const lock = lockfileSchema.parse(JSON.parse(await readLockfile()));
+const prior = lock.deliverables[manifest.id];
+if (prior && prior.version === manifest.version && prior.sha256 !== hash) {
+  throw new Error(`${manifest.id}@${manifest.version} is already pinned with different contents; bump the version and add a revision note`);
+}
+let localTarget: URL | undefined;
 if (toR2) {
   if (!process.env.CLOUDFLARE_API_TOKEN) throw new Error('--r2 needs Cloudflare credentials; run it through tools/cloudflare.sh');
+} else {
+  const base = buckets[bucket].url;
+  if (!base?.startsWith('file:')) throw new Error(`the ${bucket} bucket is not a local stand-in; publish with --r2`);
+  localTarget = new URL(key, base);
+}
+
+let stored: string;
+if (localTarget) {
+  await mkdir(dirname(fileURLToPath(localTarget)), { recursive: true });
+  await writeFile(localTarget, archive);
+  stored = localTarget.href;
+} else {
   const tmp = await mkdtemp(join(tmpdir(), 'deliverable-'));
   try {
     const file = join(tmp, 'bundle.tar.gz');
@@ -56,20 +76,9 @@ if (toR2) {
   } finally {
     await rm(tmp, { recursive: true, force: true });
   }
-} else {
-  const base = buckets[bucket].url;
-  if (!base?.startsWith('file:')) throw new Error(`the ${bucket} bucket is not a local stand-in; publish with --r2`);
-  const target = new URL(key, base);
-  await mkdir(dirname(fileURLToPath(target)), { recursive: true });
-  await writeFile(target, archive);
-  stored = target.href;
 }
 
-const lock = lockfileSchema.parse(JSON.parse(await readFile(lockfilePath, 'utf8').catch(() => '{"lockfileVersion":1,"deliverables":{}}')));
-const prior = lock.deliverables[manifest.id];
-if (prior && prior.version === manifest.version && prior.sha256 !== hash) {
-  throw new Error(`${manifest.id}@${manifest.version} is already pinned with different contents; bump the version and add a revision note`);
-}
+// The pin is written last, once its bundle is in the bucket.
 lock.deliverables[manifest.id] = { version: manifest.version, format: FORMAT_VERSION, bucket, key, sha256: hash, size: archive.byteLength };
 lock.deliverables = Object.fromEntries(Object.entries(lock.deliverables).sort(([a], [b]) => a.localeCompare(b)));
 await writeFile(lockfilePath, JSON.stringify(lock, null, 2) + '\n');
@@ -78,3 +87,13 @@ console.log(`published ${manifest.id}@${manifest.version}`);
 console.log(`  ${files.size} files, ${archive.byteLength} bytes, sha256 ${hash}`);
 console.log(`  ${bucket} bucket: ${stored}`);
 console.log(`  pinned in ${fileURLToPath(lockfilePath)}`);
+
+/** The lockfile's text, or an empty lockfile if there is none yet. Any other read error stops the publish. */
+async function readLockfile(): Promise<string> {
+  try {
+    return await readFile(lockfilePath, 'utf8');
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') return '{"lockfileVersion":1,"deliverables":{}}';
+    throw err;
+  }
+}

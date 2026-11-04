@@ -95,7 +95,8 @@ refused: bump the version and add a revision.
 `node tools/publish-deliverable.ts <deliverable-dir>` verifies the working tree, packs it,
 writes it to the bucket and pins it. With `--r2`, run through `tools/cloudflare.sh`, it
 uploads to the R2 bucket with wrangler; without it, it writes to the local folder that
-`DELIVERABLES_PUBLIC_URL` names as a `file:` URL. A project wraps it in its own build, run
+`DELIVERABLES_PUBLIC_URL` names as a `file:` URL. Every check that can refuse, the pin
+included, runs before it uploads or writes anything. A project wraps it in its own build, run
 with a checkout of this repo beside it: see
 [`build.mjs`](https://github.com/cj-mills/procedural-map-generation-notes/blob/8736c5d368f915a8412199198f7b5210262358c4/build.mjs)
 in `cj-mills/procedural-map-generation-notes`.
