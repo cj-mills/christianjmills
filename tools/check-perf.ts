@@ -22,9 +22,9 @@ const BUDGET = {
   initialTotal: 100 * KB,
   image: 200 * KB,
   interactiveModule: 50 * KB,
-  // Font files a page fetches, as transferred. The text face's roman and italic, the display
-  // face's one weight and the code face come to about 89 KB (hub decision
-  // 2026-11-07-christianjmills-typefaces); PROPOSED, not yet ruled by the user.
+  // Font files a page fetches, as transferred: ruled by the user (hub decision
+  // 2026-11-07-christianjmills-typefaces). The text face's roman and italic, the display face's one
+  // weight and the code face come to about 89 KB.
   fonts: 100 * KB,
   lcpMs: 2500,
   cls: 0.1,
