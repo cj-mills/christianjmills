@@ -1,8 +1,8 @@
 # christianjmills.com
 
 The source of the relaunched site: Astro with Markdoc, built from deliverable bundles that
-content projects publish (format spec: `spec/README.md`). The relaunch is in progress, and the
-design tokens are placeholders.
+content projects publish (format spec: `spec/README.md`). The relaunch is in progress: the design
+system's tokens, typefaces and mark are in, and the page frame and templates are not designed yet.
 
 Until the relaunch goes live, christianjmills.com still serves the last Quarto build from the
 `gh-pages` branch. The Quarto sources, the old posts among them, are at the tag `quarto-final`.
@@ -18,8 +18,16 @@ npm run build
 ```
 
 `npm run build` generates the CSS tokens, builds the site with Astro, indexes it with Pagefind,
-then fails if a page breaks the performance budgets (`tools/check-perf.ts`) or has an axe
-accessibility violation in light or dark, with JavaScript on or off (`tools/check-a11y.ts`).
+then fails if a page breaks the performance budgets (`tools/check-perf.ts`, fonts included) or has
+an axe accessibility violation in light or dark, with JavaScript on or off (`tools/check-a11y.ts`).
+
+**Design tokens.** `src/styles/tokens.json` is generated and committed, so the user's apps can
+read the same tokens. `tools/design/tokens.ts` builds it from a GPUI Kit theme in
+`src/styles/themes/` (mapped and corrected by `tools/design/theme.ts`), the typefaces in
+`tools/design/fonts.ts`, and the type scale. After changing any of those, run
+`npm run tokens:write` and commit the result: the build fails while `tokens.json` is stale. The
+fonts are self-hosted from pinned Fontsource packages through Astro's Fonts API. Their licences and
+the theme's are served at `/licenses.txt`.
 
 **Bundles.** The build fetches the bundles pinned in `deliverables.lock.json` from the public R2
 bucket at `https://deliverables.christianjmills.com/` and checks each hash. For an offline build,

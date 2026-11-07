@@ -1,32 +1,52 @@
 // Turns src/styles/tokens.json into CSS custom properties: one set for light, one for dark, and an
 // explicit data-theme override for each. Output: src/styles/tokens.css (generated, not committed).
+//
+// First it checks that tokens.json is what tools/design/tokens.ts builds from the theme, the font
+// definitions and the scale, so the committed file can't drift from its sources.
+// - Font-family tokens are skipped: Astro's Fonts API defines --font-text, --font-head and
+//   --font-code, with metric-matched fallbacks (astro.config.mjs, src/layouts/Base.astro).
+// - Aliases ("{color.ink}") resolve to the token they name.
 import { readFile, writeFile } from 'node:fs/promises';
+import { expected, TOKENS_FILE } from './design/tokens.ts';
 
 type Token = { $type: string; $value: unknown };
-const src = new URL('../src/styles/tokens.json', import.meta.url);
+type Scheme = { light: string; dark: string };
 const out = new URL('../src/styles/tokens.css', import.meta.url);
-const tokens = JSON.parse(await readFile(src, 'utf8'));
+
+const text = await readFile(TOKENS_FILE, 'utf8');
+if (text !== expected()) {
+  console.error('tokens: src/styles/tokens.json is stale. Run `npm run tokens:write` and commit the result.');
+  process.exit(1);
+}
+const tokens = JSON.parse(text);
+
+const resolve = (ref: string): unknown => {
+  const path = ref.slice(1, -1).split('.');
+  const t = path.reduce<any>((n, k) => n?.[k], tokens) as Token | undefined;
+  if (!t || !('$value' in t)) throw new Error(`tokens: unresolved alias ${ref}`);
+  return typeof t.$value === 'string' && /^\{.*\}$/.test(t.$value) ? resolve(t.$value) : t.$value;
+};
 
 const common: string[] = [];
 const light: string[] = [];
 const dark: string[] = [];
-
 function walk(node: Record<string, unknown>, path: string[]) {
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith('$')) continue;
     const name = `--${[...path, key].join('-')}`;
     const v = value as Token | Record<string, unknown>;
-    if ('$value' in v) {
-      const t = v as Token;
-      if (t.$type === 'color' && typeof t.$value === 'object') {
-        const scheme = t.$value as { light: string; dark: string };
-        light.push(`  ${name}: ${scheme.light};`);
-        dark.push(`  ${name}: ${scheme.dark};`);
-      } else {
-        common.push(`  ${name}: ${t.$value};`);
-      }
-    } else {
+    if (!('$value' in v)) {
       walk(v as Record<string, unknown>, [...path, key]);
+      continue;
+    }
+    const t = v as Token;
+    if (t.$type === 'fontFamily') continue;
+    const val = typeof t.$value === 'string' && /^\{.*\}$/.test(t.$value) ? resolve(t.$value) : t.$value;
+    if (t.$type === 'color' && typeof val === 'object') {
+      light.push(`  ${name}: ${(val as Scheme).light};`);
+      dark.push(`  ${name}: ${(val as Scheme).dark};`);
+    } else {
+      common.push(`  ${name}: ${val};`);
     }
   }
 }
@@ -50,4 +70,4 @@ ${dark.join('\n')}
 }
 `;
 await writeFile(out, css);
-console.log(`tokens: ${common.length + light.length} properties -> ${out.pathname}`);
+console.log(`tokens: tokens.json is current; ${common.length + light.length} properties -> ${out.pathname}`);

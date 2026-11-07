@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import { FONTS, SUBSETS, fontsourcePackages } from './tools/design/fonts.ts';
 
 export default defineConfig({
   site: 'https://christianjmills.com',
@@ -7,6 +8,17 @@ export default defineConfig({
   // Static output only for now. Paid paths would be the only routes rendered on demand (hub
   // decision 2026-11-03-site-deliverable-contract), which needs the Cloudflare adapter.
   output: 'static',
+  // Self-hosted fonts from pinned packages (tools/design/fonts.ts): Astro writes the @font-face
+  // rules, metric-matched fallbacks for each generic family, and the preload links.
+  fonts: FONTS.map((f) => ({
+    provider: fontsourcePackages(),
+    name: f.family,
+    cssVariable: `--font-${f.role}`,
+    weights: f.weights.map((w) => w.weight),
+    styles: f.styles,
+    subsets: [...SUBSETS],
+    fallbacks: f.fallbacks,
+  })),
   vite: {
     // Pin the tsconfig. Left to find one itself, Rolldown's resolver walks up from any file this
     // tsconfig doesn't include (Vite's own `<root>/index.html` importer, say) to the next

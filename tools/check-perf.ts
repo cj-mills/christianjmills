@@ -3,7 +3,9 @@
 // 1. Static budgets on dist/: the bytes each page needs before it is usable, gzip-compressed as
 //    served, plus per-file limits on images and interactive modules. Deterministic.
 // 2. Runtime metrics in headless Chromium with Lighthouse-like mobile throttling (150 ms RTT,
-//    1.6 Mbps down, 4x CPU slowdown): LCP and CLS, including the shift when an interactive mounts.
+//    1.6 Mbps down, 4x CPU slowdown): LCP and CLS, including the shift when an interactive mounts,
+//    and the font bytes the page fetches. Fonts are counted as the browser fetches them, because
+//    which faces and subsets a page loads depends on what it sets (unicode ranges, weights, styles).
 //
 // PROVISIONAL budgets: the requirements set "performance targets the build checks" but no numbers
 // yet. These are the prototype's proposal.
@@ -20,6 +22,10 @@ const BUDGET = {
   initialTotal: 100 * KB,
   image: 200 * KB,
   interactiveModule: 50 * KB,
+  // Font files a page fetches, as transferred. The text face's roman and italic, the display
+  // face's one weight and the code face come to about 89 KB (hub decision
+  // 2026-11-07-christianjmills-typefaces); PROPOSED, not yet ruled by the user.
+  fonts: 100 * KB,
   lcpMs: 2500,
   cls: 0.1,
 };
@@ -74,6 +80,18 @@ try {
     const tab = await context.newPage();
     const cdp = await context.newCDPSession(tab);
     await cdp.send('Network.enable');
+    const fontRequests = new Set<string>();
+    const fontFiles = new Map<string, number>();
+    const fontUrls = new Map<string, string>();
+    cdp.on('Network.responseReceived', (e) => {
+      if (e.type === 'Font') {
+        fontRequests.add(e.requestId);
+        fontUrls.set(e.requestId, new URL(e.response.url).pathname);
+      }
+    });
+    cdp.on('Network.loadingFinished', (e) => {
+      if (fontRequests.has(e.requestId)) fontFiles.set(fontUrls.get(e.requestId)!, e.encodedDataLength);
+    });
     await cdp.send('Network.emulateNetworkConditions', {
       offline: false,
       latency: 150,
@@ -103,7 +121,10 @@ try {
     });
     await tab.waitForTimeout(1000);
     const cls = await tab.evaluate(() => (window as any).__cls as number);
-    rows.push(`${page.padEnd(48)} LCP ${Math.round(lcp)} ms  CLS ${cls.toFixed(3)}`);
+    const fonts = [...fontFiles.values()].reduce((a, b) => a + b, 0);
+    rows.push(`${page.padEnd(48)} LCP ${Math.round(lcp)} ms  CLS ${cls.toFixed(3)}  fonts ${kb(fonts)} in ${fontFiles.size} files`);
+    if (fonts > BUDGET.fonts) failures.push(`${page}: fonts ${kb(fonts)} > ${kb(BUDGET.fonts)} (${[...fontFiles.keys()].join(', ')})`);
+    if (!fontFiles.size) failures.push(`${page}: fetched no font files; the self-hosted faces are not loading`);
     if (lcp > BUDGET.lcpMs) failures.push(`${page}: LCP ${Math.round(lcp)} ms > ${BUDGET.lcpMs} ms`);
     if (cls > BUDGET.cls) failures.push(`${page}: CLS ${cls.toFixed(3)} > ${BUDGET.cls}`);
     await context.close();
