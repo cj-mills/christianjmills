@@ -14,3 +14,22 @@ export const PATH =
 export const faviconSvg = () =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${UNITS} ${UNITS}" shape-rendering="crispEdges">` +
   `<style>path{fill:#000}@media (prefers-color-scheme:dark){path{fill:#fff}}</style><path d="${PATH}"/></svg>\n`;
+
+/** The mark as lattice cells (row-major, UNITS × UNITS, 1 = ink), filled from PATH by the even-odd
+ *  rule at each cell's centre, so the raster icons can't drift from the vector mark. */
+export function cells(): Uint8Array {
+  const polys = PATH.split('Z').filter(Boolean).map((p) => [...p.matchAll(/[ML](\d+) (\d+)/g)].map((m) => [Number(m[1]), Number(m[2])]));
+  const out = new Uint8Array(UNITS * UNITS);
+  for (let y = 0; y < UNITS; y++)
+    for (let x = 0; x < UNITS; x++) {
+      const [px, py] = [x + 0.5, y + 0.5];
+      let inside = false;
+      for (const poly of polys)
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+          const [xi, yi] = poly[i], [xj, yj] = poly[j];
+          if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) inside = !inside;
+        }
+      out[y * UNITS + x] = inside ? 1 : 0;
+    }
+  return out;
+}

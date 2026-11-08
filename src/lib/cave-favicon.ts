@@ -3,12 +3,12 @@
 // tile of black rock on a white room. A 16 × 16 cave from the design lab's mark rounds
 // (concepts/m1-procedural, m2-monogram/fallback.mjs), ported unchanged so the same seed gives the
 // same cave. Deterministic: string seeds through FNV-1a and mulberry32, no clock, no Math.random.
-import { deflateSync } from 'node:zlib';
+import { png, type Rgb } from './png.ts';
 
 const N = 16;
 const SEED = 107;
-const ROCK = [0, 0, 0];
-const ROOM = [255, 255, 255];
+const ROCK: Rgb = [0, 0, 0];
+const ROOM: Rgb = [255, 255, 255];
 
 const fnv = (s: string) => {
   let h = 0x811c9dc5;
@@ -99,40 +99,9 @@ export function pickedCave(): Grid {
   return g;
 }
 
-const CRC = new Uint32Array(256).map((_, n) => {
-  let c = n;
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  return c >>> 0;
-});
-const crc32 = (buf: Uint8Array) => {
-  let c = 0xffffffff;
-  for (const b of buf) c = CRC[(c ^ b) & 255] ^ (c >>> 8);
-  return (c ^ 0xffffffff) >>> 0;
-};
-const chunk = (type: string, data: Buffer) => {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length);
-  const td = Buffer.concat([Buffer.from(type, 'latin1'), data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(td));
-  return Buffer.concat([len, td, crc]);
-};
 /** An RGB PNG of the cave at S × S pixels (S a multiple of 16: every cell whole pixels). */
 export function cavePng(S: number, g: Grid = pickedCave()): Buffer {
-  const raw = Buffer.alloc((S * 3 + 1) * S);
-  for (let y = 0; y < S; y++) {
-    raw[y * (S * 3 + 1)] = 0;
-    for (let x = 0; x < S; x++) {
-      const on = g[Math.floor((y * N) / S) * N + Math.floor((x * N) / S)];
-      (on ? ROCK : ROOM).forEach((v, i) => (raw[y * (S * 3 + 1) + 1 + x * 3 + i] = v));
-    }
-  }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(S, 0);
-  ihdr.writeUInt32BE(S, 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 2; // truecolour
-  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
+  return png(S, (x, y) => (g[Math.floor((y * N) / S) * N + Math.floor((x * N) / S)] ? ROCK : ROOM));
 }
 /** favicon.ico: 16, 32 and 48 px PNGs inside one ICO. */
 export function caveIco(): Buffer {
