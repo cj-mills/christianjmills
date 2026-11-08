@@ -1,6 +1,8 @@
 ---
 import { Font } from 'astro:assets';
 import Mark from '../components/Mark.astro';
+import { HOLDER, SITE_LICENCES } from '../lib/licences.ts';
+import { NAV, current, type Section } from '../lib/nav.ts';
 import '../styles/global.css';
 
 interface Props {
@@ -8,9 +10,14 @@ interface Props {
   description: string;
   /** The page's Markdown copy for agents, if it has one. */
   markdown?: string;
+  /** The section a page belongs to, when its address doesn't say: a post is in Writing. */
+  section?: Section;
 }
-const { title, description, markdown } = Astro.props;
+const { title, description, markdown, section } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const path = Astro.url.pathname;
+// The aside is the grid's last three columns, beside the main column, from 64em.
+const hasAside = Astro.slots.has('aside');
 ---
 
 <!doctype html>
@@ -34,21 +41,34 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <a class="site-name" href="/"><Mark size={24} />Christian Mills</a>
-      <nav aria-label="Site">
-        <ul>
-          <li><a href="/">Writing</a></li>
-          <li><a href="/categories/">Categories</a></li>
-          <li><a href="/search/">Search</a></li>
-        </ul>
-      </nav>
+    <header class="masthead">
+      <div class="frame masthead-in">
+        <a class="site-name" href="/"><Mark size={24} />Christian Mills</a>
+        <nav aria-label="Site">
+          <ul>{NAV.map((n) => <li><a href={n.href} aria-current={current(n, path, section)}>{n.label}</a></li>)}</ul>
+        </nav>
+      </div>
     </header>
-    <main id="main">
-      <slot />
-    </main>
+    <div class="frame page">
+      <main id="main" class="page-main">
+        <slot />
+      </main>
+      {hasAside && <aside class="page-aside"><slot name="aside" /></aside>}
+    </div>
     <footer class="site-footer">
-      <p>Prototype build of the relaunched site: the page frame is not designed yet. <a href="/licenses.txt">Third-party licences</a>.</p>
+      <div class="frame">
+        <div class="footer-top">
+          <a class="site-name" href="/"><Mark size={24} />Christian Mills</a>
+          <nav aria-label="Site, again">
+            <ul>{NAV.map((n) => <li><a href={n.href}>{n.label}</a></li>)}</ul>
+          </nav>
+        </div>
+        <p class="licence">
+          © {HOLDER}. Writing is <a href={SITE_LICENCES.prose.url}>{SITE_LICENCES.prose.spdx}</a> and code is{' '}
+          <a href={SITE_LICENCES.code.url}>{SITE_LICENCES.code.spdx}</a>, unless a page says otherwise.{' '}
+          <a href="/licenses.txt">Third-party licences</a>.
+        </p>
+      </div>
     </footer>
   </body>
 </html>

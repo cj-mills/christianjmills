@@ -2,7 +2,8 @@
 
 The source of the relaunched site: Astro with Markdoc, built from deliverable bundles that
 content projects publish (format spec: `spec/README.md`). The relaunch is in progress: the design
-system's tokens, typefaces and mark are in, and the page frame and templates are not designed yet.
+system's tokens, typefaces, mark and page frame are in; the dialect's parts and the page templates
+are not designed yet.
 
 Until the relaunch goes live, christianjmills.com still serves the last Quarto build from the
 `gh-pages` branch. The Quarto sources, the old posts among them, are at the tag `quarto-final`.

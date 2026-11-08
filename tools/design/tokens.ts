@@ -10,6 +10,8 @@
 //               (2026-11-07-christianjmills-default-theme: Ayu Light and Ayu Dark)
 //   faces ..... fonts.ts (2026-11-07-christianjmills-typefaces)
 //   scale ..... a 1.2 ratio and a 4 px radius (2026-11-05-christianjmills-design-system-starting-tokens)
+//   space ..... multiples of the body size (2026-11-08-christianjmills-space-scale)
+//   measure ... 68ch (2026-11-08-christianjmills-measure)
 import { readFileSync, writeFileSync } from 'node:fs';
 import { FONTS, packageVersion } from './fonts.ts';
 import { correctTheme, mapTheme, type GpuiTheme, type Roles } from './theme.ts';
@@ -31,11 +33,31 @@ type Token = { $type: string; $value: unknown; $description?: string; $extension
 type Group = { [k: string]: Token | Group | string | Record<string, unknown> };
 
 const round = (x: number, d = 4) => Number(x.toFixed(d));
-function step(n: number): string {
-  const min = BODY.min * RATIO ** n, max = BODY.max * RATIO ** n; // rem
+/** A length that runs linearly from `min` rem at BODY.from to `max` rem at BODY.to, held at both ends. */
+function fluid(min: number, max: number): string {
   const slope = ((max - min) * 16) / (BODY.to - BODY.from); // px per px of viewport
   const intercept = (min * 16 - slope * BODY.from) / 16; // rem
   return `clamp(${round(min)}rem, ${round(intercept)}rem + ${round(slope * 100)}vw, ${round(max)}rem)`;
+}
+const step = (n: number) => fluid(BODY.min * RATIO ** n, BODY.max * RATIO ** n);
+
+// Space is measured in body sizes, so every gap grows with the text it separates: each step is a
+// multiple of the body size at both ends of its range. A pair ("s-l") runs from the smaller step's
+// size at 360 px to the larger's at 1200 px, for gaps that should open up faster than the text,
+// such as the page's side margin. The apps read min and max from the extension, since clamp() and vw
+// are the web's.
+const SPACE: Record<string, number> = { '3xs': 0.25, '2xs': 0.5, xs: 0.75, s: 1, m: 1.5, l: 2, xl: 3, '2xl': 4, '3xl': 6 };
+const SPACE_PAIRS: [string, string][] = [
+  ...Object.keys(SPACE).slice(1).map((k, i) => [Object.keys(SPACE)[i], k] as [string, string]),
+  ['s', 'l'],
+];
+function spaceToken(lo: string, hi = lo): Token {
+  const min = BODY.min * SPACE[lo], max = BODY.max * SPACE[hi];
+  return {
+    $type: 'dimension',
+    $value: fluid(min, max),
+    $extensions: { 'com.christianjmills.fluid': { min: `${round(min)}rem`, max: `${round(max)}rem`, from: `${BODY.from}px`, to: `${BODY.to}px` } },
+  };
 }
 
 function colourGroup(light: Roles, dark: Roles, rawLight: Roles, rawDark: Roles): Group {
@@ -101,14 +123,11 @@ export function buildTokens(): Group {
       ...Object.fromEntries(STEPS.map((n) => [`step-${n}`, { $type: 'dimension', $value: step(n) }])),
     },
     space: {
-      $description: 'Not yet ruled: the page frame rules spacing.',
-      xs: { $type: 'dimension', $value: '0.25rem' },
-      s: { $type: 'dimension', $value: '0.5rem' },
-      m: { $type: 'dimension', $value: '1rem' },
-      l: { $type: 'dimension', $value: '2rem' },
-      xl: { $type: 'dimension', $value: '4rem' },
+      $description: `Multiples of the body size (${Object.entries(SPACE).map(([k, v]) => `${k} ${v}`).join(', ')}), fluid as the body size is; a pair runs from its first step's size at ${BODY.from} px to its second's at ${BODY.to} px.`,
+      ...Object.fromEntries(Object.keys(SPACE).map((k) => [k, spaceToken(k)])),
+      ...Object.fromEntries(SPACE_PAIRS.map(([lo, hi]) => [`${lo}-${hi}`, spaceToken(lo, hi)])),
     },
-    measure: { $type: 'dimension', $value: '68ch', $description: 'Not yet ruled: the page frame rules the measure.' },
+    measure: { $type: 'dimension', $value: '68ch', $description: 'The longest line of running text, in the text face at body size.' },
     radius: { $type: 'dimension', $value: RADIUS },
   };
 }

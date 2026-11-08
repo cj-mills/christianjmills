@@ -23,14 +23,14 @@ body {
 
 .skip-link {
   position: absolute;
-  left: var(--space-m);
+  left: var(--space-s);
   top: -100%;
-  padding: var(--space-s) var(--space-m);
+  padding: var(--space-2xs) var(--space-s);
   background: var(--color-primary);
   color: var(--color-primary-ink);
 }
 .skip-link:focus {
-  top: var(--space-m);
+  top: var(--space-s);
 }
 
 :focus-visible {
@@ -43,43 +43,182 @@ a {
   text-underline-offset: 0.15em;
 }
 
-.site-header,
-.site-footer,
-main {
-  max-width: calc(var(--measure) + 2 * var(--space-m));
+/* ---- The frame. One container on every page: 70rem of content (1120 px at the default text size)
+   with a side margin that opens from 1rem to 2.25rem. From 64em it is a 12-column grid: the main
+   column takes columns 1 to 9 and the aside 10 to 12. Running text keeps to the measure inside
+   the main column; code, figures and interactives take its whole width. The breakpoints are in em, so a reader who
+   enlarges their text gets the narrower layout instead of a squeezed one. Nothing in the frame
+   moves on scroll except the contents rail, which stays inside its own column. */
+.frame {
+  max-inline-size: calc(70rem + 2 * var(--space-s-l));
   margin-inline: auto;
-  padding-inline: var(--space-m);
+  padding-inline: var(--space-s-l);
 }
 
-.site-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-m);
-  align-items: baseline;
-  justify-content: space-between;
-  padding-block: var(--space-m);
+/* Running text keeps to the measure wherever it sits. */
+.page-main {
+  max-inline-size: var(--measure);
+}
+@media (min-width: 64em) {
+  .page {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--space-l);
+  }
+  .page-main {
+    grid-column: 1 / 10;
+    max-inline-size: none;
+  }
+  .page-main :is(p, ul, ol, dl, blockquote, h1, h2, h3, .standfirst) {
+    max-inline-size: var(--measure);
+  }
+  .page-aside {
+    grid-column: 10 / 13;
+    /* Stretches the main column's height, so the rail inside can stay in view. */
+    align-self: stretch;
+  }
+}
+
+/* ---- The masthead: the name with the mark, and the sections. It doesn't stick. On a phone the
+   sections wrap to a row of their own under the name, all visible. */
+.masthead {
   border-bottom: 1px solid var(--color-rule);
 }
-.site-header .site-name {
+.masthead-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2xs) var(--space-l);
+  padding-block: var(--space-xs);
+}
+.site-name {
   font-family: var(--font-head);
   font-weight: 600;
   color: var(--color-ink);
   text-decoration: none;
+  white-space: nowrap;
 }
-.site-header nav ul {
+.masthead .site-name {
+  font-size: var(--size-step-1);
+}
+/* The mark is 24 px at every width: by the lockup rule (Mark.astro), twice Literata's cap height
+   at this size is 25 to 28 px, and the nearest multiple of the lattice's 8 is 24. */
+.masthead nav ul,
+.site-footer nav ul {
   display: flex;
-  gap: var(--space-m);
+  flex-wrap: wrap;
+  gap: 0 var(--space-m);
   list-style: none;
   margin: 0;
   padding: 0;
 }
+.masthead nav a,
+.site-footer nav a {
+  display: inline-block;
+  padding-block: var(--space-3xs);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.masthead nav a:hover,
+.site-footer nav a:hover {
+  text-decoration: underline;
+}
+/* The accent marks where you are: the current section, underlined in the theme's primary, and
+   heavier, so it isn't told by colour alone. */
+.masthead nav a[aria-current] {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--color-primary);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.4em;
+}
 
+/* ---- The footer: the name and the sections again, for the reader who reached the end, then the
+   site's licences. */
 .site-footer {
-  margin-top: var(--space-xl);
-  padding-block: var(--space-l);
+  margin-top: var(--space-2xl);
+  padding-block: var(--space-m) var(--space-xl);
   border-top: 1px solid var(--color-rule);
+}
+.footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2xs) var(--space-l);
+}
+.licence {
+  max-inline-size: var(--measure);
+  margin-block: var(--space-s) 0;
   color: var(--color-muted);
   font-size: var(--size-step--1);
+}
+
+/* ---- Contents: a rail in the aside from 64em, a closed disclosure under the page's head below. */
+.contents ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.contents li {
+  padding-block: var(--space-3xs);
+  line-height: 1.35;
+}
+.contents a {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.contents a:hover {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+/* The rail marks the section being read with a bar in the theme's primary: a mark that is there or
+   not, so it isn't told by colour alone, and the text doesn't change width. */
+.contents-rail li {
+  padding-inline-start: var(--space-xs);
+  border-inline-start: 3px solid transparent;
+}
+.contents-rail li:has(a[aria-current]) {
+  border-inline-start-color: var(--color-primary);
+}
+.contents-rail .contents-title {
+  padding-inline-start: calc(var(--space-xs) + 3px);
+}
+.contents-title,
+.contents-head summary {
+  margin: 0 0 var(--space-2xs);
+  font-weight: 600;
+}
+.contents-head {
+  margin-block: var(--space-m) 0;
+  padding-block: var(--space-2xs);
+  border-block: 1px solid var(--color-rule);
+}
+.contents-head summary {
+  margin: 0;
+  cursor: pointer;
+}
+.contents-head[open] summary {
+  margin-bottom: var(--space-2xs);
+}
+.contents-rail {
+  display: none;
+}
+@media (min-width: 64em) {
+  .contents-head {
+    display: none;
+  }
+  .contents-rail {
+    display: block;
+    position: sticky;
+    top: var(--space-l);
+    max-block-size: calc(100vh - 2 * var(--space-l));
+    overflow-y: auto;
+    /* Its first line level with the page title's. */
+    margin-top: var(--space-l);
+    font-size: var(--size-step--1);
+  }
 }
 
 /* Page and section heads in the display face, at the one weight it ships; smaller heads and item
@@ -97,11 +236,11 @@ h2 {
 }
 h1 {
   font-size: var(--size-step-3);
-  margin-block: var(--space-l) var(--space-s);
+  margin-block: var(--space-l) var(--space-2xs);
 }
 h2 {
   font-size: var(--size-step-2);
-  margin-block: var(--space-l) var(--space-s);
+  margin-block: var(--space-l) var(--space-2xs);
 }
 h3 {
   font-size: var(--size-step-1);
@@ -120,7 +259,7 @@ h3 {
 .meta ul {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-s);
+  gap: var(--space-2xs);
   list-style: none;
   padding: 0;
 }
@@ -136,7 +275,7 @@ figure {
 figcaption {
   color: var(--color-muted);
   font-size: var(--size-step--1);
-  margin-top: var(--space-s);
+  margin-top: var(--space-2xs);
 }
 
 code {
@@ -149,7 +288,7 @@ code {
   border-radius: var(--radius);
 }
 pre.shiki {
-  padding: var(--space-m);
+  padding: var(--space-s);
   overflow-x: auto;
   border-radius: var(--radius);
   border: 1px solid var(--color-rule);
@@ -173,7 +312,7 @@ pre.shiki span {
 
 .callout {
   margin: var(--space-l) 0;
-  padding: var(--space-m);
+  padding: var(--space-s);
   border-radius: var(--radius);
   background: var(--color-note);
 }
@@ -194,7 +333,7 @@ a.ref {
 }
 
 .interactive {
-  padding: var(--space-m);
+  padding: var(--space-s);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius);
   background: var(--color-surface);
@@ -202,13 +341,13 @@ a.ref {
 .interactive .controls {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-m);
+  gap: var(--space-s);
   align-items: end;
-  margin-top: var(--space-m);
+  margin-top: var(--space-s);
 }
 .interactive .field {
   display: grid;
-  gap: var(--space-xs);
+  gap: var(--space-3xs);
   font-size: var(--size-step--1);
 }
 .interactive .status {
@@ -226,7 +365,7 @@ button {
 }
 input[type='number'] {
   width: 8ch;
-  padding: var(--space-xs);
+  padding: var(--space-3xs);
   border: 1px solid var(--color-muted);
   border-radius: var(--radius);
   background: var(--color-paper);
@@ -235,7 +374,7 @@ input[type='range'] {
   accent-color: var(--color-primary);
 }
 button {
-  padding: var(--space-xs) var(--space-m);
+  padding: var(--space-3xs) var(--space-s);
   border: 1px solid var(--color-primary);
   border-radius: var(--radius);
   background: var(--color-primary);
@@ -248,7 +387,7 @@ button {
   padding: 0;
 }
 .listing li {
-  padding-block: var(--space-m);
+  padding-block: var(--space-s);
   border-bottom: 1px solid var(--color-rule);
 }
 .listing h2 {
@@ -257,12 +396,12 @@ button {
   font-size: var(--size-step-1);
 }
 .listing p {
-  margin: var(--space-xs) 0;
+  margin: var(--space-3xs) 0;
 }
 
 .sources ol {
   padding-left: 1.25em;
 }
 .sources li {
-  margin-bottom: var(--space-s);
+  margin-bottom: var(--space-2xs);
 }

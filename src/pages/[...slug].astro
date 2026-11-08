@@ -1,6 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Contents from '../components/Contents.astro';
 import { deliverables, formatDate, slugOf, updatedOf, type Deliverable } from '../lib/site.ts';
 
 export async function getStaticPaths() {
@@ -9,13 +10,18 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props as { entry: Deliverable };
 const d = entry.data;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
+// The rail lists the page's sections: the post's own h2s, then the Sources the page adds.
+const contents = [
+  ...headings.filter((h) => h.depth === 2).map((h) => ({ slug: h.slug, text: h.text })),
+  ...(d.sources.length > 0 ? [{ slug: 'sources', text: 'Sources' }] : []),
+];
 const updated = updatedOf(entry);
 const cited = new Map<string, number>();
 for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
 ---
 
-<Base title={d.title} description={d.summary} markdown={`${d.urls.canonical}index.md`}>
+<Base title={d.title} description={d.summary} markdown={`${d.urls.canonical}index.md`} section="writing">
   <article data-pagefind-body>
     <header>
       <h1>{d.title}</h1>
@@ -30,6 +36,7 @@ for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
           {d.categories.map((c) => <li><a href={`/categories/${c}/`}>{c}</a></li>)}
         </ul>
       </div>
+      {contents.length > 1 && <Contents items={contents} place="head" />}
     </header>
 
     <Content />
@@ -69,6 +76,8 @@ for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
       )}
     </footer>
   </article>
+
+  {contents.length > 1 && <Contents slot="aside" items={contents} place="rail" />}
 
   {d.interactives.length > 0 && <script src="../scripts/interactives.ts"></script>}
 </Base>
