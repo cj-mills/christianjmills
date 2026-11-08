@@ -11,7 +11,7 @@
 import { createHash } from 'node:crypto';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { createTar, parseTar } from 'nanotar';
-import { createHighlighter } from 'shiki';
+import { createCssVariablesTheme, createHighlighter } from 'shiki';
 import { z } from 'zod';
 import { BUNDLE_LIMITS, manifest as manifestSchema, type Manifest } from './manifest.ts';
 import { LANGUAGES, renderDocument, type Heading, type Reference } from './dialect.ts';
@@ -106,7 +106,9 @@ export async function verify(
   const entry = files.get(manifest.content.entry);
   if (!entry) throw new Error(`content entry "${manifest.content.entry}" is not in the bundle`);
 
-  highlighter ??= createHighlighter({ themes: ['github-light-high-contrast', 'github-dark-high-contrast'], langs: LANGUAGES });
+  // Code is highlighted into the site's own syntax roles: each token's colour is a CSS variable
+  // (--shiki-token-keyword and so on) that the site's stylesheet maps to the theme's tokens.
+  highlighter ??= createHighlighter({ themes: [createCssVariablesTheme({ name: 'site', fontStyle: true })], langs: LANGUAGES });
   const rendered = renderDocument(new TextDecoder().decode(entry), manifest.content.entry, {
     manifest,
     files,

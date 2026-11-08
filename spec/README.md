@@ -53,14 +53,19 @@ Source kinds and the locators a reference to each may use:
 Markdoc, plus:
 
 - `{% ref source="id" …locator /%}`: inline reference to a manifest source. Unknown source, a
-  locator the kind doesn't take, a malformed or out-of-range locator: build error.
+  locator the kind doesn't take, a malformed or out-of-range locator: build error. Write one per
+  claim. The HTML merges a block's references (paragraph, list item, table cell) into one marker
+  at its end; the Markdown copy keeps them one per claim.
 - `{% interactive id="id" caption="…" %}fallback{% /interactive %}`: a mount for a declared
   interactive. The children are the fallback shown without JavaScript and are required.
 - `{% figure src="assets/…" alt="…" caption="…" /%}` and `![alt](assets/…)`: bundle images
   only, PNG in 0.1, alt text required. Width and height are read from the file.
 - `{% callout type="note|tip|warning" title="…" %}…{% /callout %}`
 - Headings start at `##`; the page title is the `h1`. Code fences name a language the site
-  highlights (`LANGUAGES` in `dialect.ts`).
+  highlights (`LANGUAGES` in `dialect.ts`). The site highlights them into syntax roles (Shiki's
+  CSS-variables theme) that its theme colours, and heads each block with the language's name.
+  Highlighting runs when a bundle is verified, from its Markdoc, so how code looks is the site's
+  and never needs a republish.
 
 Any validation error fails the publish command and the site build, with file and line.
 
@@ -71,6 +76,11 @@ loads it when its figure nears the viewport, calls `mount` with an empty element
 figure, and hides the fallback only after `mount` returns. Modules take colours from the site's
 CSS custom properties (`--interactive-ink`, `--interactive-paper`, and the `--color-*` tokens),
 so they follow light and dark mode. Gzipped size limit: 50 KB (`tools/check-perf.ts`).
+
+**Size.** The module gets the main column's width: `root`'s inline size. It keeps its drawing and
+controls within the block size the site sets as `--interactive-max-block-size` (read it with
+`getComputedStyle(root)`), so a reader sees what a control does while moving it. On a short
+viewport that means drawing smaller than the column allows.
 
 ## Lockfile
 

@@ -210,7 +210,9 @@ export function dialect(ctx: BundleContext) {
           const { locator, href } = locate(attrs);
           refs.push({ source: attrs.source, locator, href });
           const label = attrs.source === 'this' ? 'this page’s code' : sources.get(attrs.source)!.label;
-          return new Tag('a', { class: 'ref', href, 'data-source': attrs.source }, [
+          // One reference per claim in the tree, which the Markdown copy keeps; the HTML merges a
+          // block's references into one marker at its end (mergeReferences, below).
+          return new Tag('a', { class: 'ref', href, 'data-source': attrs.source, 'data-label': label, 'data-locator': locator }, [
             `[${label}${locator ? ', ' + locator : ''}]`,
           ]);
         },
@@ -325,12 +327,18 @@ export function dialect(ctx: BundleContext) {
         transform(node) {
           const hast = ctx.highlighter.codeToHast(node.attributes.content.replace(/\n$/, ''), {
             lang: node.attributes.language,
-            themes: { light: 'github-light-high-contrast', dark: 'github-dark-high-contrast' },
-            defaultColor: false,
+            theme: 'site',
           });
+          const lang = node.attributes.language as string;
           const pre = hastToTag(hast.children[0]) as Tag;
-          pre.attributes['data-language'] = node.attributes.language;
-          return pre;
+          pre.attributes['data-language'] = lang;
+          // The block's head names the language (hub decision 2026-11-08-christianjmills-code-blocks);
+          // the site's script adds the copy button to it.
+          const name = LANGUAGE_NAMES[lang];
+          return new Tag('div', { class: 'code-block' }, [
+            new Tag('div', { class: 'code-head' }, name ? [new Tag('span', { class: 'code-language' }, [name])] : []),
+            pre,
+          ]);
         },
       },
     },
@@ -350,7 +358,99 @@ function hastToTag(node: any): RenderableTreeNode {
   return new Tag(node.tagName, attrs, node.children.map(hastToTag));
 }
 
+/** The blocks whose own inline content gathers its references into one marker. */
+const MARKED_BLOCKS = new Set(['p', 'li', 'td', 'th']);
+
+function isRef(node: RenderableTreeNode): node is Tag {
+  return Tag.isTag(node) && node.name === 'a' && node.attributes.class === 'ref';
+}
+
+/** Removes the references from a block's inline content, collecting them in order. Nested blocks keep their own. */
+function stripRefs(children: RenderableTreeNode[], found: Tag[]): RenderableTreeNode[] {
+  const out: RenderableTreeNode[] = [];
+  for (const child of children) {
+    if (isRef(child)) {
+      found.push(child);
+      // "repeating {% ref %}." reads "repeating." once the reference has gone.
+      const prev = out.at(-1);
+      if (typeof prev === 'string') out[out.length - 1] = prev.replace(/\s+$/, '');
+      continue;
+    }
+    if (Tag.isTag(child) && !MARKED_BLOCKS.has(child.name) && !['ul', 'ol'].includes(child.name)) {
+      out.push(new Tag(child.name, child.attributes, stripRefs(child.children, found)));
+    } else out.push(child);
+  }
+  // A space left before punctuation or at the end of the block, by a removed reference.
+  for (let i = 0; i < out.length; i++) {
+    const s = out[i];
+    if (typeof s !== 'string') continue;
+    const next = out[i + 1];
+    if (next === undefined && found.length) out[i] = s.replace(/\s+$/, '');
+    else if (typeof next === 'string' && /^[.,;:)]/.test(next)) out[i] = s.replace(/\s+$/, '');
+  }
+  return out.filter((n) => n !== '');
+}
+
+/** One marker for a block's references: each source's label once, linking to its entry in the
+ *  page's Sources, then each of its locators, linking to the place in the source. Sources are
+ *  separated by semicolons, and each label ends in a colon. */
+function marker(refs: Tag[]): Tag {
+  const groups = new Map<string, { label: string; items: { locator: string; href: string }[] }>();
+  for (const r of refs) {
+    const id = String(r.attributes['data-source']);
+    const g = groups.get(id) ?? { label: String(r.attributes['data-label']), items: [] };
+    const item = { locator: String(r.attributes['data-locator'] ?? ''), href: String(r.attributes.href) };
+    if (!g.items.some((i) => i.href === item.href && i.locator === item.locator)) g.items.push(item);
+    groups.set(id, g);
+  }
+  const parts: RenderableTreeNode[] = ['['];
+  [...groups].forEach(([id, g], gi) => {
+    if (gi > 0) parts.push('; ');
+    const located = g.items.filter((i) => i.locator);
+    if (id === 'this') parts.push(g.label);
+    else if (!located.length) parts.push(new Tag('a', { class: 'ref-source', href: g.items[0].href }, [g.label]));
+    else parts.push(new Tag('a', { class: 'ref-source', href: `#source-${id}` }, [g.label]));
+    // "the talk's code: c03-cellular/src/main.rs, lines 17–34; lines 40–70": a locator that shares
+    // the one before it's file or part drops it.
+    let prev = '';
+    located.forEach((i, ii) => {
+      parts.push(ii === 0 ? ': ' : '; ');
+      const head = /^(.*), /.exec(i.locator)?.[1];
+      const text = head && prev.startsWith(head + ', ') ? i.locator.slice(head.length + 2) : i.locator;
+      parts.push(new Tag('a', { class: 'ref', href: i.href }, [text]));
+      prev = i.locator;
+    });
+  });
+  parts.push(']');
+  return new Tag('span', { class: 'refs' }, parts);
+}
+
+/** The reader's view of references (hub decision 2026-11-04-traced-deliverables-reader-view): a
+ *  block's citations merge into one marker at its end. Returns a new tree; the input is unchanged. */
+export function mergeReferences(node: RenderableTreeNode): RenderableTreeNode {
+  if (Array.isArray(node)) return node.map(mergeReferences);
+  if (!Tag.isTag(node)) return node;
+  const children = node.children.map(mergeReferences);
+  if (!MARKED_BLOCKS.has(node.name)) return new Tag(node.name, node.attributes, children);
+  const found: Tag[] = [];
+  const kept = stripRefs(children, found);
+  if (!found.length) return new Tag(node.name, node.attributes, children);
+  // In a list item, the marker goes after the item's own text, before any nested list.
+  const nested = kept.findIndex((c) => Tag.isTag(c) && ['ul', 'ol'].includes(c.name));
+  const at = nested === -1 ? kept.length : nested;
+  return new Tag(node.name, node.attributes, [...kept.slice(0, at), ' ', marker(found), ...kept.slice(at)]);
+}
+
 export const LANGUAGES = ['javascript', 'rust', 'python', 'shell', 'json', 'text'];
+
+/** Each language's name as its readers know it, for the code block's head. Plain text has none. */
+const LANGUAGE_NAMES: Record<string, string> = {
+  javascript: 'JavaScript',
+  rust: 'Rust',
+  python: 'Python',
+  shell: 'Shell',
+  json: 'JSON',
+};
 
 /** Parses, validates and renders one Markdoc document; throws with every error if any. */
 export function renderDocument(source: string, file: string, ctx: BundleContext) {
@@ -362,5 +462,5 @@ export function renderDocument(source: string, file: string, ctx: BundleContext)
     throw new Error(`Markdoc validation failed for ${file}:\n${lines.join('\n')}`);
   }
   const tree = Markdoc.transform(ast, config);
-  return { html: Markdoc.renderers.html(tree), tree, refs, headings };
+  return { html: Markdoc.renderers.html(mergeReferences(tree)), tree, refs, headings };
 }

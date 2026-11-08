@@ -17,8 +17,20 @@ const contents = [
   ...(d.sources.length > 0 ? [{ slug: 'sources', text: 'Sources' }] : []),
 ];
 const updated = updatedOf(entry);
-const cited = new Map<string, number>();
-for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
+// Where the page cites each source: its distinct locators, in reading order.
+const cited = new Map<string, { locator: string; href: string }[]>();
+for (const r of d.refs) {
+  const list = cited.get(r.source) ?? [];
+  if (r.locator && !list.some((l) => l.href === r.href)) list.push({ locator: r.locator, href: r.href });
+  cited.set(r.source, list);
+}
+// "c03-cellular/src/main.rs, lines 17–34; lines 40–70": a locator that shares the previous one's
+// file drops it, as in the dialect's markers.
+const short = (list: { locator: string }[], i: number) => {
+  const head = /^(.*), /.exec(list[i].locator)?.[1];
+  return head && i > 0 && list[i - 1].locator.startsWith(head + ', ') ? list[i].locator.slice(head.length + 2) : list[i].locator;
+};
+const hasCode = entry.rendered?.html.includes('class="code-block"') ?? false;
 ---
 
 <Base title={d.title} description={d.summary} markdown={`${d.urls.canonical}index.md`} section="writing">
@@ -48,12 +60,16 @@ for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
           <ol>
             {d.sources.map((s) => (
               <li id={`source-${s.id}`}>
-                <a href={'url' in s ? s.url : 'repo' in s ? `${s.repo}/tree/${s.commit}` : s.path}>{s.citation}</a>
+                <span class="source-label">{s.label}</span>
+                <a class="source-citation" href={'url' in s ? s.url : 'repo' in s ? `${s.repo}/tree/${s.commit}` : s.path}>{s.citation}</a>
                 {s.kind === 'code' && <> At commit <code>{s.commit.slice(0, 7)}</code>.</>}
-                <br />
-                <span class="meta">
-                  {s.rights} {cited.get(s.id) ? `Cited ${cited.get(s.id)} times on this page.` : 'Background; not cited inline.'}
-                </span>
+                {(cited.get(s.id)?.length ?? 0) > 0 && (
+                  <span class="source-cited">
+                    Cited here at{' '}
+                    {cited.get(s.id)!.map((l, i, all) => <>{i > 0 && '; '}<a href={l.href}>{short(all, i)}</a></>)}.
+                  </span>
+                )}
+                <span class="meta source-rights">{s.rights}{!cited.has(s.id) && ' Background; not cited inline.'}</span>
               </li>
             ))}
           </ol>
@@ -80,4 +96,5 @@ for (const r of d.refs) cited.set(r.source, (cited.get(r.source) ?? 0) + 1);
   {contents.length > 1 && <Contents slot="aside" items={contents} place="rail" />}
 
   {d.interactives.length > 0 && <script src="../scripts/interactives.ts"></script>}
+  {hasCode && <script src="../scripts/code.ts"></script>}
 </Base>

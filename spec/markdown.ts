@@ -46,6 +46,8 @@ function block(node: RenderableTreeNode, indent = ''): string {
     case 'article':
     case 'section':
     case 'div':
+      // A code block's head (its language name) is chrome: the fence names the language.
+      if (node.attributes.class === 'code-head') return '';
       return kids();
     case 'p':
       return `${indent}${inline(node.children)}\n\n`;

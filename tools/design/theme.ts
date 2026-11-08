@@ -55,13 +55,15 @@ const SYNTAX: Record<string, string[]> = {
   link: ['link_uri'],
 };
 /** Callout fills: a base colour mixed into paper (the theme-role-mapping decision). */
-const CALLOUT: Record<string, [base: string, share: number]> = { note: ['blue', 0.12], warning: ['yellow', 0.12] };
+const CALLOUT: Record<string, [base: string, share: number]> = { note: ['blue', 0.12], tip: ['green', 0.12], warning: ['yellow', 0.12] };
 
 // ---- the pairs every corrected theme must pass (WCAG 2; text 4.5:1, focus ring 3:1) ------------------
 export const PAIRS: [fg: string, bg: string, min: number][] = [
-  ['ink', 'paper', 4.5], ['ink', 'surface', 4.5], ['ink', 'note', 4.5], ['ink', 'warning', 4.5],
+  ['ink', 'paper', 4.5], ['ink', 'surface', 4.5],
   ['muted', 'paper', 4.5], ['muted', 'surface', 4.5],
-  ['link', 'paper', 4.5], ['link', 'surface', 4.5], ['link', 'note', 4.5], ['link', 'warning', 4.5],
+  ['link', 'paper', 4.5], ['link', 'surface', 4.5],
+  // Callout text, and the source markers inside callouts, on each callout's fill.
+  ...Object.keys(CALLOUT).flatMap((k) => ['ink', 'muted', 'link'].map((f): [string, string, number] => [f, k, 4.5])),
   ['primary-ink', 'primary', 4.5], ['tint-ink', 'tint', 4.5],
   ['code-ink', 'code-bg', 4.5],
   ...Object.keys(SYNTAX).map((t): [string, string, number] => ['syntax-' + t, 'code-bg', 4.5]),
