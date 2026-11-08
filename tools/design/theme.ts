@@ -3,6 +3,7 @@
 //   mapping .................. 2026-11-07-christianjmills-theme-role-mapping
 //   AA, hierarchy, accents ... 2026-11-05-christianjmills-design-system-starting-tokens
 //   neutral rules and text ... 2026-11-07-christianjmills-neutral-rules-and-text
+//   button ink ............... 2026-11-07-christianjmills-button-ink-polarity
 // The corrections were developed in the design lab's tools/themes.mjs, which this ports.
 import { contrast, distance, fromOklch, isHex, luminance, mix, over, parseHex, toOklch } from './color.ts';
 
@@ -164,6 +165,21 @@ function capChroma(c: string, max: number): string {
   return C <= max ? c : fromOklch([l, max, H]);
 }
 
+// A filled button keeps its theme's ink: if that ink fails on the accent-normalised fill, the
+// fill's lightness moves away from the ink, hue and chroma kept, until the pair passes. If it never
+// does, the AA pass moves the ink as before.
+function keepButtonInk(c: Roles): Roles {
+  const ink = c['primary-ink'], min = 4.5 + MARGIN;
+  if (contrast(ink, c.primary) >= min) return c;
+  let [l, C, H] = toOklch(c.primary);
+  const away = L(ink) > l ? -1 : 1;
+  for (; l >= 0 && l <= 1; l += away * 0.005) {
+    const fill = fromOklch([l, C, H]);
+    if (contrast(ink, fill) >= min) return { ...c, primary: fill };
+  }
+  return c;
+}
+
 // ---- the pipeline -----------------------------------------------------------------------------------
 /** The theme's roles as GPUI Kit gives them, before any correction. */
 export function mapTheme(t: GpuiTheme): Roles {
@@ -195,6 +211,7 @@ export function correctTheme(t: GpuiTheme): { roles: Roles; pairs: [string, stri
   c.ink = capChroma(c.ink, TEXT_CHROMA.ink);
   c.muted = capChroma(c.muted, TEXT_CHROMA.muted);
   for (const [role, [base, share]] of Object.entries(CALLOUT)) c[role] = mix(c.paper, c[base], share);
+  c = keepButtonInk(c);
   // Then AA, ink apart from the corrected muted, links apart from ink, and AA once more.
   c = correctAA(linkApart(inkApart(correctAA(c), t.mode), t.mode));
   const pairs = PAIRS.map(([f, b, min]): [string, string, number, number] => [f, b, contrast(c[f], c[b], c.paper), min]);
