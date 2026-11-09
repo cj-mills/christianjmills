@@ -75,6 +75,23 @@ export const manifest = z.strictObject({
 
   sources: z.array(source).default([]),
 
+  // How a traced page was checked, for the "how this was checked" note under its Sources (hub
+  // decision 2026-11-04-traced-deliverables-reader-view). Written by the project's build from its
+  // evidence; a snapshot of when the bundle was built.
+  checked: z
+    .strictObject({
+      claims: z.int().nonnegative().describe('Claims that cite a source; the verifier checks each against the passages it cites'),
+      supported: z.int().nonnegative().describe('Of those, how many the verifier found supported'),
+      measured: z.int().nonnegative().describe('Statements of the deliverable’s own measurements, regenerated and checked by its build'),
+      verifiers: z
+        .array(z.strictObject({ name: z.string().min(1), version: z.string().min(1), model: z.string().min(1).optional() }))
+        .min(1),
+      lastVerified: isoDate,
+      openFlags: z.int().nonnegative().describe('Flags open when the bundle was built: a changed source, a missing or failed verdict'),
+    })
+    .refine((c) => c.supported <= c.claims, 'more claims supported than checked')
+    .optional(),
+
   // provenance of generated media
   provenance: z
     .array(

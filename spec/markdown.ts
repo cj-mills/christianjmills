@@ -84,6 +84,18 @@ function block(node: RenderableTreeNode, indent = ''): string {
   }
 }
 
+/** The "how this was checked" note, in words; `date` formats the ISO date for the medium. */
+export function checkedNote(c: NonNullable<Manifest['checked']>, date: (iso: string) => string = (d) => d): string {
+  const n = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
+  const who = c.verifiers.map((v) => `${v.name}, version ${v.version}${v.model ? `, running ${v.model}` : ''}`).join('; ');
+  const found = c.supported === c.claims ? (c.claims === 1 ? 'it was supported' : `all ${c.claims} were supported`) : `${c.supported} were supported`;
+  return [
+    `${n(c.claims, 'claim cites', 'claims cite')} a source. The verifier (${who}) checked each against the passages it cites, last on ${date(c.lastVerified)}: ${found}.`,
+    c.measured > 0 ? `${n(c.measured, 'statement', 'statements')} of this page’s own measurements ${c.measured === 1 ? 'is' : 'are'} regenerated and checked by its build.` : '',
+    c.openFlags === 0 ? 'No flags are open.' : `${n(c.openFlags, 'flag is', 'flags are')} open.`,
+  ].filter(Boolean).join(' ');
+}
+
 export function toMarkdown(tree: RenderableTreeNode, manifest: Manifest): string {
   const canonical = `https://christianjmills.com${manifest.urls.canonical}`;
   const updated = manifest.revisions.at(-1)!.date;
@@ -99,7 +111,8 @@ export function toMarkdown(tree: RenderableTreeNode, manifest: Manifest): string
   ].join('\n');
   const body = block(tree).replaceAll('{canonical}', canonical).replace(/\n{3,}/g, '\n\n');
   const sources = manifest.sources.length
-    ? '\n## Sources\n\n' + manifest.sources.map((s) => `- **${s.label}**: ${s.citation} (${'url' in s ? s.url : 'repo' in s ? s.repo : s.path})`).join('\n') + '\n'
+    ? '\n## Sources\n\n' + manifest.sources.map((s) => `- **${s.label}**: ${s.citation} (${'url' in s ? s.url : 'repo' in s ? s.repo : s.path})`).join('\n') + '\n' +
+      (manifest.checked ? `\n**How this was checked.** ${checkedNote(manifest.checked)}\n` : '')
     : '';
   return `${head}\n${body.trim()}\n${sources}`;
 }
