@@ -3,13 +3,15 @@
 // has finished mounting, that one module mounts many times with each mount's own parameters, that a
 // module's reported values reach its own card and no other, that a failing module keeps its
 // fallback, that the swap holds a figure's end for a reader whose window starts inside the figure,
-// that the page's own scripts move nothing when they run,
+// that the page's own scripts move nothing when they run and are one file linked from its head,
+// which browsers are told to keep,
 // that a table sorts and comes back, that the rail marks the card being read, that a
 // themed figure follows the theme, and that a reference marker opens its note in place, leads to
 // it on the references page without scripts, and goes when the reader switches references off.
 // Any failure fails the build.
+import { readFile } from 'node:fs/promises';
 import { chromium, type Page } from 'playwright';
-import { serve } from './lib/dist.ts';
+import { fileFor, serve } from './lib/dist.ts';
 
 const PATH = '/fixtures/parts/';
 const failures: string[] = [];
@@ -34,6 +36,13 @@ try {
   const first = tab.locator('figure[data-interactive="demo"]').nth(0);
   const second = tab.locator('figure[data-interactive="demo"]').nth(1);
   const broken = tab.locator('figure[data-interactive="broken"]');
+
+  // ---- The page's scripts are one file, linked from its head, that a browser keeps (hub decision
+  // 2026-11-10-christianjmills-page-scripts-in-one-file). None is written into the page.
+  const modules = await tab.evaluate(() => [...document.querySelectorAll<HTMLScriptElement>('script[type=module]')].map((s) => ({ src: s.getAttribute('src'), head: s.parentElement === document.head })));
+  expect(modules.length === 1 && modules[0].head && /^\/_astro\/.+\.js$/.test(modules[0].src ?? ''), `the page's scripts should be one file under /_astro/, linked from the head; the page has ${JSON.stringify(modules)}`);
+  const headers = await readFile(fileFor('/_headers'), 'utf8').catch(() => '');
+  expect(/^\/_astro\/\*\n {2}Cache-Control: public, max-age=31536000, immutable$/m.test(headers), 'the build should carry a _headers rule that lets browsers keep the hashed files under /_astro/');
 
   // Nothing mounts until its figure is near the window.
   expect((await tab.locator('[data-mounted], [data-mounting]').count()) === 0, "no interactive should start to mount before its figure is within a window's height of the window");
@@ -260,4 +269,4 @@ if (failures.length) {
   console.error(`fixture check failed (${failures.length}):\n  ${failures.join('\n  ')}`);
   process.exit(1);
 }
-console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, scripts that move nothing, sorting, the rail, themed figures, reference notes and the switch");
+console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, scripts in one kept file that move nothing, sorting, the rail, themed figures, reference notes and the switch");
