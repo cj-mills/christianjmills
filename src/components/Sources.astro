@@ -1,0 +1,42 @@
+---
+// A page's sources: each headed by the label its references use, then its citation and rights.
+// The post's own list links to the references page, where each numbered marker's passages are
+// listed, and ends with the "how this was checked" note; the references page repeats the list
+// without them.
+import { checkedNote } from '../../spec/markdown.ts';
+import { formatDate, type Deliverable } from '../lib/site.ts';
+
+interface Props {
+  d: Deliverable['data'];
+  /** On the post: the address of its references page, when the page has numbered markers. */
+  references?: string;
+  /** On the post: the "how this was checked" note follows the list. */
+  checked?: boolean;
+}
+const { d, references, checked = false } = Astro.props;
+const cited = new Set(d.refs.map((r) => r.source));
+---
+
+<section class="sources" aria-labelledby="sources">
+  <h2 id="sources">Sources</h2>
+  <ol>
+    {d.sources.map((s) => (
+      <li id={`source-${s.id}`}>
+        <span class="source-label">{s.label}</span>
+        <a class="source-citation" href={'url' in s ? s.url : 'repo' in s ? `${s.repo}/tree/${s.commit}` : s.path}>{s.citation}</a>
+        {s.kind === 'code' && <> At commit <code>{s.commit.slice(0, 7)}</code>.</>}
+        <span class="meta source-rights">{s.rights}{!cited.has(s.id) && ' Background; not cited inline.'}</span>
+      </li>
+    ))}
+  </ol>
+  {references && (
+    <p class="source-references">
+      <a href={references}>References</a>: the {d.notes.length === 1 ? 'numbered marker' : `${d.notes.length} numbered markers`} in the text, each with the passages it cites.
+    </p>
+  )}
+  {checked && d.checked && (
+    <p class="meta source-checked">
+      <strong>How this was checked.</strong> {checkedNote(d.checked, formatDate)}
+    </p>
+  )}
+</section>

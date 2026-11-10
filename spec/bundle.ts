@@ -14,7 +14,7 @@ import { createTar, parseTar } from 'nanotar';
 import { createCssVariablesTheme, createHighlighter } from 'shiki';
 import { z } from 'zod';
 import { BUNDLE_LIMITS, manifest as manifestSchema, type Manifest } from './manifest.ts';
-import { LANGUAGES, renderDocument, type Heading, type Reference } from './dialect.ts';
+import { LANGUAGES, renderDocument, type Heading, type Note, type Reference } from './dialect.ts';
 import { toMarkdown } from './markdown.ts';
 
 const TOP_LEVEL = /^(manifest\.json|content\/.+|assets\/.+)$/;
@@ -78,6 +78,8 @@ export interface VerifiedDeliverable {
   html: string;
   markdown: string;
   refs: Reference[];
+  /** What each numbered marker in the HTML stands for, for the page's references page. */
+  notes: Note[];
   headings: Heading[];
   files: Map<string, Uint8Array>;
 }
@@ -115,5 +117,5 @@ export async function verify(
     assetBase: opts.assetBase(manifest),
     highlighter: await highlighter,
   });
-  return { manifest, files, html: rendered.html, refs: rendered.refs, headings: rendered.headings, markdown: toMarkdown(rendered.tree, manifest) };
+  return { manifest, files, html: rendered.html, refs: rendered.refs, notes: rendered.notes, headings: rendered.headings, markdown: toMarkdown(rendered.tree, manifest) };
 }

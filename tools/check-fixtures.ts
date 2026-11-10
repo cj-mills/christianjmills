@@ -2,8 +2,10 @@
 // (spec/fixtures/parts, built by `npm run check:fixtures`): that a fallback stays until its module
 // has finished mounting, that one module mounts many times with each mount's own parameters, that a
 // module's reported values reach its own card and no other, that a failing module keeps its
-// fallback, that a table sorts and comes back, that the rail marks the card being read, and that a
-// themed figure follows the theme. Any failure fails the build.
+// fallback, that a table sorts and comes back, that the rail marks the card being read, that a
+// themed figure follows the theme, and that a reference marker opens its note in place, leads to
+// it on the references page without scripts, and goes when the reader switches references off.
+// Any failure fails the build.
 import { chromium, type Page } from 'playwright';
 import { serve } from './lib/dist.ts';
 
@@ -86,6 +88,53 @@ try {
   await tab.locator('#the-second-card').evaluate((h) => scrollTo(0, h.getBoundingClientRect().top + scrollY - 40));
   await tab.waitForFunction(() => document.querySelector('.contents-rail a[aria-current]')?.textContent === 'The second card', null, { timeout: 5000 }).catch(() => {});
   expect((await rail.locator('a[aria-current]').allTextContents()).join('|') === 'The second card', `the rail should mark the card being read, and only it; it marks "${(await rail.locator('a[aria-current]').allTextContents()).join('|')}"`);
+
+  // ---- References: a marker opens its note in place, copied from the references page.
+  const words = (text: string | null) => (text ?? '').replace(/\s+/g, ' ').trim();
+  const note = tab.locator('.ref-note');
+  const refMarker = (n: number) => tab.locator('article .refs a', { hasText: `[${n}]` }).first();
+  expect((await tab.locator('article > p .refs a').first().getAttribute('href')) === '/fixtures/parts/references/#ref-1', "a marker should link to its note on the page's references page");
+  await refMarker(1).scrollIntoViewIfNeeded();
+  await refMarker(1).click();
+  await note.waitFor({ timeout: 5000 }).catch(() => {});
+  const noteText = async () => words(await note.locator('span').first().textContent().catch(() => ''));
+  expect((await noteText()) === 'The talk: 05:54.' && (await note.locator('a.ref-note-all').getAttribute('href')) === '/fixtures/parts/references/#ref-1', `marker 1's note should name its source and passage, and link to itself in the list; it reads "${await noteText()}"`);
+  expect((await note.locator('a').nth(1).getAttribute('href')) === 'https://example.com/talk#t=354', 'a passage in a note should link to its place in the source');
+  expect((await refMarker(1).getAttribute('aria-expanded')) === 'true', 'an open note should be told on its marker');
+  const placed = await tab.evaluate(() => {
+    const [m, n] = [document.querySelector('article .refs a')!.getBoundingClientRect(), document.querySelector('.ref-note')!.getBoundingClientRect()];
+    return n.top >= m.bottom && n.left >= 0 && n.right <= document.documentElement.clientWidth;
+  });
+  expect(placed, 'a note should open under its marker, inside the window');
+  await tab.keyboard.press('Escape');
+  expect((await note.count()) === 0 && (await refMarker(1).getAttribute('aria-expanded')) === null, 'the Escape key should close a note and leave nothing of it');
+  await refMarker(3).scrollIntoViewIfNeeded();
+  await refMarker(3).click();
+  await note.waitFor({ timeout: 5000 }).catch(() => {});
+  expect((await noteText()) === "The talk's code: src/main.rs, line 43; lines 40–54. The talk: 06:10–06:59.", `marker 3's note should list both sources, the second passage of a file without its path; it reads "${await noteText()}"`);
+  await refMarker(3).click();
+  expect((await note.count()) === 0, "a click on an open note's marker should close it");
+  // A marker a module has copied into its own root opens the same way.
+  const copied = first.locator('.interactive-root .step-sources .refs a');
+  await copied.scrollIntoViewIfNeeded();
+  await copied.click();
+  await note.waitFor({ timeout: 5000 }).catch(() => {});
+  expect((await noteText()) === 'The talk: 06:10–06:59.', "a marker copied by an interactive's module should open its note");
+  await tab.keyboard.press('Escape');
+
+  // ---- The reader's switch: with the contents, kept across pages, applied before the page is drawn.
+  const shown = () => tab.locator('.refs:visible').count();
+  const boxes = () => tab.locator('.refs-switch input').evaluateAll((all) => all.map((b) => (b as HTMLInputElement).checked).join());
+  expect((await tab.locator('.rail .refs-switch').isVisible()) && !(await tab.locator('header .refs-switch').isVisible()), 'where the page has a rail, the switch should be at its foot and nowhere else');
+  expect((await shown()) > 0, 'references should show until the reader switches them off');
+  await tab.locator('.rail .refs-switch input').uncheck();
+  expect((await shown()) === 0, "switched off, no marker should show, nor an interactive's label for them");
+  expect((await tab.evaluate(() => localStorage.getItem('refs'))) === 'off' && (await boxes()) === 'false,false', 'the choice should be kept, and both boxes should say it');
+  await tab.reload({ waitUntil: 'load' });
+  expect((await tab.evaluate(() => document.documentElement.dataset.refs)) === 'off' && (await shown()) === 0 && (await boxes()) === 'false,false', 'a kept "off" should hold on the next page load');
+  expect(await tab.evaluate(() => [...document.head.querySelectorAll('script:not([src])')].some((s) => s.textContent!.includes("localStorage.getItem('refs')"))), "the kept choice should be applied by the page's head, before anything is drawn");
+  await tab.locator('.rail .refs-switch input').check();
+  expect((await shown()) > 0 && (await tab.evaluate(() => localStorage.getItem('refs'))) === null && (await boxes()) === 'true,true', 'switched on again, the markers should show and nothing should be kept');
   await tab.context().close();
 
   // ---- A themed figure follows the theme; a phone gets the contents as a disclosure, cards and all.
@@ -97,6 +146,7 @@ try {
     const src = await figure.evaluate((img: HTMLImageElement) => img.currentSrc);
     expect(String(src).endsWith(`step-1-${colorScheme}.png`), `in ${colorScheme} the themed figure should show its ${colorScheme} image, not ${src}`);
     expect((await phone.locator('.contents-head ol ol a').count()) === 2 && !(await phone.locator('.contents-rail').isVisible()), "a phone's contents should be the disclosure, with the cards in it");
+    expect((await phone.locator('header .refs-switch').isVisible()) && !(await phone.locator('.rail').isVisible()), "a phone's switch for references should be under the contents, at the page's head");
     expect(await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the page should not scroll sideways on a phone');
     await phone.context().close();
   }
@@ -104,6 +154,15 @@ try {
   // ---- Without JavaScript the fallbacks are the page.
   const plain = await open({ viewport: { width: 375, height: 740 }, javaScriptEnabled: false });
   expect((await plain.locator('.interactive-fallback .step').count()) === 4 && (await plain.locator('.interactive-fallback').first().isVisible()), 'without JavaScript each step list should be there to read');
+  // A marker is a plain link to its note on the references page, and the box still hides markers.
+  await plain.locator('header .refs-switch input').uncheck();
+  expect((await plain.locator('.refs:visible').count()) === 0, 'without JavaScript the switch should still hide the markers');
+  await plain.locator('header .refs-switch input').check();
+  await plain.locator('article > p .refs a').first().click();
+  await plain.waitForURL('**/fixtures/parts/references/#ref-1', { timeout: 5000 }).catch(() => {});
+  expect(plain.url().endsWith('/fixtures/parts/references/#ref-1') && (await plain.locator('#ref-1').isVisible()), `without JavaScript a marker should lead to its note on the references page, not ${plain.url()}`);
+  expect((await plain.locator('#ref-3').textContent())!.replace(/\s+/g, ' ').trim() === "The talk's code: src/main.rs, line 43; lines 40–54. The talk: 06:10–06:59.", `the references page should list each note in full; note 3 reads "${await plain.locator('#ref-3').textContent()}"`);
+  expect((await plain.locator('meta[name=robots][content=noindex]').count()) === 1 && (await plain.locator('#source-code').count()) === 1, 'the references page should be kept out of search engines and list the sources its notes name');
   await plain.context().close();
 } finally {
   await browser.close();
@@ -114,4 +173,4 @@ if (failures.length) {
   console.error(`fixture check failed (${failures.length}):\n  ${failures.join('\n  ')}`);
   process.exit(1);
 }
-console.log('fixture check passed: mounting, parameters, reported values, a failing module, sorting, the rail and themed figures');
+console.log('fixture check passed: mounting, parameters, reported values, a failing module, sorting, the rail, themed figures, reference notes and the switch');

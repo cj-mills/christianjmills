@@ -60,8 +60,9 @@ Markdoc, plus:
 
 - `{% ref source="id" …locator /%}`: inline reference to a manifest source. Unknown source, a
   locator the kind doesn't take, a malformed or out-of-range locator: build error. Write one per
-  claim. The HTML merges a block's references (paragraph, list item, table cell) into one marker
-  at its end; the Markdown copy keeps them one per claim.
+  claim, as many to a block as the claim needs. The HTML gives a block (paragraph, list item,
+  table cell) one numbered marker at its end for all of them; the Markdown copy keeps them one per
+  claim, in full (References, below).
 - `{% interactive id="id" caption="…" params={…} %}fallback{% /interactive %}`: a mount for a
   declared interactive. The children are the fallback shown without JavaScript and are required.
   `params` is any JSON object, handed to the module. One interactive may be mounted many times on
@@ -106,6 +107,37 @@ Markdoc, plus:
 
 Any validation error fails the publish command and the site build, with file and line.
 
+## References
+
+What the site makes of a page's `{% ref %}`s (hub decision
+`2026-11-10-christianjmills-numbered-reference-markers`). A page's author writes the references
+and nothing else; all of this is the site's.
+
+- **The marker.** Each block that cites anything ends in one marker, a bracketed number:
+  `<span class="refs">&nbsp;<a href="/posts/<page>/references/#ref-39" role="doc-noteref">[39]</a></span>`.
+  The number stands for the block's whole set of passages. Blocks that cite the same passages
+  share a number, so numbers run in the order of first use and repeat. A marker costs the page
+  about 10 bytes gzipped whatever it cites, so citing every list item and table cell is
+  affordable: on the map lab's page, 152 markers are 1.6 KB of its HTML.
+- **The references page.** The site builds `<the page's address>references/` for every page with
+  references: each number with its sources' labels and every passage as a link to the place in
+  the source, then the page's Sources. It is `noindex` and outside the site's search. The page's
+  own Sources section lists each source's citation and rights and links to it.
+- **With scripts,** a marker that is clicked, tapped or entered shows its note in place, copied
+  from the references page, which is fetched on the reader's first move toward a marker.
+  **Without scripts** it is a plain link to its note there.
+- **The reader's switch.** A "Show references" checkbox sits with the page's contents: at the foot
+  of the rail on a wide screen, under the contents at the page's head on a narrow one. Unchecked,
+  it hides everything with the class `refs`. The choice is kept in the reader's browser for every
+  page and applied before the page is drawn. Without scripts it works and isn't kept. Hidden
+  markers are still in the HTML.
+- **Locators** print as the reader would say them: `06:24–06:38`, `p. 9`, `pp. 9–10`,
+  `c03-cellular/src/main.rs, lines 40–70`, and `line 43` for a single line. In a note, a passage
+  in the same file as the one before it drops the file.
+- **The Markdown copy** has no markers: every reference is where it was written, in full, as a
+  link to the place in the source.
+- **Search** leaves markers out of what it indexes.
+
 ## Interactives
 
 An interactive is an ES module in `assets/` that exports `mount(root, context)`, which may return
@@ -134,6 +166,14 @@ that last step.
   marker at the number's place on its scale; with `series`, only that series' marks.
 
 A module changes nothing outside its root; `report` is how its numbers reach the page.
+
+**A step's references.** A step's text in the fallback ends in its marker, a `span.refs`
+(References, above). A module that shows the step's text takes the marker with it or shows it
+elsewhere in its root: a copy opens its note as the original does, with nothing for the module to
+do. To read the text without the marker, remove `.refs` from a copy first. Anything a module
+prints about references, such as a label before a step's markers, gets the class `refs` too, so
+it goes with the markers when the reader hides them. A module needs no other knowledge of
+references, and none of what is inside a marker.
 
 Modules take colors from the site's CSS custom properties (`--interactive-ink`,
 `--interactive-paper`, the `--color-*` tokens, and the figure pair `--figure-light` and

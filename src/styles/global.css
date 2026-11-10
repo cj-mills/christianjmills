@@ -234,22 +234,69 @@ a {
 .contents-head[open] summary {
   margin-bottom: var(--space-2xs);
 }
-.contents-rail {
+/* The rail is what the aside keeps in view: the contents, which scroll inside it when they are
+   longer than the window, and under them the reader's switch for references, always there. */
+.rail {
   display: none;
 }
 @media (min-width: 64em) {
   .contents-head {
     display: none;
   }
-  .contents-rail {
-    display: block;
+  .rail {
+    display: flex;
+    flex-direction: column;
     position: sticky;
     top: var(--space-l);
     max-block-size: calc(100vh - 2 * var(--space-l));
-    overflow-y: auto;
     /* Its first line level with the page title's. */
     margin-top: var(--space-l);
     font-size: var(--size-step--1);
+  }
+  .contents-rail {
+    flex: 0 1 auto;
+    min-block-size: 0;
+    overflow-y: auto;
+  }
+}
+
+/* ---- The reader's switch for reference markers: a checkbox with the contents. Under the page's
+   head on a narrow screen; at the foot of the rail, under a rule, where the page has an aside. */
+.refs-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  inline-size: fit-content;
+  /* A touch target's 24 px, and room to spare. */
+  min-block-size: 1.75rem;
+  margin-top: var(--space-2xs);
+  color: var(--color-muted);
+  font-size: var(--size-step--1);
+  cursor: pointer;
+}
+.refs-switch input {
+  inline-size: 1rem;
+  block-size: 1rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+}
+@media (min-width: 64em) {
+  header .refs-switch {
+    display: none;
+  }
+  .rail .refs-switch {
+    flex: none;
+    inline-size: auto;
+    margin-top: var(--space-xs);
+    padding-top: var(--space-2xs);
+    padding-inline-start: calc(var(--space-xs) + 3px);
+    border-top: 1px solid var(--color-rule);
+  }
+  /* With no contents above it, the switch is the rail, and needs no rule. */
+  .rail .refs-switch:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
   }
 }
 
@@ -708,14 +755,93 @@ th[aria-sort] button.sort {
   margin-bottom: 0;
 }
 
-/* ---- Source references: one marker at the end of each block (the dialect merges them), a step
-   smaller and muted, its links in the link color. Long paths wrap. */
+/* ---- Source references (hub decision 2026-11-10-christianjmills-numbered-reference-markers): one
+   marker at the end of each block, its note's number in brackets, smaller than the text and muted
+   so a page of them stays a page of text. It takes the link color when pointed at, focused or
+   open. The reader's switch hides every marker: by the root's attribute, which the page's head
+   sets from the kept choice and the script keeps, and by the box itself, for a reader without
+   scripts. Anything else given the class goes with them (an interactive's own label for a step's
+   references). */
 .refs {
   color: var(--color-muted);
-  font-size: var(--size-step--1);
+  font-size: 0.8em;
+  font-weight: 400;
+  white-space: nowrap;
+}
+/* A label that goes with its markers holds them: they keep the label's size. */
+.refs .refs {
+  font-size: inherit;
 }
 .refs a {
+  /* Taller than its line of type, for a finger. */
+  padding-block: 0.3em;
+  color: inherit;
+  text-decoration: none;
+}
+.refs a:hover,
+.refs a:focus-visible,
+.refs a[aria-expanded='true'] {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+:root[data-refs='off'] .refs,
+:root:has(.refs-switch input:not(:checked)) .refs {
+  display: none;
+}
+/* The note a marker opens, under it: its sources and passages, copied from the references page. */
+.ref-note {
+  position: absolute;
+  inset: auto;
+  inline-size: max-content;
+  max-inline-size: min(28rem, calc(100vw - 2 * var(--space-s)));
+  margin: 0;
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: var(--size-step--1);
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: start;
+  white-space: normal;
   overflow-wrap: anywhere;
+}
+.ref-note-all {
+  display: block;
+  inline-size: fit-content;
+  margin-top: var(--space-2xs);
+  color: var(--color-muted);
+}
+/* The references page: the notes by number. The one a marker led to is marked. */
+.notes {
+  padding-inline-start: 2.5em;
+  font-size: var(--size-step--1);
+}
+.page-main .notes {
+  max-inline-size: none;
+}
+.notes li {
+  margin-bottom: var(--space-3xs);
+  padding-inline: var(--space-3xs);
+  overflow-wrap: anywhere;
+}
+/* A source's label leads its passages, in a note and in the copy of it a marker opens: told by
+   weight, so a list of notes isn't a wall of links. */
+.note-source {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+.note-source:hover {
+  text-decoration: underline;
+}
+.notes li::marker {
+  color: var(--color-muted);
+}
+.notes li:target {
+  background: var(--color-surface);
+  outline: 1px solid var(--color-rule);
 }
 
 /* ---- The interactive frame: the live area on the surface, its caption inside. A module keeps its
@@ -799,8 +925,8 @@ button {
   margin: var(--space-3xs) 0;
 }
 
-/* ---- Sources: each entry headed by the label the markers use, then the citation, where this page
-   cites it, and the rights. */
+/* ---- Sources: each entry headed by the label the references use, then the citation and the
+   rights. Under them the post links to its references page. */
 .sources ol {
   list-style: none;
   padding: 0;
@@ -815,10 +941,6 @@ button {
 .source-label::first-letter {
   text-transform: uppercase;
 }
-.source-cited,
 .source-rights {
   display: block;
-}
-.source-cited a {
-  overflow-wrap: anywhere;
 }

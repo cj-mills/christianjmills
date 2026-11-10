@@ -23,6 +23,13 @@ export interface Reference {
   href: string;
 }
 
+/** One numbered note: what a block cites, each source with its passages. Listed on the page's
+ *  references page; the marker in the text is its number. */
+export interface Note {
+  n: number;
+  sources: { id: string; label: string; items: { locator: string; href: string }[] }[];
+}
+
 export interface Heading {
   depth: number;
   slug: string;
@@ -45,6 +52,9 @@ function parseRange(value: string): [number, number] | null {
   const b = m[2] ? Number(m[2]) : a;
   return a >= 1 && b >= a ? [a, b] : null;
 }
+
+/** "line 43" or "lines 40–54". */
+const lines = (a: number, b: number) => (a === b ? `line ${a}` : `lines ${a}–${b}`);
 
 function seconds(t: string): number {
   return t.split(':').reduce((acc, part) => acc * 60 + Number(part), 0);
@@ -152,7 +162,7 @@ export function dialect(ctx: BundleContext) {
     const id = attrs.source as string;
     if (id === 'this') {
       const [a, b] = parseRange(attrs.lines)!;
-      return { locator: `${attrs.path}, lines ${a}–${b}`, href: assetBase + attrs.path };
+      return { locator: `${attrs.path}, ${lines(a, b)}`, href: assetBase + attrs.path };
     }
     const s = sources.get(id)!;
     switch (s.kind) {
@@ -171,8 +181,8 @@ export function dialect(ctx: BundleContext) {
         const [a, b] = parseRange(attrs.lines)!;
         const repo = s.repo.replace(/\/$/, '');
         return {
-          locator: `${attrs.path}, lines ${a}–${b}`,
-          href: `${repo}/blob/${s.commit}/${attrs.path}#L${a}-L${b}`,
+          locator: `${attrs.path}, ${lines(a, b)}`,
+          href: `${repo}/blob/${s.commit}/${attrs.path}#L${a}${a === b ? '' : `-L${b}`}`,
         };
       }
       case 'web':
@@ -242,8 +252,8 @@ export function dialect(ctx: BundleContext) {
           const { locator, href } = locate(attrs);
           refs.push({ source: attrs.source, locator, href });
           const label = attrs.source === 'this' ? 'this page’s code' : sources.get(attrs.source)!.label;
-          // One reference per claim in the tree, which the Markdown copy keeps; the HTML merges a
-          // block's references into one marker at its end (mergeReferences, below).
+          // One reference per claim in the tree, which the Markdown copy keeps; the HTML gives a
+          // block one numbered marker at its end for all of them (mergeReferences, below).
           return new Tag('a', { class: 'ref', href, 'data-source': attrs.source, 'data-label': label, 'data-locator': locator }, [
             `[${label}${locator ? ', ' + locator : ''}]`,
           ]);
@@ -695,54 +705,59 @@ function stripRefs(children: RenderableTreeNode[], found: Tag[]): RenderableTree
   return out.filter((n) => n !== '');
 }
 
-/** One marker for a block's references: each source's label once, linking to its entry in the
- *  page's Sources, then each of its locators, linking to the place in the source. Sources are
- *  separated by semicolons, and each label ends in a colon. */
-function marker(refs: Tag[]): Tag {
-  const groups = new Map<string, { label: string; items: { locator: string; href: string }[] }>();
-  for (const r of refs) {
-    const id = String(r.attributes['data-source']);
-    const g = groups.get(id) ?? { label: String(r.attributes['data-label']), items: [] };
-    const item = { locator: String(r.attributes['data-locator'] ?? ''), href: String(r.attributes.href) };
-    if (!g.items.some((i) => i.href === item.href && i.locator === item.locator)) g.items.push(item);
-    groups.set(id, g);
+/** The page's notes, numbered in the order its blocks first cite them. Two blocks that cite the
+ *  same passages share a note. */
+class Notes {
+  list: Note[] = [];
+  #byKey = new Map<string, Note>();
+
+  note(refs: Tag[]): Note {
+    const sources: Note['sources'] = [];
+    for (const r of refs) {
+      const id = String(r.attributes['data-source']);
+      let source = sources.find((x) => x.id === id);
+      if (!source) sources.push((source = { id, label: String(r.attributes['data-label']), items: [] }));
+      const item = { locator: String(r.attributes['data-locator'] ?? ''), href: String(r.attributes.href) };
+      if (!source.items.some((i) => i.href === item.href && i.locator === item.locator)) source.items.push(item);
+    }
+    const key = JSON.stringify(sources.map((x) => [x.id, x.items.map((i) => [i.href, i.locator])]));
+    let note = this.#byKey.get(key);
+    if (!note) {
+      note = { n: this.list.length + 1, sources };
+      this.#byKey.set(key, note);
+      this.list.push(note);
+    }
+    return note;
   }
-  const parts: RenderableTreeNode[] = ['['];
-  [...groups].forEach(([id, g], gi) => {
-    if (gi > 0) parts.push('; ');
-    const located = g.items.filter((i) => i.locator);
-    if (id === 'this') parts.push(g.label);
-    else if (!located.length) parts.push(new Tag('a', { class: 'ref-source', href: g.items[0].href }, [g.label]));
-    else parts.push(new Tag('a', { class: 'ref-source', href: `#source-${id}` }, [g.label]));
-    // "the talk's code: c03-cellular/src/main.rs, lines 17–34; lines 40–70": a locator that shares
-    // the one before it's file or part drops it.
-    let prev = '';
-    located.forEach((i, ii) => {
-      parts.push(ii === 0 ? ': ' : '; ');
-      const head = /^(.*), /.exec(i.locator)?.[1];
-      const text = head && prev.startsWith(head + ', ') ? i.locator.slice(head.length + 2) : i.locator;
-      parts.push(new Tag('a', { class: 'ref', href: i.href }, [text]));
-      prev = i.locator;
-    });
-  });
-  parts.push(']');
-  return new Tag('span', { class: 'refs' }, parts);
 }
 
-/** The reader's view of references (hub decision 2026-11-04-traced-deliverables-reader-view): a
- *  block's citations merge into one marker at its end. Returns a new tree; the input is unchanged. */
-export function mergeReferences(node: RenderableTreeNode): RenderableTreeNode {
-  if (Array.isArray(node)) return node.map(mergeReferences);
-  if (!Tag.isTag(node)) return node;
-  const children = node.children.map(mergeReferences);
-  if (!MARKED_BLOCKS.has(node.name)) return new Tag(node.name, node.attributes, children);
-  const found: Tag[] = [];
-  const kept = stripRefs(children, found);
-  if (!found.length) return new Tag(node.name, node.attributes, children);
-  // In a list item, the marker goes after the item's own text, before any nested list.
-  const nested = kept.findIndex((c) => Tag.isTag(c) && ['ul', 'ol'].includes(c.name));
-  const at = nested === -1 ? kept.length : nested;
-  return new Tag(node.name, node.attributes, [...kept.slice(0, at), ' ', marker(found), ...kept.slice(at)]);
+/** A block's marker: its note's number, linking to the note on the page's references page. The
+ *  space before it doesn't break, so a marker never starts a line, and is inside the marker, so it
+ *  goes when a reader hides the markers. `span.refs` is what an interactive's module and the
+ *  reader's switch know a marker by (spec/README.md, References). */
+function marker(note: Note, references: string): Tag {
+  return new Tag('span', { class: 'refs' }, ['\u00a0', new Tag('a', { href: `${references}#ref-${note.n}`, role: 'doc-noteref' }, [`[${note.n}]`])]);
+}
+
+/** The reader's view of references (hub decision 2026-11-10-christianjmills-numbered-reference-markers):
+ *  a block's citations become one numbered marker at its end, and `notes` collects what each number
+ *  stands for. `references` is the address of the page that lists them. Returns a new tree; the
+ *  input is unchanged. */
+export function mergeReferences(node: RenderableTreeNode, references: string, notes = new Notes()): { tree: RenderableTreeNode; notes: Note[] } {
+  const walk = (node: RenderableTreeNode): RenderableTreeNode => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!Tag.isTag(node)) return node;
+    const children = node.children.map(walk);
+    if (!MARKED_BLOCKS.has(node.name)) return new Tag(node.name, node.attributes, children);
+    const found: Tag[] = [];
+    const kept = stripRefs(children, found);
+    if (!found.length) return new Tag(node.name, node.attributes, children);
+    // In a list item, the marker goes after the item's own text, before any nested list.
+    const nested = kept.findIndex((c) => Tag.isTag(c) && ['ul', 'ol'].includes(c.name));
+    const at = nested === -1 ? kept.length : nested;
+    return new Tag(node.name, node.attributes, [...kept.slice(0, at), marker(notes.note(found), references), ...kept.slice(at)]);
+  };
+  return { tree: walk(node), notes: notes.list };
 }
 
 /** The tags that go directly inside another. */
@@ -777,5 +792,6 @@ export function renderDocument(source: string, file: string, ctx: BundleContext)
     throw new Error(`Markdoc validation failed for ${file}:\n${lines.join('\n')}`);
   }
   const tree = Markdoc.transform(ast, config);
-  return { html: Markdoc.renderers.html(mergeReferences(tree)), tree, refs, headings };
+  const merged = mergeReferences(tree, `${ctx.manifest.urls.canonical}references/`);
+  return { html: Markdoc.renderers.html(merged.tree), tree, refs, headings, notes: merged.notes };
 }

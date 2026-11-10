@@ -54,8 +54,38 @@ has('aria-label="Median 0.637. 8 of 10 seeds fall between 0.608 and 0.665. Lowes
 has('<span class="key key-now"></span>the map on screen', "the key's marker, in a table that shows an interactive's value");
 expect(html.split('key-now').length === 2, "the key should name the marker only where a table shows an interactive's value");
 has('<span class="trait-now" data-trait="floor_share" data-digits="3"></span>', "the place for an interactive's own value");
-// References still merge inside the new parts.
-has('neighbors are. <span class="refs">[<a class="ref-source" href="#source-talk">the talk</a>: <a class="ref"', "a part's references merged into one marker");
+// References: a block's citations are one numbered marker at its end, linking to its note on the
+// page's references page; the same passages get the same number wherever they are cited.
+const NBSP = '\u00a0';
+const mark = (n: number) => `<span class="refs">${NBSP}<a href="/fixtures/parts/references/#ref-${n}" role="doc-noteref">[${n}]</a></span>`;
+has(`cites a source.${mark(1)}</p>`, "a paragraph's marker, after its last word");
+has(`neighbors are.${mark(2)}</p>`, "a part's marker");
+has(`<li>Count the walls around a tile.${mark(3)}</li>`, 'one marker for a list item that cites three passages of two sources');
+has(`<li>Five or more make it wall.${mark(2)}</li>`, 'the number of the note that already holds the same passages');
+has(`the caves have settled.${mark(2)}</p>`, "a step's marker, in the text a module reads");
+expect(!html.includes('class="ref"') && !html.includes('example.com/talk#'), "the page's HTML should hold no locator: they are on its references page");
+expect(
+  JSON.stringify(page.notes) ===
+    JSON.stringify([
+      { n: 1, sources: [{ id: 'talk', label: 'the talk', items: [{ locator: '05:54', href: 'https://example.com/talk#t=354' }] }] },
+      { n: 2, sources: [{ id: 'talk', label: 'the talk', items: [{ locator: '06:10–06:59', href: 'https://example.com/talk#t=370,419' }] }] },
+      {
+        n: 3,
+        sources: [
+          {
+            id: 'code',
+            label: "the talk's code",
+            items: [
+              { locator: 'src/main.rs, line 43', href: 'https://example.com/repo/blob/0123456789abcdef0123456789abcdef01234567/src/main.rs#L43' },
+              { locator: 'src/main.rs, lines 40–54', href: 'https://example.com/repo/blob/0123456789abcdef0123456789abcdef01234567/src/main.rs#L40-L54' },
+            ],
+          },
+          { id: 'talk', label: 'the talk', items: [{ locator: '06:10–06:59', href: 'https://example.com/talk#t=370,419' }] },
+        ],
+      },
+    ]),
+  `the page's notes should be its three sets of passages, in the order first cited, a single line as "line 43"; they are ${JSON.stringify(page.notes)}`,
+);
 
 // The Markdown copy.
 const says = (fragment: string, what: string) => expect(page.markdown.includes(fragment), `the Markdown copy should have ${what}: ${fragment}`);
@@ -64,6 +94,8 @@ says('#### The rule\n\n', 'a part');
 says('**Step 1 of 11.**\n\nEvery tile starts as wall with a 55% chance.\n\n![The map at step 1 of 11.](/_deliverables/fixture-parts/1.0.0/assets/step-1-light.png)', 'a step: its place, its text, its figure');
 says('**The techniques compared**\n\n| Technique | Floor share | Regions | Seeds failing |\n| --- | --- | --- | --- |\n| **Generators** |  |  |  |', 'a table under its name, with its group rows');
 says('| [The first card](#first) `c01` | 0.637 (8 of 10: 0.608 to 0.665) |', 'a mark in words');
+says("1. Count the walls around a tile [[the talk's code, src/main.rs, line 43]](https://example.com/repo/blob/0123456789abcdef0123456789abcdef01234567/src/main.rs#L43)[[the talk's code, src/main.rs, lines 40–54]](https://example.com/repo/blob/0123456789abcdef0123456789abcdef01234567/src/main.rs#L40-L54)[[the talk, 06:10–06:59]](https://example.com/talk#t=370,419).", 'every reference in full, one per claim, where the HTML has a number');
+expect(!page.markdown.includes('#ref-'), 'the Markdown copy should have no numbered markers');
 
 // Each mistake is refused, by name.
 const mdoc = new TextDecoder().decode(files.get('content/index.mdoc')!);

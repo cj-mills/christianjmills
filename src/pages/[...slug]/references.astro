@@ -1,0 +1,50 @@
+---
+// A page's references: what each numbered marker in its text stands for (hub decision
+// 2026-11-10-christianjmills-numbered-reference-markers). A marker links here, to its note; with
+// scripts the post reads the note from this page and shows it in place (src/scripts/references.ts,
+// which finds a note by its id and copies what is inside it).
+import Base from '../../layouts/Base.astro';
+import Sources from '../../components/Sources.astro';
+import { deliverables, slugOf, type Deliverable } from '../../lib/site.ts';
+
+export async function getStaticPaths() {
+  return (await deliverables()).filter((entry) => entry.data.notes.length > 0).map((entry) => ({ params: { slug: slugOf(entry) }, props: { entry } }));
+}
+
+const { entry } = Astro.props as { entry: Deliverable };
+const d = entry.data;
+// A label is written to sit inside a sentence ("the talk's code"); a note starts with it.
+const cap = (label: string) => label[0].toUpperCase() + label.slice(1);
+// "c03-cellular/src/main.rs, lines 17–34; lines 40–70": a locator that shares the one before it's
+// file drops it.
+const short = (items: { locator: string }[], i: number) => {
+  const head = /^(.*), /.exec(items[i].locator)?.[1];
+  return head && i > 0 && items[i - 1].locator.startsWith(head + ', ') ? items[i].locator.slice(head.length + 2) : items[i].locator;
+};
+---
+
+<Base title={`References: ${d.title}`} description={`The passages “${d.title}” cites, by the numbers in its text.`} section="writing" noindex>
+  <article>
+    <header>
+      <h1>References</h1>
+      <p class="standfirst">The passages <a href={d.urls.canonical}>{d.title}</a> cites, by the numbers in its text.</p>
+    </header>
+    <ol class="notes">
+      {d.notes.map((note) => (
+        <li id={`ref-${note.n}`}>
+          {note.sources.map((s, si) => {
+            const located = s.items.filter((i) => i.locator);
+            return (
+              <>
+                {si > 0 && ' '}
+                {s.id === 'this' ? cap(s.label) : located.length ? <a class="note-source" href={`#source-${s.id}`}>{cap(s.label)}</a> : <a href={s.items[0].href}>{cap(s.label)}</a>}
+                {located.map((i, ii) => <>{ii === 0 ? ': ' : '; '}<a href={i.href}>{short(located, ii)}</a></>)}.
+              </>
+            );
+          })}
+        </li>
+      ))}
+    </ol>
+    {d.sources.length > 0 && <Sources d={d} />}
+  </article>
+</Base>

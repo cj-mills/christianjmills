@@ -91,6 +91,7 @@ export function deliverablesLoader(): Loader {
             ...d.manifest,
             pinned: pin && !local ? { sha256: pin.sha256, key: pin.key } : null,
             refs: d.refs,
+            notes: d.notes,
             markdown: d.markdown,
           },
         });

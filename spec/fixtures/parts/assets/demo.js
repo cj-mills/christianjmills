@@ -8,7 +8,15 @@ export async function mount(root, { params, fallback, report }) {
   ready ??= new Promise((done) => setTimeout(done, 150));
   await ready;
   const steps = [...fallback.querySelectorAll('.step')];
-  const text = (i) => steps[i]?.querySelector('p:not(.step-label)')?.textContent ?? '';
+  // A step's text is written once, in the page. Its reference marker is a `span.refs` at its end:
+  // the text is read without it, and the marker is shown under the drawing, where it opens its
+  // note as it does in the page.
+  const written = (i) => steps[i]?.querySelector('p:not(.step-label)');
+  const text = (i) => {
+    const p = written(i)?.cloneNode(true);
+    for (const marker of p?.querySelectorAll('.refs') ?? []) marker.remove();
+    return p?.textContent ?? '';
+  };
 
   // The drawing and the control that changes it are what must fit the screen.
   const fit = document.createElement('div');
@@ -21,8 +29,13 @@ export async function mount(root, { params, fallback, report }) {
   range.max = String(Math.max(0, steps.length - 1));
   range.value = '0';
   range.setAttribute('aria-label', `Step, for ${params.name}`);
+  // The label has the markers' class, so it goes with them when the reader hides references.
+  const sources = document.createElement('p');
+  sources.className = 'refs step-sources';
   const show = () => {
     out.textContent = `${params.name}: ${text(Number(range.value))}`;
+    const markers = [...(written(Number(range.value))?.querySelectorAll('.refs') ?? [])].map((m) => m.cloneNode(true));
+    sources.replaceChildren(...(markers.length ? ['This step’s sources:', ...markers] : []));
     report({ floor_share: params.value + Number(range.value) / 10 }, params.series);
   };
   range.addEventListener('input', show);
@@ -30,7 +43,7 @@ export async function mount(root, { params, fallback, report }) {
   // The swap from the fallback to the module must not move the page under the reader (the build's
   // layout-shift check covers it), so this module starts at the size its fallback had.
   root.style.minBlockSize = `${fallback.getBoundingClientRect().height}px`;
-  root.append(fit);
+  root.append(fit, sources);
   mounts.push(params.name);
   show();
 }

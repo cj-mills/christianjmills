@@ -1,8 +1,8 @@
 // Accessibility check, run after every build; any violation fails the build.
 // axe-core against every built page in headless Chromium, in light and dark, at a phone's width and
 // a desktop's (the page frame changes at 64em: the contents are a disclosure below it and a rail
-// above), with JavaScript on (interactives mounted, a search run) and off (the fallbacks a reader
-// without JavaScript gets).
+// above), with JavaScript on (interactives mounted, a reference's note open, a search run) and off
+// (the fallbacks a reader without JavaScript gets).
 // axe needs JavaScript to run, so the "off" state is the page served with its scripts removed and
 // its <noscript> content unwrapped, which is what a browser without JavaScript renders.
 // Rules: WCAG 2.0, 2.1 and 2.2 A and AA, plus axe's best practices.
@@ -24,6 +24,13 @@ async function exercise(tab: Page, path: string) {
     await figure.and(tab.locator('[data-mounted], [data-mount-failed]')).waitFor({ timeout: 30_000 });
     const id = (await figure.getAttribute('data-interactive'))!;
     if ((await figure.getAttribute('data-mount-failed')) !== null && !EXPECTED_MOUNT_FAILURES.includes(id)) throw new Error(`${path}: interactive ${id} failed to mount`);
+  }
+  // Open a reference's note, so the note is checked with the page.
+  const marker = tab.locator('article .refs a').first();
+  if (await marker.count()) {
+    await marker.scrollIntoViewIfNeeded();
+    await marker.click();
+    await tab.locator('.ref-note').waitFor({ timeout: 5000 });
   }
   if (path === '/search/') {
     await tab.locator('pagefind-input input').fill('caves');
