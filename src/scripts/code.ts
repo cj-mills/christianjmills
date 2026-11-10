@@ -1,9 +1,15 @@
 // Adds a copy button to each code block's head (hub decision 2026-11-08-christianjmills-code-blocks).
 // The button needs JavaScript, so it is made here: without JavaScript the block has no dead control.
+// The head already has the button's height (global.css, Code), so adding it moves nothing.
 for (const block of document.querySelectorAll<HTMLElement>('.code-block')) {
   const head = block.querySelector<HTMLElement>('.code-head');
   const code = block.querySelector<HTMLElement>('pre code') ?? block.querySelector<HTMLElement>('pre');
-  if (!head || !code || !navigator.clipboard) continue;
+  if (!head || !code) continue;
+  if (!navigator.clipboard) {
+    // No way to copy here: a head that was only waiting for the button goes.
+    head.hidden = head.childElementCount === 0;
+    continue;
+  }
 
   const language = block.querySelector('.code-language')?.textContent;
   const button = document.createElement('button');

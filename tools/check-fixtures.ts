@@ -3,6 +3,7 @@
 // has finished mounting, that one module mounts many times with each mount's own parameters, that a
 // module's reported values reach its own card and no other, that a failing module keeps its
 // fallback, that the swap holds a figure's end for a reader whose window starts inside the figure,
+// that the page's own scripts move nothing when they run,
 // that a table sorts and comes back, that the rail marks the card being read, that a
 // themed figure follows the theme, and that a reference marker opens its note in place, leads to
 // it on the references page without scripts, and goes when the reader switches references off.
@@ -188,6 +189,55 @@ try {
   expect(Math.abs(after.next - before.next) < 1, `with the window starting inside a figure, the swap should leave what follows the figure where it was; it moved ${Math.round(after.next - before.next)} px`);
   await held.context().close();
 
+  // ---- The page's own scripts move nothing: the copy buttons, the sort buttons and the rail's mark
+  // arrive in room that was already there, so it doesn't matter when the scripts run. The page is
+  // loaded without its module scripts and with its interactives' modules held back, every box is
+  // read, the scripts are put back, and every box is read again.
+  for (const viewport of [{ width: 375, height: 740 }, { width: 1280, height: 720 }]) {
+    const still = await (await browser.newContext({ viewport })).newPage();
+    const scripts: { src?: string; text: string }[] = [];
+    await still.route(origin + PATH, async (route) => {
+      const res = await route.fetch();
+      const body = (await res.text()).replace(/<script type="module"([^>]*)>([\s\S]*?)<\/script>/g, (_all, attrs: string, text: string) => {
+        scripts.push({ src: /\bsrc="([^"]*)"/.exec(attrs)?.[1], text });
+        return '';
+      });
+      await route.fulfill({ response: res, body });
+    });
+    await still.route('**/_deliverables/**/*.js', () => new Promise(() => {}));
+    await still.goto(origin + PATH, { waitUntil: 'load' });
+    expect(scripts.length > 0 && (await still.locator('button.copy, button.sort').count()) === 0, "the page should have module scripts to hold back, and no buttons before they run");
+    const settle = () => still.evaluate(async () => { await document.fonts.ready; await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))); });
+    await settle();
+    await still.evaluate(() => {
+      const box = (e: Element) => { const r = e.getBoundingClientRect(); return [r.top + scrollY, r.left, r.width, r.height]; };
+      (window as any).__boxes = [...document.querySelectorAll('body *')].map((e) => [e, box(e)]);
+      (window as any).__box = box;
+    });
+    await still.evaluate((all) => {
+      for (const { src, text } of all) {
+        const script = document.createElement('script');
+        script.type = 'module';
+        if (src) script.src = src;
+        else script.textContent = text;
+        document.body.append(script);
+      }
+    }, scripts);
+    await still.waitForFunction(() => document.querySelectorAll('button.copy').length === document.querySelectorAll('.code-block').length && document.querySelector('button.sort') !== null, null, { timeout: 5000 }).catch(() => {});
+    await settle();
+    const changed = await still.evaluate(() => {
+      const w = window as any;
+      const moved = (w.__boxes as [Element, number[]][]).filter(([e, was]) => (w.__box(e) as number[]).some((v, i) => Math.abs(v - was[i]) > 0.5));
+      // The cause is a box that changed size with nothing inside it changing size.
+      const resized = moved.filter(([e, was]) => (w.__box(e) as number[]).slice(2).some((v, i) => Math.abs(v - was[i + 2]) > 0.5));
+      const causes = resized.filter(([e]) => !resized.some(([inner]) => inner !== e && e.contains(inner)));
+      return { count: moved.length, buttons: document.querySelectorAll('button.copy, button.sort').length, first: causes.slice(0, 3).map(([e, was]) => `${e.tagName.toLowerCase()}${e.className ? '.' + String(e.className).split(' ')[0] : ''} (${was[3].toFixed(1)} to ${(w.__box(e) as number[])[3].toFixed(1)} px tall)`) };
+    });
+    expect(changed.buttons >= 3, `the page's scripts should have added the copy and sort buttons; there are ${changed.buttons}`);
+    expect(changed.count === 0, `at ${viewport.width} × ${viewport.height} the page's scripts should move nothing: ${changed.count} boxes changed, starting with ${changed.first.join(', ')}`);
+    await still.context().close();
+  }
+
   // ---- Without JavaScript the fallbacks are the page.
   const plain = await open({ viewport: { width: 375, height: 740 }, javaScriptEnabled: false });
   expect((await plain.locator('.interactive-fallback .step').count()) === 4 && (await plain.locator('.interactive-fallback').first().isVisible()), 'without JavaScript each step list should be there to read');
@@ -210,4 +260,4 @@ if (failures.length) {
   console.error(`fixture check failed (${failures.length}):\n  ${failures.join('\n  ')}`);
   process.exit(1);
 }
-console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, sorting, the rail, themed figures, reference notes and the switch");
+console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, scripts that move nothing, sorting, the rail, themed figures, reference notes and the switch");
