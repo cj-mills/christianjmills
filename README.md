@@ -18,16 +18,20 @@ npm run setup:browser   # the headless Chromium pinned by Playwright, for the ch
 npm run build
 ```
 
-`npm run build` generates the CSS tokens, builds the site with Astro, indexes it with Pagefind,
-then fails if a page breaks the performance budgets (`tools/check-perf.ts`, fonts included) or has
-an axe accessibility violation in light or dark, with JavaScript on or off (`tools/check-a11y.ts`).
+`npm run build` first checks the repo itself: that its own text is in American English
+(`tools/check-english.ts`), that the format's fixture page renders every part of the dialect and
+each mistake is refused (`tools/check-spec.ts`), and, on a build of that fixture page alone, that
+interactives mount as the contract says (`tools/check-fixtures.ts`). Then it generates the CSS
+tokens, builds the site with Astro, indexes it with Pagefind, and fails if a page breaks the
+performance budgets (`tools/check-perf.ts`, fonts and interactives included) or has an axe
+accessibility violation in light or dark, with JavaScript on or off (`tools/check-a11y.ts`).
 
 **Design tokens.** `src/styles/tokens.json` is generated and committed, so the user's apps can
 read the same tokens. `tools/design/tokens.ts` builds it from a GPUI Kit theme in
 `src/styles/themes/` (mapped and corrected by `tools/design/theme.ts`), the typefaces in
 `tools/design/fonts.ts`, and the type scale. After changing any of those, run
 `npm run tokens:write` and commit the result: the build fails while `tokens.json` is stale. The
-fonts are self-hosted from pinned Fontsource packages through Astro's Fonts API. Their licences and
+fonts are self-hosted from pinned Fontsource packages through Astro's Fonts API. Their licenses and
 the theme's are served at `/licenses.txt`.
 
 **Bundles.** The build fetches the bundles pinned in `deliverables.lock.json` from the public R2

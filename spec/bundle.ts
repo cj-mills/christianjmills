@@ -106,7 +106,7 @@ export async function verify(
   const entry = files.get(manifest.content.entry);
   if (!entry) throw new Error(`content entry "${manifest.content.entry}" is not in the bundle`);
 
-  // Code is highlighted into the site's own syntax roles: each token's colour is a CSS variable
+  // Code is highlighted into the site's own syntax roles: each token's color is a CSS variable
   // (--shiki-token-keyword and so on) that the site's stylesheet maps to the theme's tokens.
   highlighter ??= createHighlighter({ themes: [createCssVariablesTheme({ name: 'site', fontStyle: true })], langs: LANGUAGES });
   const rendered = renderDocument(new TextDecoder().decode(entry), manifest.content.entry, {

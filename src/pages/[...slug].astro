@@ -1,7 +1,7 @@
 ---
 import { render } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import Contents from '../components/Contents.astro';
+import Contents, { type Item } from '../components/Contents.astro';
 import { deliverables, formatDate, slugOf, updatedOf, type Deliverable } from '../lib/site.ts';
 import { checkedNote } from '../../spec/markdown.ts';
 
@@ -12,11 +12,14 @@ export async function getStaticPaths() {
 const { entry } = Astro.props as { entry: Deliverable };
 const d = entry.data;
 const { Content, headings } = await render(entry);
-// The rail lists the page's sections: the post's own h2s, then the Sources the page adds.
-const contents = [
-  ...headings.filter((h) => h.depth === 2).map((h) => ({ slug: h.slug, text: h.text })),
-  ...(d.sources.length > 0 ? [{ slug: 'sources', text: 'Sources' }] : []),
-];
+// The rail lists the page's sections: the post's own h2s, each with the cards under it, then the
+// Sources the page adds.
+const contents: Item[] = [];
+for (const h of headings as { depth: number; slug: string; text: string; card?: boolean }[]) {
+  if (h.depth === 2) contents.push({ slug: h.slug, text: h.text, items: [] });
+  else if (h.card && contents.length) contents.at(-1)!.items!.push({ slug: h.slug, text: h.text });
+}
+if (d.sources.length > 0) contents.push({ slug: 'sources', text: 'Sources' });
 const updated = updatedOf(entry);
 // Where the page cites each source: its distinct locators, in reading order.
 const cited = new Map<string, { locator: string; href: string }[]>();
@@ -32,9 +35,13 @@ const short = (list: { locator: string }[], i: number) => {
   return head && i > 0 && list[i - 1].locator.startsWith(head + ', ') ? list[i].locator.slice(head.length + 2) : list[i].locator;
 };
 const hasCode = entry.rendered?.html.includes('class="code-block"') ?? false;
+const hasSortedTable = entry.rendered?.html.includes('<table data-sort') ?? false;
 ---
 
 <Base title={d.title} description={d.summary} markdown={`${d.urls.canonical}index.md`} section="writing">
+  {/* Says scripts are running, before anything is drawn: a step list that is an interactive's
+      fallback then shows its last step alone while the module loads (global.css, Step lists). */}
+  {d.interactives.length > 0 && <script is:inline slot="head">document.documentElement.dataset.js = '';</script>}
   <article data-pagefind-body>
     <header>
       <h1>{d.title}</h1>
@@ -87,13 +94,13 @@ const hasCode = entry.rendered?.html.includes('class="code-block"') ?? false;
       <p>
         Prose: {d.licenses.prose.url ? <a href={d.licenses.prose.url}>{d.licenses.prose.spdx}</a> : d.licenses.prose.spdx}.
         Code: {d.licenses.code.spdx}.{' '}
-        {d.testedAgainst.length > 0 && <>Tested against {d.testedAgainst.map((t) => `${t.name} ${t.version} (${t.date})`).join(', ')}.{' '}</>}
+        {d.testedAgainst.length > 0 && <>Tested against {d.testedAgainst.map((t) => `${t.name} ${t.version} (${formatDate(t.date)})`).join(', ')}.{' '}</>}
         <a href={`${d.urls.canonical}index.md`}>Markdown copy</a>.
       </p>
       {d.revisions.length > 1 && (
         <details>
           <summary>Revisions</summary>
-          <ul>{d.revisions.map((r) => <li><time datetime={r.date}>{r.date}</time>, {r.version}: {r.note}</li>)}</ul>
+          <ul>{d.revisions.map((r) => <li><time datetime={r.date}>{formatDate(r.date)}</time>, version {r.version}: {r.note}</li>)}</ul>
         </details>
       )}
     </footer>
@@ -103,4 +110,5 @@ const hasCode = entry.rendered?.html.includes('class="code-block"') ?? false;
 
   {d.interactives.length > 0 && <script src="../scripts/interactives.ts"></script>}
   {hasCode && <script src="../scripts/code.ts"></script>}
+  {hasSortedTable && <script src="../scripts/tables.ts"></script>}
 </Base>

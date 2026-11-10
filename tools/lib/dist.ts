@@ -5,7 +5,10 @@ import { createServer, type Server } from 'node:http';
 import { extname, join, normalize, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const DIST = fileURLToPath(new URL('../../dist/', import.meta.url));
+// The build to check: dist/, or the fixture build's folder (npm run check:fixtures).
+export const DIST = fileURLToPath(new URL(`../../${process.env.SITE_DIST ?? 'dist'}/`, import.meta.url));
+/** Interactives that are meant to fail to mount: only the fixture's, which shows that a fallback stays. */
+export const EXPECTED_MOUNT_FAILURES = (process.env.EXPECT_MOUNT_FAILURES ?? '').split(',').filter(Boolean);
 
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -37,7 +40,9 @@ export async function pages(): Promise<string[]> {
     if (rel.startsWith('pagefind')) continue;
     out.push(rel ? `/${rel}/` : '/');
   }
-  return out.sort();
+  // CHECK_PAGES narrows a run to some pages, e.g. the fixture build's one page.
+  const only = (process.env.CHECK_PAGES ?? '').split(',').filter(Boolean);
+  return out.filter((p) => !only.length || only.includes(p)).sort();
 }
 
 export function fileFor(urlPath: string): string {

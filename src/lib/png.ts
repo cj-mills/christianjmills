@@ -24,7 +24,7 @@ const chunk = (type: string, data: Buffer) => {
   return Buffer.concat([len, td, crc]);
 };
 
-/** An S × S RGB PNG, each pixel's colour from `pixel(x, y)`. */
+/** An S × S RGB PNG, each pixel's color from `pixel(x, y)`. */
 export function png(S: number, pixel: (x: number, y: number) => Rgb): Buffer {
   const raw = Buffer.alloc((S * 3 + 1) * S);
   for (let y = 0; y < S; y++) {
@@ -35,6 +35,6 @@ export function png(S: number, pixel: (x: number, y: number) => Rgb): Buffer {
   ihdr.writeUInt32BE(S, 0);
   ihdr.writeUInt32BE(S, 4);
   ihdr[8] = 8; // bit depth
-  ihdr[9] = 2; // truecolour
+  ihdr[9] = 2; // truecolor
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
 }

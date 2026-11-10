@@ -1,4 +1,4 @@
-// Colour maths for the theme corrections: hex parsing, WCAG 2 contrast, OKLCH and OKLab.
+// Color maths for the theme corrections: hex parsing, WCAG 2 contrast, OKLCH and OKLab.
 // Ported from the design lab's tools/themes.mjs, which the user ruled on (hub decision
 // 2026-11-05-christianjmills-design-system-starting-tokens).
 
@@ -14,7 +14,7 @@ export function parseHex(c: string | undefined): { rgb: Rgb; a: number } | null 
 export const isHex = (c: string | undefined) => parseHex(c) !== null;
 const toHex = (rgb: number[]) => '#' + rgb.map((v) => v.toString(16).padStart(2, '0')).join('');
 
-/** A colour composited over a background, as opaque 8-bit sRGB. */
+/** A color composited over a background, as opaque 8-bit sRGB. */
 export function over(fg: string, bg: string): Rgb {
   const f = parseHex(fg)!, b = parseHex(bg)!;
   return f.rgb.map((v, i) => Math.round(v * f.a + b.rgb[i] * (1 - f.a))) as Rgb;
@@ -44,7 +44,7 @@ export function toOklch(c: string): Oklch {
   const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
   return [L, Math.hypot(A, B), Math.atan2(B, A)];
 }
-/** OKLCH to hex, reducing chroma until the colour is inside sRGB (hue and lightness kept). */
+/** OKLCH to hex, reducing chroma until the color is inside sRGB (hue and lightness kept). */
 export function fromOklch([L, C, H]: Oklch): string {
   for (let c = C; c >= 0; c -= 0.005) {
     const A = c * Math.cos(H), B = c * Math.sin(H);
@@ -68,7 +68,7 @@ export const distance = (x: string, y: string) => {
   const a = oklab(x), b = oklab(y);
   return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 };
-/** Mix `share` of colour b into colour a, in OKLab. */
+/** Mix `share` of color b into color a, in OKLab. */
 export function mix(a: string, b: string, share: number): string {
   const x = oklab(a), y = oklab(b);
   const [L, A, B] = x.map((v, i) => v + (y[i] - v) * share);

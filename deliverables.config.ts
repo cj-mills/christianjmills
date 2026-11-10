@@ -21,7 +21,7 @@ export const buckets: Record<'public' | 'private', Bucket> = {
 
 export const lockfilePath = new URL('./deliverables.lock.json', import.meta.url);
 
-/** Preview overrides: point a deliverable at a local working tree. Honoured only when DELIVERABLES_ALLOW_LOCAL=1. */
+/** Preview overrides: point a deliverable at a local working tree. Honored only when DELIVERABLES_ALLOW_LOCAL=1. */
 export const localOverridesPath = new URL('./deliverables.local.json', import.meta.url);
 
 /** Where a deliverable's files are served from on the site. */

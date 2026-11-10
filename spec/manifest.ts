@@ -92,6 +92,10 @@ export const manifest = z.strictObject({
     .refine((c) => c.supported <= c.claims, 'more claims supported than checked')
     .optional(),
 
+  // The names and quotations that keep their own spelling. The publish command refuses British
+  // spellings and day-first dates in everything else a reader sees (spec/english.ts).
+  english: z.strictObject({ allow: z.array(z.string().min(1)).default([]) }).optional(),
+
   // provenance of generated media
   provenance: z
     .array(

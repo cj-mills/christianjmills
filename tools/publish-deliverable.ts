@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pack, readBundleDir, sha256, unpack, verify } from '../spec/bundle.ts';
+import { checkBundle } from '../spec/english.ts';
 import { FORMAT_VERSION, lockfile as lockfileSchema } from '../spec/manifest.ts';
 import { assetBase, buckets, lockfilePath } from '../deliverables.config.ts';
 
@@ -27,6 +28,13 @@ if (!dir) {
 
 const files = await readBundleDir(dir);
 const { manifest } = await verify(files, { assetBase: (m) => assetBase(m.id, m.version) });
+// What readers see is in American English (hub decision 2026-11-09-american-english-written-from-the-start).
+const british = checkBundle(files, manifest);
+if (british.length) {
+  throw new Error(
+    `${manifest.id}@${manifest.version} is not in American English. Change each of these, or list a name or quotation in the manifest's english.allow:\n  ${british.join('\n  ')}`,
+  );
+}
 const archive = pack(files);
 const hash = sha256(archive);
 

@@ -1,4 +1,4 @@
-// Maps a GPUI Kit theme variant to the site's colour roles and applies the ruled corrections. Every
+// Maps a GPUI Kit theme variant to the site's color roles and applies the ruled corrections. Every
 // rule here was ruled by the user; the hub decision that holds each is named beside it:
 //   mapping .................. 2026-11-07-christianjmills-theme-role-mapping
 //   AA, hierarchy, accents ... 2026-11-05-christianjmills-design-system-starting-tokens
@@ -54,7 +54,7 @@ const SYNTAX: Record<string, string[]> = {
   punctuation: ['punctuation'],
   link: ['link_uri'],
 };
-/** Callout fills: a base colour mixed into paper (the theme-role-mapping decision). */
+/** Callout fills: a base color mixed into paper (the theme-role-mapping decision). */
 const CALLOUT: Record<string, [base: string, share: number]> = { note: ['blue', 0.12], tip: ['green', 0.12], warning: ['yellow', 0.12] };
 
 // ---- the pairs every corrected theme must pass (WCAG 2; text 4.5:1, focus ring 3:1) ------------------
@@ -84,7 +84,7 @@ function correctAA(r: Roles): Roles {
     const ok = () => mine.every(([f, b, min]) => contrast(c[f], c[b], c.paper) >= min + MARGIN);
     if (ok() || parseHex(c[fg])!.a < 1) continue;
     const [L0, C, H] = toOklch(c[fg]);
-    // Away from the background first; if that runs out of range before passing, towards and past it.
+    // Away from the background first; if that runs out of range before passing, toward and past it.
     const bg = luminance(over(c[mine[0][1]], c.paper)), self = luminance(over(c[fg], c.paper));
     const away = self === bg ? (bg > 0.18 ? -1 : 1) : Math.sign(self - bg);
     for (const dir of [away, -away]) {
@@ -124,9 +124,9 @@ const ACCENT: Record<Mode, { L: [number, number]; C: [number, number] }> = {
   light: { L: [0.42, 0.56], C: [0.07, 0.13] },
   dark: { L: [0.7, 0.8], C: [0.07, 0.13] },
 };
-function normaliseAccent(c: string, mode: Mode): string {
+function normalizeAccent(c: string, mode: Mode): string {
   const [l, C, H] = toOklch(c);
-  const chroma = C < 0.02 ? C : clamp(C, ACCENT[mode].C); // a near-grey accent stays grey
+  const chroma = C < 0.02 ? C : clamp(C, ACCENT[mode].C); // a near-gray accent stays gray
   return fromOklch([clamp(l, ACCENT[mode].L), chroma, H]);
 }
 // Links stand apart from body text: if the OKLab distance is under LINK_MIN, ink moves away from
@@ -148,7 +148,7 @@ function linkApart(c: Roles, mode: Mode): Roles {
 }
 
 // Neutral rules and text (2026-11-07-christianjmills-neutral-rules-and-text): every rule at one
-// WCAG contrast against paper in both modes, near neutral; ink and muted near grey.
+// WCAG contrast against paper in both modes, near neutral; ink and muted near gray.
 const RULE_CONTRAST = 1.4;
 const RULE_CHROMA = 0.02;
 const TEXT_CHROMA = { ink: 0.02, muted: 0.025 };
@@ -167,7 +167,7 @@ function capChroma(c: string, max: number): string {
   return C <= max ? c : fromOklch([l, max, H]);
 }
 
-// A filled button keeps its theme's ink: if that ink fails on the accent-normalised fill, the
+// A filled button keeps its theme's ink: if that ink fails on the accent-normalized fill, the
 // fill's lightness moves away from the ink, hue and chroma kept, until the pair passes. If it never
 // does, the AA pass moves the ink as before.
 function keepButtonInk(c: Roles): Roles {
@@ -188,7 +188,7 @@ export function mapTheme(t: GpuiTheme): Roles {
   const r: Roles = {};
   for (const [role, keys] of Object.entries(MAP)) {
     const v = keys.map((k) => t.colors[k]).find(isHex);
-    if (!v) throw new Error(`${t.name}: no colour for role "${role}" (keys ${keys.join(', ')})`);
+    if (!v) throw new Error(`${t.name}: no color for role "${role}" (keys ${keys.join(', ')})`);
     r[role] = v;
   }
   const h = (t.highlight ?? {}) as Record<string, unknown>;
@@ -206,8 +206,8 @@ export function correctTheme(t: GpuiTheme): { roles: Roles; pairs: [string, stri
   const raw = mapTheme(t);
   let c: Roles = { ...raw };
   // Hierarchy and accents first, then the neutral rules and text.
-  c.primary = normaliseAccent(c.primary, t.mode);
-  c.link = normaliseAccent(c.link, t.mode);
+  c.primary = normalizeAccent(c.primary, t.mode);
+  c.link = normalizeAccent(c.link, t.mode);
   c.surface = moveAway(c.surface, c.paper, GAP[t.mode].surface);
   c.rule = fixedRule(c.rule, c.paper);
   c.ink = capChroma(c.ink, TEXT_CHROMA.ink);

@@ -14,5 +14,5 @@ export async function deliverables(): Promise<Deliverable[]> {
 export const categoryGroups = Object.entries(categories.groups).map(([key, g]) => ({ key, ...g }));
 
 export function formatDate(iso: string) {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 }

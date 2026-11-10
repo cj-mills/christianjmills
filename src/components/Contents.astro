@@ -5,6 +5,8 @@
 export interface Item {
   slug: string;
   text: string;
+  /** A section's cards, listed under it. */
+  items?: Item[];
 }
 interface Props {
   items: Item[];
@@ -12,19 +14,34 @@ interface Props {
   place: 'rail' | 'head';
 }
 const { items, place } = Astro.props;
+const list = (all: Item[]) => all.map((i) => ({ ...i, items: i.items ?? [] }));
 ---
 
 {
   place === 'rail' ? (
     <nav class="contents contents-rail" aria-label="Contents">
       <p class="contents-title" aria-hidden="true">Contents</p>
-      <ol>{items.map((i) => <li><a href={`#${i.slug}`}>{i.text}</a></li>)}</ol>
+      <ol>
+        {list(items).map((i) => (
+          <li>
+            <a href={`#${i.slug}`}>{i.text}</a>
+            {i.items.length > 0 && <ol>{i.items.map((c) => <li><a href={`#${c.slug}`}>{c.text}</a></li>)}</ol>}
+          </li>
+        ))}
+      </ol>
     </nav>
   ) : (
     <details class="contents contents-head">
       <summary>Contents</summary>
       <nav aria-label="Contents">
-        <ol>{items.map((i) => <li><a href={`#${i.slug}`}>{i.text}</a></li>)}</ol>
+        <ol>
+        {list(items).map((i) => (
+          <li>
+            <a href={`#${i.slug}`}>{i.text}</a>
+            {i.items.length > 0 && <ol>{i.items.map((c) => <li><a href={`#${c.slug}`}>{c.text}</a></li>)}</ol>}
+          </li>
+        ))}
+      </ol>
       </nav>
     </details>
   )

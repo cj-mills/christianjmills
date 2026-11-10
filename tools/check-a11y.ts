@@ -8,18 +8,22 @@
 // Rules: WCAG 2.0, 2.1 and 2.2 A and AA, plus axe's best practices.
 import AxeBuilder from '@axe-core/playwright';
 import { chromium, type Page } from 'playwright';
-import { pages, serve } from './lib/dist.ts';
+import { EXPECTED_MOUNT_FAILURES, pages, serve } from './lib/dist.ts';
 
 // Either side of the frame's 64em breakpoint.
 const VIEWPORTS = { phone: { width: 375, height: 812 }, desktop: { width: 1280, height: 800 } };
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
 async function exercise(tab: Page, path: string) {
-  // Bring every interactive into view so it mounts, then wait for its controls.
+  // Bring every interactive into view so it mounts, then wait until it has. One that fails to
+  // mount fails the check, unless it is the fixture's, which fails on purpose.
   const figures = tab.locator('figure[data-interactive]');
   for (let i = 0; i < (await figures.count()); i++) {
-    await figures.nth(i).scrollIntoViewIfNeeded();
-    await figures.nth(i).locator('.interactive-root').waitFor({ timeout: 5000 });
+    const figure = figures.nth(i);
+    await figure.scrollIntoViewIfNeeded();
+    await figure.and(tab.locator('[data-mounted], [data-mount-failed]')).waitFor({ timeout: 30_000 });
+    const id = (await figure.getAttribute('data-interactive'))!;
+    if ((await figure.getAttribute('data-mount-failed')) !== null && !EXPECTED_MOUNT_FAILURES.includes(id)) throw new Error(`${path}: interactive ${id} failed to mount`);
   }
   if (path === '/search/') {
     await tab.locator('pagefind-input input').fill('caves');

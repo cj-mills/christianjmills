@@ -16,7 +16,7 @@ export const faviconSvg = () =>
   `<style>path{fill:#000}@media (prefers-color-scheme:dark){path{fill:#fff}}</style><path d="${PATH}"/></svg>\n`;
 
 /** The mark as lattice cells (row-major, UNITS × UNITS, 1 = ink), filled from PATH by the even-odd
- *  rule at each cell's centre, so the raster icons can't drift from the vector mark. */
+ *  rule at each cell's center, so the raster icons can't drift from the vector mark. */
 export function cells(): Uint8Array {
   const polys = PATH.split('Z').filter(Boolean).map((p) => [...p.matchAll(/[ML](\d+) (\d+)/g)].map((m) => [Number(m[1]), Number(m[2])]));
   const out = new Uint8Array(UNITS * UNITS);

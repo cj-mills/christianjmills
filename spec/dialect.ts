@@ -27,6 +27,8 @@ export interface Heading {
   depth: number;
   slug: string;
   text: string;
+  /** A card's title: the contents rail lists a section's cards under it. */
+  card?: boolean;
 }
 
 const RANGE = /^(\d+)(?:-(\d+))?$/;
@@ -92,6 +94,18 @@ export function dialect(ctx: BundleContext) {
   const refs: Reference[] = [];
   const headings: Heading[] = [];
   const usedIds = new Set<string>();
+  /** Each trait's scale, as its first mark gives it: one scale for a trait across the page. */
+  const traitScales = new Map<string, string>();
+  /** The ids of the cards being transformed, innermost last: a part's id starts with its card's. */
+  const cards: string[] = [];
+
+  /** An id no other heading on the page has: the base, or the base with a number. */
+  function claim(base: string): string {
+    let id = base;
+    for (let n = 2; usedIds.has(id); n++) id = `${base}-${n}`;
+    usedIds.add(id);
+    return id;
+  }
 
   function checkAsset(src: unknown): ValidationError[] {
     if (typeof src !== 'string' || /^[a-z]+:/i.test(src) || src.startsWith('/')) {
@@ -103,12 +117,30 @@ export function dialect(ctx: BundleContext) {
     return [];
   }
 
+  /** A figure's dark-theme image is a PNG in the bundle, the size of the light one. */
+  function checkDark(src: unknown, dark: unknown): ValidationError[] {
+    if (dark === undefined) return [];
+    const errs = checkAsset(dark);
+    if (errs.length || typeof src !== 'string') return errs;
+    const [a, b] = [files.get(src), files.get(dark as string)].map((f) => (f ? pngSize(f) : null));
+    if (a && b && (a.width !== b.width || a.height !== b.height))
+      return [error('asset-dark-size', `"${dark}" is ${b.width} by ${b.height}; the image it stands in for, "${src}", is ${a.width} by ${a.height}`)];
+    return [];
+  }
+
+  /** An image, or a light and dark pair: the dark one where the reader's system asks for dark. */
+  function picture(src: string, dark: string | undefined, alt: string): Tag {
+    const img = image(src, alt);
+    if (!dark) return img;
+    return new Tag('picture', {}, [new Tag('source', { media: '(prefers-color-scheme: dark)', srcset: assetBase + dark }), img]);
+  }
+
   function image(src: string, alt: string, title?: string): Tag {
     const size = pngSize(files.get(src)!)!;
     return new Tag('img', {
       src: assetBase + src,
       alt,
-      title,
+      ...(title ? { title } : {}),
       width: size.width,
       height: size.height,
       loading: 'lazy',
@@ -223,6 +255,9 @@ export function dialect(ctx: BundleContext) {
         attributes: {
           id: { type: String, required: true },
           caption: { type: String, required: true },
+          // What this mount is given: any JSON object. One module may be mounted many times on a
+          // page, each with its own parameters.
+          params: { type: Object },
         },
         validate(node) {
           const id = node.attributes.id;
@@ -241,6 +276,7 @@ export function dialect(ctx: BundleContext) {
               class: 'interactive',
               'data-interactive': decl.id,
               'data-module': assetBase + decl.module,
+              ...(node.attributes.params ? { 'data-params': JSON.stringify(node.attributes.params) } : {}),
             },
             [
               new Tag('div', { class: 'interactive-fallback' }, node.transformChildren(config)),
@@ -254,17 +290,206 @@ export function dialect(ctx: BundleContext) {
         selfClosing: true,
         attributes: {
           src: { type: String, required: true },
+          // The same image drawn for the dark theme. Without it, one image serves both.
+          dark: { type: String },
           alt: { type: String, required: true },
           caption: { type: String },
         },
         validate(node) {
-          const errs = checkAsset(node.attributes.src);
+          const errs = [...checkAsset(node.attributes.src), ...checkDark(node.attributes.src, node.attributes.dark)];
           if (!String(node.attributes.alt).trim()) errs.push(error('figure-alt', 'a figure needs alt text'));
           return errs;
         },
         transform(node) {
-          const { src, alt, caption } = node.attributes;
-          return new Tag('figure', {}, [image(src, alt), ...(caption ? [new Tag('figcaption', {}, [caption])] : [])]);
+          const { src, dark, alt, caption } = node.attributes;
+          return new Tag('figure', {}, [picture(src, dark, alt), ...(caption ? [new Tag('figcaption', {}, [caption])] : [])]);
+        },
+      },
+
+      // A card: one entry of a catalog, under a title, in labeled parts. What comes before its
+      // first part is its opening line. The contents rail lists a section's cards under it.
+      card: {
+        attributes: {
+          title: { type: String, required: true },
+          id: { type: String },
+          kind: { type: String },
+        },
+        validate(node) {
+          const id = node.attributes.id;
+          return id !== undefined && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)
+            ? [error('card-id', `{% card id="${id}" %}: an id is lowercase words joined by hyphens`)]
+            : [];
+        },
+        transform(node, config) {
+          const { title, kind } = node.attributes;
+          if (node.attributes.id && usedIds.has(node.attributes.id)) throw new Error(`{% card id="${node.attributes.id}" %}: the page already has that id`);
+          const id = claim(node.attributes.id ?? slugify(title));
+          headings.push({ depth: 3, slug: id, text: title, card: true });
+          cards.push(id);
+          const children = node.transformChildren(config);
+          cards.pop();
+          const first = children.findIndex((c) => Tag.isTag(c) && c.attributes.class === 'part');
+          const opening = first === -1 ? children : children.slice(0, first);
+          return new Tag('section', { class: 'card' }, [
+            new Tag('header', { class: 'card-head' }, [
+              ...(kind ? [new Tag('p', { class: 'card-kind' }, [kind])] : []),
+              new Tag('h3', { id }, [title]),
+              ...opening,
+            ]),
+            ...(first === -1 ? [] : children.slice(first)),
+          ]);
+        },
+      },
+
+      // One labeled part of a card.
+      part: {
+        attributes: { title: { type: String, required: true } },
+        transform(node, config) {
+          const title = node.attributes.title as string;
+          const id = claim(`${cards.at(-1)}-${slugify(title)}`);
+          headings.push({ depth: 4, slug: id, text: title });
+          return new Tag('section', { class: 'part' }, [new Tag('h4', { id }, [title]), ...node.transformChildren(config)]);
+        },
+      },
+
+      // A step list: each step a figure with its text. Inside {% interactive %} it is the fallback,
+      // and the module reads each step's text from it by `key` (spec/README.md, Interactives).
+      steps: {
+        transform(node, config) {
+          const items = node.transformChildren(config);
+          // A step that doesn't say where it is in a longer run is numbered by its place in the list.
+          items.forEach((li, i) => {
+            if (!Tag.isTag(li) || li.attributes['data-at'] !== undefined) return;
+            const at = li.children.findIndex((c) => Tag.isTag(c) && c.name !== 'picture' && c.name !== 'img');
+            li.children.splice(at === -1 ? li.children.length : at, 0, new Tag('p', { class: 'step-label' }, [`Step ${i + 1}`]));
+          });
+          return new Tag('ol', { class: 'steps' }, items);
+        },
+      },
+      step: {
+        attributes: {
+          src: { type: String },
+          dark: { type: String },
+          alt: { type: String },
+          // The kind of step, for the module that reads the list.
+          key: { type: String },
+          // Where the step is in a longer run: step `at` of `of`.
+          at: { type: Number },
+          of: { type: Number },
+        },
+        validate(node) {
+          const { src, dark, alt, at, of } = node.attributes;
+          const errs: ValidationError[] = [];
+          if (src !== undefined) {
+            errs.push(...checkAsset(src), ...checkDark(src, dark));
+            if (!String(alt ?? '').trim()) errs.push(error('step-alt', "a step's figure needs alt text"));
+          } else if (dark !== undefined) errs.push(error('step-dark', 'a step with a dark image needs the light one, in src'));
+          if ((at === undefined) !== (of === undefined) || (at !== undefined && !(Number.isInteger(at) && Number.isInteger(of) && at >= 1 && at <= of)))
+            errs.push(error('step-at', 'a step says where it is with both at and of, whole numbers with at from 1 to of'));
+          if (!node.children.length) errs.push(error('step-text', 'a step needs its text'));
+          return errs;
+        },
+        transform(node, config) {
+          const { src, dark, alt, key, at, of } = node.attributes;
+          return new Tag('li', { class: 'step', ...given({ 'data-key': key, 'data-at': at, 'data-of': of }) }, [
+            ...(src ? [picture(src, dark, alt)] : []),
+            ...(at !== undefined ? [new Tag('p', { class: 'step-label' }, [`Step ${at} of ${of}`])] : []),
+            ...node.transformChildren(config),
+          ]);
+        },
+      },
+      // A value in a step's text that the interactive replaces as the reader moves through the steps.
+      value: {
+        inline: true,
+        attributes: { name: { type: String } },
+        transform(node, config) {
+          return new Tag('span', { class: 'step-value', 'data-value': node.attributes.name ?? '' }, node.transformChildren(config));
+        },
+      },
+
+      // A table: named, in a region that scrolls sideways on a narrow screen with its first column
+      // fixed. A body row of one cell heads a group of rows. `sort` lets the reader order the
+      // rows by a column of numbers; `key` explains the marks in its cells.
+      table: {
+        attributes: {
+          label: { type: String, required: true },
+          rowheads: { type: Boolean, default: false },
+          sort: { type: Boolean, default: false },
+          key: { type: Boolean, default: false },
+        },
+        transform(node, config) {
+          const { label, rowheads, sort, key } = node.attributes;
+          const table = node.transformChildren(config).find((c): c is Tag => Tag.isTag(c) && c.name === 'table');
+          if (!table) throw new Error(`{% table label="${label}" %} holds no table`);
+          return dataTable(table, { label, rowheads, sort, key });
+        },
+      },
+
+      // The mark for a measured distribution: a track for the scale (from, to), a bar from the
+      // 10th to the 90th percentile, a dot at the median. The number itself is the cell's text.
+      mark: {
+        selfClosing: true,
+        attributes: {
+          p10: { type: Number, required: true },
+          median: { type: Number, required: true },
+          p90: { type: Number, required: true },
+          from: { type: Number, default: 0 },
+          to: { type: Number, required: true },
+          min: { type: Number },
+          max: { type: Number },
+          n: { type: Number },
+          unit: { type: String },
+          // What is measured and which run of it, so an interactive's own value can be marked on it.
+          trait: { type: String },
+          series: { type: String },
+        },
+        validate(node) {
+          const a = node.attributes;
+          const order = [a.from ?? 0, a.min ?? a.p10, a.p10, a.median, a.p90, a.max ?? a.p90, a.to];
+          return order.every((v, i) => typeof v === 'number' && (i === 0 || order[i - 1] <= v)) && a.to > (a.from ?? 0)
+            ? []
+            : [error('mark-order', '{% mark %} needs from ≤ min ≤ p10 ≤ median ≤ p90 ≤ max ≤ to, with from below to')];
+        },
+        transform(node) {
+          const a = { from: 0, ...node.attributes };
+          if (a.trait) {
+            const scale = `${a.from} to ${a.to}`;
+            const first = traitScales.get(a.trait) ?? scale;
+            if (first !== scale) throw new Error(`{% mark trait="${a.trait}" %}: the page's marks for one trait are on different scales (${first}; ${scale})`);
+            traitScales.set(a.trait, scale);
+          }
+          const at = (v: number) => ((v - a.from) / (a.to - a.from)).toFixed(4).replace(/\.?0+$/, '') || '0';
+          const unit = a.unit ? ` ${a.unit}` : '';
+          const words = [
+            `Median ${a.median}.`,
+            `8 of 10${unit} fall between ${a.p10} and ${a.p90}.`,
+            a.min !== undefined && a.max !== undefined ? `Lowest ${a.min}, highest ${a.max}${a.n ? `, over ${a.n}${unit}` : ''}.` : '',
+          ].filter(Boolean).join(' ');
+          return new Tag(
+            'span',
+            {
+              class: 'trait-mark',
+              role: 'img',
+              'aria-label': words,
+              title: words,
+              style: `--lo:${at(a.p10)};--mid:${at(a.median)};--hi:${at(a.p90)}`,
+              ...given({ 'data-trait': a.trait, 'data-series': a.series }),
+              'data-from': a.from,
+              'data-to': a.to,
+              'data-p10': a.p10,
+              'data-p90': a.p90,
+            },
+            [new Tag('i', {}, []), new Tag('b', {}, [])],
+          );
+        },
+      },
+
+      // Where an interactive's own value for a trait is shown, beside the measured ones.
+      now: {
+        selfClosing: true,
+        attributes: { trait: { type: String, required: true }, digits: { type: Number, default: 0 } },
+        transform(node) {
+          return new Tag('span', { class: 'trait-now', 'data-trait': node.attributes.trait, 'data-digits': node.attributes.digits ?? 0 }, []);
         },
       },
 
@@ -285,6 +510,12 @@ export function dialect(ctx: BundleContext) {
     },
 
     nodes: {
+      // Markdoc hands a {% table %}'s attributes to the table inside it, which the tag builds.
+      table: {
+        render: 'table',
+        attributes: { label: { type: String }, rowheads: { type: Boolean }, sort: { type: Boolean }, key: { type: Boolean } },
+      },
+
       heading: {
         children: ['inline'],
         attributes: { level: { type: Number, required: true } },
@@ -320,7 +551,8 @@ export function dialect(ctx: BundleContext) {
         validate(node) {
           const lang = node.attributes.language;
           if (!lang) return [error('fence-language', 'a code block names its language')];
-          if (!ctx.highlighter.getLoadedLanguages().includes(lang))
+          // Plain text is Shiki's own, never among the loaded languages.
+          if (lang !== 'text' && !ctx.highlighter.getLoadedLanguages().includes(lang))
             return [error('fence-language', `"${lang}" is not a language the site highlights`)];
           return [];
         },
@@ -356,6 +588,78 @@ function hastToTag(node: any): RenderableTreeNode {
   }
   if (node.tagName === 'pre') attrs.tabindex = 0; // scrollable regions must be keyboard reachable
   return new Tag(node.tagName, attrs, node.children.map(hastToTag));
+}
+
+/** The attributes that were given: the renderer prints one that is undefined as the word. */
+function given(attributes: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(attributes).filter(([, v]) => v !== undefined));
+}
+
+function find(node: RenderableTreeNode, test: (t: Tag) => boolean, out: Tag[] = []): Tag[] {
+  if (Tag.isTag(node)) {
+    if (test(node)) out.push(node);
+    for (const c of node.children) find(c, test, out);
+  }
+  return out;
+}
+const hasClass = (name: string) => (t: Tag) => t.attributes.class === name;
+
+/** What the marks' parts mean, for a table that asks for it. The marks say it themselves to a screen reader. */
+function markKey(now: boolean): Tag {
+  const item = (cls: string, text: string) => new Tag('span', {}, [new Tag('span', { class: `key ${cls}` }, []), text]);
+  return new Tag('p', { class: 'trait-key', 'aria-hidden': 'true' }, [
+    item('key-bar', 'the middle 8 of 10'),
+    item('key-dot', 'the median'),
+    ...(now ? [item('key-now', 'the map on screen')] : []),
+    item('key-track', 'the column’s whole scale'),
+  ]);
+}
+
+/** Builds a {% table %}: its name, its scrolling region, its row groups and row heads, and each
+ *  column's scale at its head when the column's marks share one. */
+function dataTable(table: Tag, opts: { label: string; rowheads: boolean; sort: boolean; key: boolean }): Tag {
+  const rowsOf = (section: Tag) => section.children.filter((c): c is Tag => Tag.isTag(c) && c.name === 'tr');
+  const cellsOf = (row: Tag) => row.children.filter((c): c is Tag => Tag.isTag(c) && (c.name === 'td' || c.name === 'th'));
+  const sections = table.children.filter((c): c is Tag => Tag.isTag(c));
+  const thead = sections.find((c) => c.name === 'thead');
+  const head = thead ? cellsOf(rowsOf(thead)[0]) : [];
+  for (const th of head) th.attributes.scope = 'col';
+
+  const bodies: Tag[] = [];
+  const scales = new Map<number, string>();
+  for (const row of sections.filter((c) => c.name === 'tbody').flatMap(rowsOf)) {
+    const cells = cellsOf(row);
+    if (cells.length === 1 && head.length > 1) {
+      // A row of one cell heads the rows after it.
+      bodies.push(new Tag('tbody', {}, [new Tag('tr', { class: 'group' }, [new Tag('th', { scope: 'rowgroup', colspan: head.length }, [new Tag('span', {}, cells[0].children)])])]));
+      continue;
+    }
+    cells.forEach((cell, i) => {
+      if (i === 0 && opts.rowheads) {
+        cell.name = 'th';
+        cell.attributes.scope = 'row';
+      }
+      for (const m of find(cell, hasClass('trait-mark'))) {
+        // A column whose marks share a scale prints it at its head; one that mixes scales (a
+        // table with a trait to a row) prints none.
+        const scale = `${m.attributes['data-from']} to ${m.attributes['data-to']}`;
+        scales.set(i, scales.has(i) && scales.get(i) !== scale ? '' : scale);
+      }
+    });
+    if (!bodies.length) bodies.push(new Tag('tbody', {}, []));
+    bodies.at(-1)!.children.push(row);
+  }
+  for (const [i, scale] of scales) if (scale) head[i]?.children.push(' ', new Tag('span', { class: 'scale' }, [scale]));
+
+  const built = new Tag('table', opts.sort ? { 'data-sort': '' } : {}, [
+    new Tag('caption', { class: 'visually-hidden' }, [opts.label]),
+    ...(thead ? [thead] : []),
+    ...bodies,
+  ]);
+  return new Tag('div', { class: 'table-block' }, [
+    ...(opts.key ? [markKey(find(built, hasClass('trait-now')).length > 0)] : []),
+    new Tag('div', { class: 'table-scroll', tabindex: 0, role: 'region', 'aria-label': opts.label }, [built]),
+  ]);
 }
 
 /** The blocks whose own inline content gathers its references into one marker. */
@@ -441,6 +745,9 @@ export function mergeReferences(node: RenderableTreeNode): RenderableTreeNode {
   return new Tag(node.name, node.attributes, [...kept.slice(0, at), ' ', marker(found), ...kept.slice(at)]);
 }
 
+/** The tags that go directly inside another. */
+const NESTS: Record<string, string> = { part: 'card', step: 'steps' };
+
 export const LANGUAGES = ['javascript', 'rust', 'python', 'shell', 'json', 'text'];
 
 /** Each language's name as its readers know it, for the code block's head. Plain text has none. */
@@ -457,6 +764,14 @@ export function renderDocument(source: string, file: string, ctx: BundleContext)
   const ast = Markdoc.parse(source, { file });
   const { config, refs, headings } = dialect(ctx);
   const problems = Markdoc.validate(ast, config).filter((e) => !['debug', 'info'].includes(e.error.level));
+  // A part belongs to a card, and a step to a step list.
+  const within = (node: Node, inside: string[]) => {
+    const parent = NESTS[node.tag ?? ''];
+    if (node.type === 'tag' && parent && inside.at(-1) !== parent)
+      problems.push({ type: 'tag', lines: node.lines, error: error('nesting', `{% ${node.tag} %} goes directly inside {% ${parent} %}`) } as (typeof problems)[number]);
+    for (const child of node.children) within(child, node.type === 'tag' ? [...inside, node.tag!] : inside);
+  };
+  within(ast, []);
   if (problems.length) {
     const lines = problems.map((p) => `  ${file}:${(p.lines[0] ?? 0) + 1}: ${p.error.message} [${p.error.id}]`);
     throw new Error(`Markdoc validation failed for ${file}:\n${lines.join('\n')}`);
