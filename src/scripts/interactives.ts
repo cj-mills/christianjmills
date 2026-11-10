@@ -4,6 +4,13 @@
 // each. The fallback stays in place until mount has finished, which a module that loads
 // WebAssembly does later, and stays if the module fails, so the page works without JavaScript and
 // when a module breaks.
+//
+// The swap doesn't move the page under a reader who has scrolled on. Past the figure, the browser's
+// scroll anchoring sees to that. Inside it, the browser can't: what it would hold on to is the
+// fallback, which the swap hides, or the figure's own box, whose start stays put while its end
+// moves. So the swap holds the figure's end itself. A reader with the figure's start in the window
+// is the module's to look after, by opening at the size its fallback had: the build's check holds
+// the window at several places in each figure while it mounts (tools/check-perf.ts).
 interface MountContext {
   /** The tag's `params`, parsed: whatever this mount is given. */
   params: Record<string, unknown>;
@@ -36,6 +43,16 @@ function reporter(figure: HTMLElement): MountContext['report'] {
   };
 }
 
+/** Makes a change to a figure's size and holds the figure's end where it was, for a reader whose
+ *  window starts inside the figure: what follows the figure is what they are reading toward. */
+function holdingEnd(figure: HTMLElement, change: () => void) {
+  const before = figure.getBoundingClientRect();
+  change();
+  if (before.top >= 0 || before.bottom <= 0) return;
+  const moved = figure.getBoundingClientRect().bottom - before.bottom;
+  if (moved) scrollBy({ top: moved, behavior: 'instant' });
+}
+
 async function activate(figure: HTMLElement) {
   const url = figure.dataset.module;
   const fallback = figure.querySelector<HTMLElement>('.interactive-fallback');
@@ -54,14 +71,19 @@ async function activate(figure: HTMLElement) {
       fallback,
       report: reporter(figure),
     });
-    fallback.hidden = true;
-    delete figure.dataset.mounting;
-    figure.dataset.mounted = '';
+    holdingEnd(figure, () => {
+      fallback.hidden = true;
+      delete figure.dataset.mounting;
+      figure.dataset.mounted = '';
+    });
     performance.measure(name, { start: started, end: performance.now() });
   } catch (err) {
-    root.remove();
-    delete figure.dataset.mounting;
-    figure.dataset.mountFailed = '';
+    // A step list that was showing its last step alone now shows every step.
+    holdingEnd(figure, () => {
+      root.remove();
+      delete figure.dataset.mounting;
+      figure.dataset.mountFailed = '';
+    });
     console.error(`interactive ${figure.dataset.interactive} failed to mount; keeping its fallback`, err);
   }
 }

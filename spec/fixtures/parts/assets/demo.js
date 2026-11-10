@@ -40,8 +40,9 @@ export async function mount(root, { params, fallback, report }) {
   };
   range.addEventListener('input', show);
   fit.append(out, range);
-  // The swap from the fallback to the module must not move the page under the reader (the build's
-  // layout-shift check covers it), so this module starts at the size its fallback had.
+  // The swap from the fallback to the module must not move the page under the reader, so this
+  // module opens no shorter than its fallback and within a line or two of its height. The build's
+  // check holds the window at several places in the figure while it mounts and reads the shift.
   root.style.minBlockSize = `${fallback.getBoundingClientRect().height}px`;
   root.append(fit, sources);
   mounts.push(params.name);

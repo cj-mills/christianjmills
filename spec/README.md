@@ -150,10 +150,26 @@ by `root`; what its mounts can share (a WebAssembly instance), it loads once.
 has WebAssembly to load. If the module can't be loaded, or `mount` throws or rejects, the root is
 removed and the fallback stays. While `mount` runs, the root has its final width, no height, and
 isn't seen. A fallback that is a step list shows only its last step while its module is on its
-way, so the page doesn't move when the module takes its place; without JavaScript, or once a
-module has failed, it shows every step. The build measures the layout shift of each mount with
-every other shift on the page (`tools/check-perf.ts`), so a module opens at about the size of
-that last step.
+way; without JavaScript, or once a module has failed, it shows every step.
+
+**The swap must not move the page.** A reader may be at the figure when its module is ready: the
+figure at the page's head is in the first window, a link in the contents lands on a card, and a
+reader can scroll faster than a module loads. What the reader then sees move is the difference
+between the fallback's height and the module's, so **a module opens at the height its fallback
+had**: the last step alone, for a step list. Whatever needs more room opens when the reader asks
+for it. The parts are:
+
+- **The site's:** past the figure, the browser keeps the reader's place. With the window starting
+  inside the figure, the site holds the figure's end where it was, so what follows doesn't move.
+- **The module's:** with the figure's start in the window, nothing can hold both what is above the
+  figure and what is below it, so the figure has to keep its height.
+- **The build's:** `tools/check-perf.ts` keeps each module from loading until the window is in
+  place, at three places in each figure (its start a quarter of the way down the window, its end
+  halfway down, its end an eighth of the way down) at 412 × 823 and 1280 × 720, then lets the
+  module through and reads the layout shift until the figure has mounted. That shift and the
+  page's shift from loading together may be no more than 0.1, the limit for a page. The result
+  doesn't depend on how long a mount takes. `LIST_HOLDS=1 npm run check:perf` prints every hold
+  with the figure's height before and after.
 
 `context` holds:
 

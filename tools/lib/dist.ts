@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 export const DIST = fileURLToPath(new URL(`../../${process.env.SITE_DIST ?? 'dist'}/`, import.meta.url));
 /** Interactives that are meant to fail to mount: only the fixture's, which shows that a fallback stays. */
 export const EXPECTED_MOUNT_FAILURES = (process.env.EXPECT_MOUNT_FAILURES ?? '').split(',').filter(Boolean);
+/** Interactives that are meant to move the page when they mount: only the fixture's, which shows that the check sees it. */
+export const EXPECTED_MOUNT_SHIFTS = (process.env.EXPECT_MOUNT_SHIFTS ?? '').split(',').filter(Boolean);
 
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',

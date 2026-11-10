@@ -2,7 +2,8 @@
 // (spec/fixtures/parts, built by `npm run check:fixtures`): that a fallback stays until its module
 // has finished mounting, that one module mounts many times with each mount's own parameters, that a
 // module's reported values reach its own card and no other, that a failing module keeps its
-// fallback, that a table sorts and comes back, that the rail marks the card being read, that a
+// fallback, that the swap holds a figure's end for a reader whose window starts inside the figure,
+// that a table sorts and comes back, that the rail marks the card being read, that a
 // themed figure follows the theme, and that a reference marker opens its note in place, leads to
 // it on the references page without scripts, and goes when the reader switches references off.
 // Any failure fails the build.
@@ -151,6 +152,42 @@ try {
     await phone.context().close();
   }
 
+  // ---- The swap holds the figure's end for a reader whose window starts inside the figure: what
+  // follows stays where it was, though the fixture's module opens far taller than its fallback. The
+  // module is kept from loading until the window is in place and has been drawn there, and the
+  // page's other modules for good, so nothing else changes size.
+  const held = await (await browser.newContext({ viewport: { width: 375, height: 400 } })).newPage();
+  let letThrough!: () => void;
+  const waiting = new Promise<void>((r) => (letThrough = r));
+  await held.route('**/_deliverables/**/*.js', async (route) => {
+    await (route.request().url().endsWith('/grows.js') ? waiting : new Promise(() => {}));
+    await route.continue().catch(() => {});
+  });
+  await held.goto(origin + PATH, { waitUntil: 'domcontentloaded' });
+  const grows = held.locator('figure[data-interactive="grows"]');
+  const frames = () => held.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+  const place = () =>
+    grows.evaluate((f) => {
+      const r = f.getBoundingClientRect();
+      return { start: r.top, end: r.bottom, height: r.height, next: f.nextElementSibling!.getBoundingClientRect().top };
+    });
+  await frames();
+  await held.evaluate(() => document.fonts.ready);
+  // The window starts just inside the figure, with the whole fallback in it: there the fallback is
+  // what the browser would keep in place, and the swap hides it, so only the site's hold keeps what
+  // follows where it was.
+  await grows.evaluate((f) => scrollTo({ top: scrollY + f.getBoundingClientRect().top + 6, behavior: 'instant' }));
+  await frames();
+  const before = await place();
+  letThrough();
+  await grows.and(held.locator('[data-mounted]')).waitFor({ timeout: 5000 }).catch(() => {});
+  await frames();
+  const after = await place();
+  expect(before.start < 0 && before.end > 0, `the window should start inside the figure before its module mounts; the figure runs from ${Math.round(before.start)} to ${Math.round(before.end)} px`);
+  expect(after.height > before.height + 200, `the fixture's growing module should open far taller than its fallback; the figure went from ${Math.round(before.height)} to ${Math.round(after.height)} px`);
+  expect(Math.abs(after.next - before.next) < 1, `with the window starting inside a figure, the swap should leave what follows the figure where it was; it moved ${Math.round(after.next - before.next)} px`);
+  await held.context().close();
+
   // ---- Without JavaScript the fallbacks are the page.
   const plain = await open({ viewport: { width: 375, height: 740 }, javaScriptEnabled: false });
   expect((await plain.locator('.interactive-fallback .step').count()) === 4 && (await plain.locator('.interactive-fallback').first().isVisible()), 'without JavaScript each step list should be there to read');
@@ -173,4 +210,4 @@ if (failures.length) {
   console.error(`fixture check failed (${failures.length}):\n  ${failures.join('\n  ')}`);
   process.exit(1);
 }
-console.log('fixture check passed: mounting, parameters, reported values, a failing module, sorting, the rail, themed figures, reference notes and the switch');
+console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, sorting, the rail, themed figures, reference notes and the switch");
