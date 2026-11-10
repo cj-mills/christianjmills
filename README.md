@@ -22,9 +22,11 @@ npm run build
 (`tools/check-english.ts`), that the format's fixture page renders every part of the dialect and
 each mistake is refused (`tools/check-spec.ts`), and, on a build of that fixture page alone, that
 interactives mount as the contract says (`tools/check-fixtures.ts`). Then it generates the CSS
-tokens, builds the site with Astro, indexes it with Pagefind, and fails if a page breaks the
-performance budgets (`tools/check-perf.ts`, fonts and interactives included) or has an axe
-accessibility violation in light or dark, with JavaScript on or off (`tools/check-a11y.ts`).
+tokens, builds the site with Astro, indexes it with Pagefind, and fails if desktop Chromium would
+show the fallback `.ico` as a page's tab icon in place of the SVG (`tools/check-icons.ts`), if a
+page breaks the performance budgets (`tools/check-perf.ts`, fonts and interactives included), or
+if it has an axe accessibility violation in light or dark, with JavaScript on or off
+(`tools/check-a11y.ts`).
 
 **Design tokens.** `src/styles/tokens.json` is generated and committed, so the user's apps can
 read the same tokens. `tools/design/tokens.ts` builds it from a GPUI Kit theme in
