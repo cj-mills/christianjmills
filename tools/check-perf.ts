@@ -77,10 +77,7 @@ const HOLDS = [
 // with why the build lets it through. A path holds one version of one deliverable, so an entry ends
 // with that version. An entry the check no longer finds moving the page, or whose module no page
 // mounts, fails the build, so the list can't outlive its reason.
-const KNOWN_MOUNT_SHIFTS: Record<string, string> = {
-  '/_deliverables/procedural-map-generation-techniques-notes/0.4.1/assets/lab/lab.js':
-    "published before this check existed: it opens 250 to 750 px taller than its fallback's last step; its next version opens at the size of its fallback (hub/projects/procedural-map-generation-notes.md, Open work)",
-};
+const KNOWN_MOUNT_SHIFTS: Record<string, string> = {};
 
 const failures: string[] = [];
 const known: string[] = [];
