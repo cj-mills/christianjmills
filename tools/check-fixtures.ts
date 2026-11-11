@@ -3,6 +3,8 @@
 // has finished mounting, that one module mounts many times with each mount's own parameters, that a
 // module's reported values reach its own card and no other, that a failing module keeps its
 // fallback, that the swap holds a figure's end for a reader whose window starts inside the figure,
+// that a figure whose page reserves its module's room has that room from the first paint, keeps its
+// height when the module mounts, and has no such room without scripts or once the module has failed,
 // that the page's own scripts move nothing when they run and are one file linked from its head,
 // which browsers are told to keep,
 // that a table sorts and comes back, that the rail marks the card being read, that a
@@ -198,6 +200,57 @@ try {
   expect(Math.abs(after.next - before.next) < 1, `with the window starting inside a figure, the swap should leave what follows the figure where it was; it moved ${Math.round(after.next - before.next)} px`);
   await held.context().close();
 
+  // ---- A reserve (hub decision 2026-11-11-christianjmills-interactive-reserve): the fixture's
+  // reserved figure declares its module's room on the tag. With scripts running the figure's live
+  // area is that tall before the module is there; the module, which fills the room, mounts with
+  // the figure's start in the window, and neither the figure's height nor what follows it changes.
+  // When the module can't be loaded, the room goes and the fallback is what is left.
+  for (const viewport of [{ width: 375, height: 740 }, { width: 1280, height: 720 }]) {
+    for (const fails of [false, true]) {
+      const tab = await (await browser.newContext({ viewport })).newPage();
+      let release!: () => void;
+      const released = new Promise<void>((r) => (release = r));
+      await tab.route('**/_deliverables/**/*.js', async (route) => {
+        if (!route.request().url().endsWith('/reserved.js')) return new Promise(() => {});
+        await released;
+        await (fails ? route.abort() : route.continue()).catch(() => {});
+      });
+      await tab.goto(origin + PATH, { waitUntil: 'domcontentloaded' });
+      const figure = tab.locator('figure[data-interactive="reserved"]');
+      const settle = () => tab.evaluate(async () => { await document.fonts.ready; await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))); });
+      const read = () =>
+        figure.evaluate((f) => {
+          // The reserve is a length in CSS; an element given it as its height says what it comes to here.
+          const probe = document.createElement('div');
+          probe.style.cssText = 'position:absolute;visibility:hidden;block-size:var(--interactive-reserve)';
+          f.append(probe);
+          const reserve = probe.getBoundingClientRect().height;
+          probe.remove();
+          const live = f.querySelector<HTMLElement>('.interactive-root') ?? f.querySelector<HTMLElement>('.interactive-fallback')!;
+          return { reserve, live: live.getBoundingClientRect().height, height: f.getBoundingClientRect().height, start: f.getBoundingClientRect().top, next: f.nextElementSibling!.getBoundingClientRect().top, status: f.querySelector('.status')?.textContent ?? '' };
+        });
+      await settle();
+      await figure.evaluate((f) => scrollTo({ top: scrollY + f.getBoundingClientRect().top - innerHeight / 4, behavior: 'instant' }));
+      await settle();
+      const before = await read();
+      const at = `at ${viewport.width} × ${viewport.height}`;
+      expect(before.reserve > 200 && Math.abs(before.live - before.reserve) < 0.5, `${at}, with scripts running, a reserved figure's live area should be its reserve (${before.reserve.toFixed(1)} px) before its module is there; it is ${before.live.toFixed(1)} px`);
+      expect(before.start > 0 && before.start < viewport.height, `${at} the reserved figure's start should be in the window while its module mounts; it is at ${Math.round(before.start)} px`);
+      release();
+      await figure.and(tab.locator(fails ? '[data-mount-failed]' : '[data-mounted]')).waitFor({ timeout: 5000 }).catch(() => {});
+      await settle();
+      const after = await read();
+      if (fails) {
+        expect((await figure.locator('.interactive-root').count()) === 0 && after.live < before.reserve - 100, `${at}, when a reserved figure's module fails, the room should go and the fallback be what is left; the live area is ${after.live.toFixed(1)} px of a reserve of ${after.reserve.toFixed(1)} px`);
+      } else {
+        expect(after.status === 'This module opened in the room its page reserved: min(16rem + 50cqi, var(--interactive-max-block-size)).', `a module should be handed its reserve as the tag wrote it; the fixture's shows "${after.status}"`);
+        expect(Math.abs(after.live - after.reserve) < 0.5, `${at} a module that fills its reserve should be ${after.reserve.toFixed(1)} px tall once mounted; its root is ${after.live.toFixed(1)} px`);
+        expect(Math.abs(after.height - before.height) < 0.5 && Math.abs(after.next - before.next) < 0.5, `${at} a reserved figure should keep its height when its module mounts, and what follows it its place; the figure went from ${before.height.toFixed(1)} to ${after.height.toFixed(1)} px and what follows moved ${(after.next - before.next).toFixed(1)} px`);
+      }
+      await tab.context().close();
+    }
+  }
+
   // ---- The page's own scripts move nothing: the copy buttons, the sort buttons and the rail's mark
   // arrive in room that was already there, so it doesn't matter when the scripts run. The page is
   // loaded without its module scripts and with its interactives' modules held back, every box is
@@ -250,6 +303,9 @@ try {
   // ---- Without JavaScript the fallbacks are the page.
   const plain = await open({ viewport: { width: 375, height: 740 }, javaScriptEnabled: false });
   expect((await plain.locator('.interactive-fallback .step').count()) === 4 && (await plain.locator('.interactive-fallback').first().isVisible()), 'without JavaScript each step list should be there to read');
+  // A reserve is room for a module, so without scripts there is none: the fallback is as tall as its text.
+  const unreserved = await plain.locator('figure[data-interactive="reserved"] .interactive-fallback').boundingBox();
+  expect(unreserved !== null && unreserved.height < 120, `without JavaScript a reserved figure's fallback should be its own height, with no room kept under it; it is ${unreserved?.height.toFixed(1)} px tall`);
   // A marker is a plain link to its note on the references page, and the box still hides markers.
   await plain.locator('header .refs-switch input').uncheck();
   expect((await plain.locator('.refs:visible').count()) === 0, 'without JavaScript the switch should still hide the markers');
@@ -269,4 +325,4 @@ if (failures.length) {
   console.error(`fixture check failed (${failures.length}):\n  ${failures.join('\n  ')}`);
   process.exit(1);
 }
-console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, scripts in one kept file that move nothing, sorting, the rail, themed figures, reference notes and the switch");
+console.log("fixture check passed: mounting, parameters, reported values, a failing module, a figure's end held, a reserve kept and let go, scripts in one kept file that move nothing, sorting, the rail, themed figures, reference notes and the switch");

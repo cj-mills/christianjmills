@@ -9,13 +9,19 @@
 // scroll anchoring sees to that. Inside it, the browser can't: what it would hold on to is the
 // fallback, which the swap hides, or the figure's own box, whose start stays put while its end
 // moves. So the swap holds the figure's end itself. A reader with the figure's start in the window
-// is the module's to look after, by opening at the size its fallback had: the build's check holds
-// the window at several places in each figure while it mounts (tools/check-perf.ts).
+// is the module's to look after, by opening at the size its figure had: its fallback's, or the
+// reserve its page declared, which the site's CSS holds the figure to from the first paint
+// (global.css, The interactive frame). The build's check holds the window at several places in
+// each figure while it mounts (tools/check-perf.ts).
 interface MountContext {
   /** The tag's `params`, parsed: whatever this mount is given. */
   params: Record<string, unknown>;
   /** The fallback, still in the page. A module may read it (a step list holds each step's text); it doesn't change it. */
   fallback: HTMLElement;
+  /** The reserve the page declared for this figure, as the tag wrote it (a CSS length), or null.
+   *  The figure's live area is at least that tall from the first paint, and the root once it has
+   *  mounted; a module uses it in its own CSS as var(--interactive-reserve) and opens within it. */
+  reserve: string | null;
   /** Shows the module's own values beside the measured ones in the card the figure is in: each
    *  {% now %} of a trait gets the number, and each {% mark %} of it a marker. With `series`, only
    *  the marks of that series. A value of null clears it. Outside a card it does nothing. */
@@ -69,6 +75,7 @@ async function activate(figure: HTMLElement) {
     await mod.mount(root, {
       params: JSON.parse(figure.dataset.params ?? '{}'),
       fallback,
+      reserve: figure.dataset.reserve ?? null,
       report: reporter(figure),
     });
     holdingEnd(figure, () => {

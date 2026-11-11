@@ -26,6 +26,14 @@
 //    shift from then until the figure has mounted is added to the page's shift from loading, as a
 //    reader who went straight there would get both. Each hold is judged against the CLS budget.
 //
+// 5. A declared reserve, at every width (hub decision 2026-11-11-christianjmills-interactive-reserve).
+//    A page may reserve its module's room on the tag, and the site holds the figure's live area to
+//    it from the first paint. That is a claim about every window, where step 4 holds the window at
+//    two sizes, so for each figure that declares a reserve the figure's height is read before its
+//    module is let through and after it has mounted, across a sweep of window sizes. Any
+//    difference fails: the module opened taller than its reserve, or shorter than a fallback the
+//    reserve doesn't cover.
+//
 // Budgets: the HTML, font and interactive numbers are ruled (hub decisions
 // 2026-11-09-christianjmills-interactive-and-html-budgets, 2026-11-07-christianjmills-typefaces).
 // The rest are PROVISIONAL, the prototype's proposal: the requirements set "performance targets the
@@ -72,6 +80,12 @@ const HOLDS = [
   { edge: 'end', at: 1 / 2, where: 'its end halfway down the window' },
   { edge: 'end', at: 1 / 8, where: 'its end an eighth of the way down the window' },
 ] as const;
+
+// The windows a declared reserve is checked at: widths from the narrowest phone to past where the
+// column stops growing, each at a short window and a tall one, since a reserve may follow both the
+// figure's width and the window's height.
+const RESERVE_WIDTHS = [320, 375, 412, 600, 768, 1024, 1280, 1920];
+const RESERVE_HEIGHTS = [600, 1080];
 
 // Published modules known to move the page when they mount, by the path they are served at, each
 // with why the build lets it through. A path holds one version of one deliverable, so an entry ends
@@ -369,6 +383,68 @@ try {
   }
   // An entry for a module no page mounts has outlived its version. A run narrowed to some pages can't tell.
   if (!process.env.CHECK_PAGES) for (const m of Object.keys(KNOWN_MOUNT_SHIFTS)) if (!mounted.has(m)) failures.push(`${m} is listed as known to move the page when it mounts, and no page mounts it; take it off the list`);
+
+  // A declared reserve, at every width (step 5, above).
+  for (const page of await pages()) {
+    const html = await readFile(fileFor(page), 'utf8');
+    if (!/<figure\b[^>]*\bdata-reserve=/.test(html)) continue;
+    const pageModules = [...new Set([...html.matchAll(/data-module="([^"]+)"/g)].map((m) => m[1]))];
+    const widest = new Map<string, number>();
+    let sizes = 0;
+    for (const width of RESERVE_WIDTHS) {
+      for (const height of RESERVE_HEIGHTS) {
+        sizes++;
+        const context = await browser.newContext({ viewport: { width, height } });
+        const tab = await context.newPage();
+        let open!: () => void;
+        const opened = new Promise<void>((r) => (open = r));
+        await tab.route((url) => pageModules.includes(url.pathname), async (route) => {
+          await opened;
+          await route.continue().catch(() => {});
+        });
+        await tab.goto(origin + page, { waitUntil: 'domcontentloaded' });
+        const read = () =>
+          tab.evaluate(async () => {
+            const frames = (n: number) => new Promise<void>((done) => { const step = () => (n-- > 0 ? requestAnimationFrame(step) : done()); step(); });
+            await frames(2);
+            await document.fonts.ready;
+            await frames(2);
+            return [...document.querySelectorAll<HTMLElement>('figure[data-interactive][data-reserve]')].map((f) => {
+              // The reserve is a length in CSS; an element given it as its height says what it comes to here.
+              const probe = document.createElement('div');
+              probe.style.cssText = 'position:absolute;visibility:hidden;block-size:var(--interactive-reserve)';
+              f.append(probe);
+              const reserve = probe.getBoundingClientRect().height;
+              probe.remove();
+              const live = f.querySelector<HTMLElement>('.interactive-root') ?? f.querySelector<HTMLElement>('.interactive-fallback')!;
+              return { id: f.dataset.interactive!, written: f.dataset.reserve!, reserve, live: live.getBoundingClientRect().height, height: f.getBoundingClientRect().height, mounted: 'mounted' in f.dataset };
+            });
+          });
+        const before = await read();
+        open();
+        const figures = tab.locator('figure[data-interactive][data-reserve]');
+        for (let i = 0; i < before.length; i++) {
+          await figures.nth(i).scrollIntoViewIfNeeded();
+          await figures.nth(i).and(tab.locator('[data-mounted], [data-mount-failed]')).waitFor({ timeout: 30_000 }).catch(() => {});
+        }
+        const after = await read();
+        const at = `${page} at ${width} × ${height}: interactive`;
+        before.forEach((was, i) => {
+          const now = after[i];
+          if (!(was.reserve > 0)) failures.push(`${at} ${was.id} declares a reserve, ${was.written}, that the browser can't make a length of`);
+          else if (was.live < was.reserve - 0.5) failures.push(`${at} ${was.id} declares a reserve of ${was.reserve.toFixed(1)} px, and its fallback was ${was.live.toFixed(1)} px before its module loaded: the room isn't there from the first paint`);
+          // A module that failed to mount is step 3's to report; its room is let go on purpose.
+          else if (now.mounted) {
+            const grew = now.height - was.height;
+            widest.set(was.id, Math.max(widest.get(was.id) ?? 0, Math.abs(grew)));
+            if (Math.abs(grew) > 0.5) failures.push(`${at} ${was.id} opened ${Math.abs(grew).toFixed(1)} px ${grew > 0 ? 'taller' : 'shorter'} than its figure was: ${was.height.toFixed(1)} px before its module, ${now.height.toFixed(1)} px after (the reserve, ${was.written}, is ${was.reserve.toFixed(1)} px here; the module's root is ${now.live.toFixed(1)} px). A module opens within its reserve`);
+          }
+        });
+        await context.close();
+      }
+    }
+    for (const [id, most] of widest) rows.push(`${(page + ' interactive ' + id).padEnd(48)} reserve read at ${sizes} window sizes  largest change when it mounts ${most.toFixed(1)} px`);
+  }
 
   // The size rule: what a module marks with data-fit is no taller than the frame allows.
   for (const page of await pages()) {

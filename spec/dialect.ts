@@ -81,6 +81,28 @@ export function slugify(text: string): string {
     .replace(/\s+/g, '-');
 }
 
+/** Why a reserve can't be used, or null. A reserve is the block size an interactive's figure keeps
+ *  for its module from the first paint (spec/README.md, Interactives): a CSS length made of
+ *  numbers in px, rem, cqi (a hundredth of the figure's live width) and svh, the functions min(),
+ *  max(), clamp() and calc(), and the site's own lengths. It is written into a style attribute, so
+ *  nothing else gets through. Whether the browser can make a length of it is the build's to find
+ *  (tools/check-perf.ts). */
+const RESERVE_LENGTHS = /var\(--(?:interactive-max-block-size|space-[a-z0-9-]+)\)/g;
+const RESERVE_PARTS = /\s+|[-+*/(),]|\d+(?:\.\d+)?(?:(?:px|rem|cqi|svh)\b|(?![\w%.]))|\b(?:min|max|clamp|calc)(?=\()/gy;
+export function reserveError(value: string): string | null {
+  const rest = value.replace(RESERVE_LENGTHS, ' 1px ');
+  let at = 0;
+  let depth = 0;
+  RESERVE_PARTS.lastIndex = 0;
+  for (let m: RegExpExecArray | null; at < rest.length && (m = RESERVE_PARTS.exec(rest)); at = RESERVE_PARTS.lastIndex) {
+    if (m[0] === '(') depth++;
+    if (m[0] === ')' && --depth < 0) return 'it closes a bracket it never opened';
+  }
+  if (at < rest.length) return `"${rest.slice(at).trim().split(/[\s(),]/)[0] || rest[at]}" is not a number in px, rem, cqi or svh, one of min(), max(), clamp() and calc(), or var(--interactive-max-block-size) or var(--space-…)`;
+  if (depth) return 'it leaves a bracket open';
+  return /\d/.test(rest) ? null : 'it holds no length';
+}
+
 function textOf(node: Node): string {
   if (node.type === 'text') return String(node.attributes.content ?? '');
   return node.children.map(textOf).join('');
@@ -268,10 +290,16 @@ export function dialect(ctx: BundleContext) {
           // What this mount is given: any JSON object. One module may be mounted many times on a
           // page, each with its own parameters.
           params: { type: Object },
+          // The block size the figure keeps for the module from the first paint, where scripts are
+          // running: a CSS length. The module opens within it (spec/README.md, Interactives).
+          reserve: { type: String },
         },
         validate(node) {
           const id = node.attributes.id;
           const errs: ValidationError[] = [];
+          const reserve = node.attributes.reserve;
+          const why = reserve === undefined ? null : reserveError(reserve);
+          if (why) errs.push(error('interactive-reserve', `{% interactive id="${id}" %} has a reserve the site can't use: ${why}`));
           const decl = interactives.get(id);
           if (!decl) errs.push(error('interactive-unknown', `{% interactive id="${id}" %} is not declared in the manifest`));
           else if (!files.get(decl.module)) errs.push(error('interactive-module', `module "${decl.module}" is not in the bundle`));
@@ -287,6 +315,9 @@ export function dialect(ctx: BundleContext) {
               'data-interactive': decl.id,
               'data-module': assetBase + decl.module,
               ...(node.attributes.params ? { 'data-params': JSON.stringify(node.attributes.params) } : {}),
+              // The reserve as written, for the module, and as a length the site's CSS holds the
+              // figure's live area to (global.css, The interactive frame).
+              ...(node.attributes.reserve ? { 'data-reserve': node.attributes.reserve.trim(), style: `--interactive-reserve: ${node.attributes.reserve.trim()}` } : {}),
             },
             [
               new Tag('div', { class: 'interactive-fallback' }, node.transformChildren(config)),

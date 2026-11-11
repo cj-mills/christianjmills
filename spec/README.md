@@ -63,10 +63,11 @@ Markdoc, plus:
   claim, as many to a block as the claim needs. The HTML gives a block (paragraph, list item,
   table cell) one numbered marker at its end for all of them; the Markdown copy keeps them one per
   claim, in full (References, below).
-- `{% interactive id="id" caption="…" params={…} %}fallback{% /interactive %}`: a mount for a
-  declared interactive. The children are the fallback shown without JavaScript and are required.
-  `params` is any JSON object, handed to the module. One interactive may be mounted many times on
-  a page, each mount with its own `params`.
+- `{% interactive id="id" caption="…" params={…} reserve="…" %}fallback{% /interactive %}`: a
+  mount for a declared interactive. The children are the fallback shown without JavaScript and are
+  required. `params` is any JSON object, handed to the module. One interactive may be mounted many
+  times on a page, each mount with its own `params`. `reserve` is the room the figure keeps for a
+  module that opens taller than its fallback: a CSS length (Interactives, below).
 - `{% figure src="assets/…" dark="assets/…" alt="…" caption="…" /%}` and `![alt](assets/…)`:
   bundle images only, PNG in 0.1, alt text required. Width and height are read from the file.
   `dark` names the same image drawn for the dark theme, the same size; the reader's browser
@@ -155,9 +156,9 @@ way; without JavaScript, or once a module has failed, it shows every step.
 **The swap must not move the page.** A reader may be at the figure when its module is ready: the
 figure at the page's head is in the first window, a link in the contents lands on a card, and a
 reader can scroll faster than a module loads. What the reader then sees move is the difference
-between the fallback's height and the module's, so **a module opens at the height its fallback
-had**: the last step alone, for a step list. Whatever needs more room opens when the reader asks
-for it. The parts are:
+between the figure's height before the module and after, so **a module opens at the height its
+figure had**: its fallback's (the last step alone, for a step list), or the reserve its page
+declared (below). Whatever needs more room opens when the reader asks for it. The parts are:
 
 - **The site's:** past the figure, the browser keeps the reader's place. With the window starting
   inside the figure, the site holds the figure's end where it was, so what follows doesn't move.
@@ -171,11 +172,43 @@ for it. The parts are:
   doesn't depend on how long a mount takes. `LIST_HOLDS=1 npm run check:perf` prints every hold
   with the figure's height before and after.
 
+**A reserve** (hub decision `2026-11-11-christianjmills-interactive-reserve`). A module that has
+to open taller than its fallback gets its room from the page: the tag's `reserve` is the block
+size the figure's live area has from the first paint. The live area is the fallback and then the
+module's root; the caption is outside it.
+
+- **What a reserve is made of:** a CSS length. Numbers in `px`, `rem`, `cqi` (a hundredth of the
+  live area's width) and `svh`; `min()`, `max()`, `clamp()` and `calc()`; and the site's own
+  lengths, `var(--interactive-max-block-size)` and the `var(--space-…)` tokens. So it can follow a
+  drawing that grows with its column and stop at the window:
+  `reserve="min(62.5cqi + 12rem, var(--interactive-max-block-size))"`. A layout that changes at a
+  width takes `clamp()`: `clamp(50rem, (44rem - 100cqi) * 9999, 66rem)` is 66rem while the live area
+  is narrower than 44rem and 50rem from there up. Anything else is refused when the bundle is
+  verified.
+- **The site's part:** where scripts are running, the fallback is at least that tall before the
+  module is there, and the root at least that tall once it has mounted, so a module that needs
+  less leaves room and moves nothing. Without JavaScript there is no such room: the fallback is as
+  tall as itself. When a module fails, the room is let go and the fallback is what is left, the
+  site holding the figure's end as above.
+- **The module's part:** it opens within the reserve, by drawing smaller where it must, as it
+  keeps within `--interactive-max-block-size`. It gets the reserve as `context.reserve` and as
+  `--interactive-reserve`, which it can use in its own CSS (`min-block-size:
+  var(--interactive-reserve)` on what it puts in its root). What a reader's own act changes may
+  still change the figure's height.
+- **The build's part:** beside the holds above, `tools/check-perf.ts` reads the height of each
+  figure that declares a reserve before its module is let through and after it has mounted, at
+  eight window widths from 320 to 1,920 px, each 600 and 1,080 px tall. Any difference fails: the
+  module opened taller than its reserve, or shorter than a fallback its reserve doesn't cover. So
+  does a reserve the browser can't make a length of.
+- **What it costs a reader:** while the module loads, the fallback sits at the top of a box as
+  tall as the module will be. Reserve what the module opens at, not what it can grow to.
+
 `context` holds:
 
 - `params`: the tag's `params`, an object; empty when the tag gives none.
 - `fallback`: the fallback's element. A module may read it, and reads its step texts there
   (Dialect, above), so that text is written once, in the page. It doesn't change it.
+- `reserve`: the reserve its page declared for this figure, as the tag wrote it, or `null`.
 - `report(values, series?)`: shows the module's own numbers beside the measured ones, in the card
   the figure is in. `values` maps a trait to a number, or to `null` to clear it. Each
   `{% now %}` of that trait in the card gets the number, and each `{% mark %}` of it gets a

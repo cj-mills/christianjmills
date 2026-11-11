@@ -44,6 +44,8 @@ has('<span class="step-value" data-value="">55</span>', 'a value an interactive 
 // Interactives.
 has(`data-params="${JSON.stringify({ name: 'first', value: 0.5, series: 'c01' }).replaceAll('"', '&quot;')}"`, "a mount's parameters");
 expect(html.split('data-interactive="demo"').length === 3, 'one module should be mounted twice on the fixture page');
+has('data-interactive="reserved" data-module="/_deliverables/fixture-parts/1.0.0/assets/reserved.js" data-reserve="min(16rem + 50cqi, var(--interactive-max-block-size))" style="--interactive-reserve: min(16rem + 50cqi, var(--interactive-max-block-size))"', "a mount's reserve, as written and as the length the site's CSS holds the figure to");
+expect(!/data-interactive="(?:demo|broken|grows)"[^>]*(?:data-reserve|style)=/.test(html), 'a mount that declares no reserve should carry none');
 // Tables and marks.
 has('<div class="table-scroll" tabindex="0" role="region" aria-label="The techniques compared"><table data-sort=""><caption class="visually-hidden">The techniques compared</caption>', 'a named, sortable table in its scrolling region');
 has('<tr class="group"><th scope="rowgroup" colspan="4"><span>Generators</span></th></tr>', 'a row that heads a group');
@@ -122,6 +124,9 @@ await refuses('already has that id', (s) => s.replace('{% card title="The second
 await refuses('card-id', (s) => s.replace('id="first"', 'id="First Card"'));
 await refuses('attribute-missing-required', (s) => s.replace('{% table label="The techniques compared" ', '{% table '));
 await refuses('interactive-unknown', (s) => s.replace('id="broken"', 'id="absent"'));
+// A reserve is a CSS length of a few known parts; anything else could carry more than a length into the page.
+for (const bad of ['30em', '20rem; position: fixed', 'url(x)', 'var(--color-ink)', 'min(20rem, 50cqi', 'tall'])
+  await refuses('interactive-reserve', (s) => s.replace('reserve="min(16rem + 50cqi, var(--interactive-max-block-size))"', `reserve="${bad}"`));
 
 // The American English check. The British spellings and the day-first date are put together from
 // pieces here, so this file passes the check itself.
