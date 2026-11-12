@@ -22,6 +22,8 @@ const external = process.env.CHECK_URLS_EXTERNAL !== '0';
 const expectations: Expectation[] = JSON.parse(await readFile(join(ROOT, '.build/urls.json'), 'utf8'));
 const failures: string[] = [];
 let reencodedPlus = 0;
+/** Requests tried again after failing on the network, reported with the result. */
+let retried = 0;
 
 let base: URL;
 let stop = () => {};
@@ -51,6 +53,34 @@ else {
   }
 }
 
+interface Answer {
+  status: number;
+  location: string | null;
+  type: string;
+  /** The body, for an HTML page that answered 200; otherwise empty, and not downloaded. */
+  text: string;
+}
+/**
+ * One request, its body read or let go before it returns. A request that fails on the network
+ * rather than with an answer is tried again, up to four times: Cloudflare's edge sometimes closes
+ * an HTTP/2 connection carrying many requests at once (observed 2026-11-12: ERR_HTTP2_SESSION_ERROR
+ * on a version's preview URL, in one run of three). An answer, whatever it is, is never retried.
+ */
+async function ask(url: URL | string, redirect: RequestRedirect = 'manual'): Promise<Answer> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, { redirect });
+      const type = res.headers.get('content-type') ?? '';
+      const text = res.status === 200 && type.startsWith('text/html') ? await res.text() : (await res.body?.cancel(), '');
+      return { status: res.status, location: res.headers.get('location'), type, text };
+    } catch (err) {
+      if (attempt === 4) throw new Error(`GET ${url}: ${String(err)}, four times`);
+      retried++;
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
+    }
+  }
+}
+
 try {
   const finals = new Map<string, Promise<string | null>>();
   /** Where a redirect lands must answer 200: null when it does, or what it answered. */
@@ -60,11 +90,11 @@ try {
         to,
         (async () => {
           if (to.startsWith('/')) {
-            const res = await fetch(new URL(to, base), { redirect: 'manual' });
+            const res = await ask(new URL(to, base));
             return res.status === 200 ? null : `${res.status}`;
           }
           for (let attempt = 0; ; attempt++) {
-            const res = await fetch(to, { redirect: 'follow' }).catch((e) => ({ status: String(e) }));
+            const res = await ask(to, 'follow').catch((e) => ({ status: String(e) }));
             if (res.status === 200) return null;
             if (attempt === 2) return `${res.status}`;
             await new Promise((r) => setTimeout(r, 2000 * (attempt + 1)));
@@ -76,18 +106,18 @@ try {
   };
 
   const one = async (e: Expectation) => {
-    const res = await fetch(new URL(e.path, base), { redirect: 'manual' });
+    const res = await ask(new URL(e.path, base));
     // A page of the old site carries the archive banner; a page of the new site doesn't.
-    const page = e.expect === 200 && res.status === 200 && (res.headers.get('content-type') ?? '').startsWith('text/html');
-    const body = page ? await res.text() : (await res.body?.cancel(), '');
+    const page = e.expect === 200 && res.status === 200 && res.type.startsWith('text/html');
+    const body = res.text;
     if (e.expect === 200) {
       // Cloudflare's asset server sends a `+` in a path on to its encoded form, `%2B`, with a 307
       // (observed 2026-11-12 in wrangler dev: three old images named `c++`). The reader still gets
       // the file, so one such hop to a 200 passes.
       if (res.status === 307 && e.path.includes('+')) {
-        const location = new URL(res.headers.get('location') ?? '', base);
+        const location = new URL(res.location ?? '', base);
         const reencoded = new URL(e.path.replaceAll('+', '%2B'), base);
-        if (location.href === reencoded.href && (await fetch(location, { redirect: 'manual' }).then((r) => (r.body?.cancel(), r.status))) === 200) {
+        if (location.href === reencoded.href && (await ask(location)).status === 200) {
           reencodedPlus++;
           return;
         }
@@ -98,7 +128,7 @@ try {
       }
       return;
     }
-    const location = res.headers.get('location');
+    const location = res.location;
     const wanted = e.expect.startsWith('/') ? new URL(e.expect, base).href : e.expect;
     if (res.status !== 301 || !location || new URL(location, base).href !== wanted) {
       failures.push(`${e.path} answered ${res.status}${location ? ` to ${location}` : ''}, not 301 to ${e.expect} (${e.why})`);
@@ -122,7 +152,11 @@ try {
             resolve(res.headers['x-robots-tag'] as string | undefined);
           }).on('error', reject).end();
         })
-      : (await fetch(new URL('/', base))).headers.get('x-robots-tag') ?? undefined;
+      : await (async () => {
+          const res = await fetch(new URL('/', base));
+          await res.body?.cancel();
+          return res.headers.get('x-robots-tag') ?? undefined;
+        })();
   const hosts: [string | undefined, boolean][] = arg
     ? [[undefined, base.hostname.endsWith('.workers.dev')]]
     : [['christianjmills-site.millscj.workers.dev', true], ['0123abcd-christianjmills-site.millscj.workers.dev', true], ['christianjmills.com', false]];
@@ -140,5 +174,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `URL check passed on ${base.origin}: ${expectations.length - redirects} addresses answer 200 (${reencodedPlus} after the asset server's 307 that encodes a +), ${redirects} redirect with a 301 to a page that does${external ? '' : ' (GitHub targets not followed)'}, and noindex is on the preview's hosts only`,
+  `URL check passed on ${base.origin}: ${expectations.length - redirects} addresses answer 200 (${reencodedPlus} after the asset server's 307 that encodes a +), ${redirects} redirect with a 301 to a page that does${external ? '' : ' (GitHub targets not followed)'}, and noindex is on the preview's hosts only${retried ? ` (${retried} requests tried again after a network error)` : ''}`,
 );
