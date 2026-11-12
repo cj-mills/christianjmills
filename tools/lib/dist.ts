@@ -1,6 +1,6 @@
 // Helpers shared by the build checks: list the built pages and serve dist/ over HTTP.
 import { createReadStream } from 'node:fs';
-import { readdir, stat } from 'node:fs/promises';
+import { readdir, readFile, stat } from 'node:fs/promises';
 import { createServer, type Server } from 'node:http';
 import { extname, join, normalize, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,14 +32,21 @@ const TYPES: Record<string, string> = {
   '.pf_index': 'application/octet-stream',
 };
 
-/** Site paths of every built HTML page, e.g. "/", "/search/", "/404.html". Pagefind's own files are excluded. */
+/**
+ * The files the frozen copy of the old site put into dist/ (tools/archive-merge.ts writes the list,
+ * and build:pages clears it with dist/). The checks are the new site's, so its pages alone.
+ */
+export const MERGED = fileURLToPath(new URL('../../.build/merged.json', import.meta.url));
+
+/** Site paths of every built HTML page, e.g. "/", "/search/", "/404.html". Pagefind's own files and the old site's are excluded. */
 export async function pages(): Promise<string[]> {
+  const merged = new Set<string>(await readFile(MERGED, 'utf8').then(JSON.parse, () => []));
   const out: string[] = [];
   for (const entry of await readdir(DIST, { recursive: true, withFileTypes: true })) {
     if (entry.isFile() && entry.name === '404.html' && entry.parentPath.replace(/\/$/, '') === DIST.replace(/\/$/, '')) out.push('/404.html');
     if (!entry.isFile() || entry.name !== 'index.html') continue;
     const rel = relative(DIST, entry.parentPath).split(sep).join('/');
-    if (rel.startsWith('pagefind')) continue;
+    if (rel.startsWith('pagefind') || merged.has(rel ? `${rel}/index.html` : 'index.html')) continue;
     out.push(rel ? `/${rel}/` : '/');
   }
   // CHECK_PAGES narrows a run to some pages, e.g. the fixture build's one page.

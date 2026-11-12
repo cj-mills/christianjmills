@@ -40,6 +40,8 @@ await writeFile(join(DIST, '_redirects'), plan.rules);
 await writeFile(join(DIST, ARCHIVE_SITEMAP_PATH.slice(1)), plan.archiveSitemap);
 await mkdir(join(ROOT, '.build'), { recursive: true });
 await writeFile(join(ROOT, '.build/urls.json'), JSON.stringify(plan.expectations, null, 1) + '\n');
+// The page checks are the new site's: they leave out what the copy put in (tools/lib/dist.ts).
+await writeFile(join(ROOT, '.build/merged.json'), JSON.stringify([...plan.writes.keys()]) + '\n');
 
 console.log(
   `frozen copy merged: ${plan.writes.size} files (${plan.stats.pages} pages, each with the banner) from ${lock.source.branch}@${lock.source.commit.slice(0, 8)}; ` +
