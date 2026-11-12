@@ -9,18 +9,23 @@
     "tokens": "node tools/gen-tokens.ts",
     "tokens:write": "node tools/design/tokens.ts",
     "dev": "npm run tokens && DELIVERABLES_ALLOW_LOCAL=1 astro dev",
-    "build:pages": "npm run tokens && astro build && pagefind --site dist --exclude-selectors .refs",
+    "check:types": "astro check",
     "check:english": "node tools/check-english.ts",
     "check:spec": "node tools/check-spec.ts",
+    "check:legacy": "node tools/check-legacy.ts",
     "check:fixtures": "npm run tokens && SITE_FIXTURES=1 astro build --outDir dist-fixtures && SITE_DIST=dist-fixtures CHECK_PAGES=/fixtures/parts/,/fixtures/parts/references/ EXPECT_MOUNT_FAILURES=broken EXPECT_MOUNT_SHIFTS=grows sh -c 'node tools/check-fixtures.ts && node tools/check-perf.ts && node tools/check-a11y.ts'",
+    "build:pages": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && npm run tokens && astro build && pagefind --site dist --exclude-selectors .refs",
     "check:icons": "node tools/check-icons.ts",
     "check:perf": "node tools/check-perf.ts",
     "check:a11y": "node tools/check-a11y.ts",
-    "build": "npm run check:english && npm run check:spec && npm run check:fixtures && npm run build:pages && npm run check:icons && npm run check:perf && npm run check:a11y",
+    "archive:merge": "node tools/archive-merge.ts",
+    "check:urls": "node tools/check-urls.ts",
+    "build": "npm run check:types && npm run check:english && npm run check:spec && npm run check:legacy && npm run check:fixtures && npm run build:pages && npm run check:icons && npm run check:perf && npm run check:a11y && npm run archive:merge && npm run check:urls",
     "setup:browser": "playwright install --only-shell chromium",
     "publish:deliverable": "node tools/publish-deliverable.ts",
     "cf": "sh tools/cloudflare.sh",
-    "deploy:preview": "npm run build && sh tools/cloudflare.sh wrangler deploy"
+    "deploy:upload": "npm run build && sh tools/cloudflare.sh node tools/deploy.ts upload",
+    "deploy:promote": "sh tools/cloudflare.sh node tools/deploy.ts promote"
   },
   "dependencies": {
     "@fontsource-variable/source-sans-3": "5.3.0",
@@ -33,10 +38,13 @@
     "zod": "4.6.6"
   },
   "devDependencies": {
+    "@astrojs/check": "0.9.11",
     "@axe-core/playwright": "4.14.0",
     "@pagefind/default-ui": "1.6.0",
+    "@types/node": "26.6.5",
     "pagefind": "1.6.0",
     "playwright": "1.64.1",
+    "typescript": "6.0.2",
     "wrangler": "4.154.0"
   }
 }

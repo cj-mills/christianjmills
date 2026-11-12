@@ -66,7 +66,7 @@ try {
   await second.scrollIntoViewIfNeeded();
   await second.and(tab.locator('[data-mounted]')).waitFor({ timeout: 5000 });
   expect((await second.locator('.status').textContent())!.startsWith('second: '), 'the second mount of the same module should get its own parameters');
-  const mounts = await tab.evaluate(async (url) => (await import(/* @vite-ignore */ url)).mounts, await first.getAttribute('data-module'));
+  const mounts = await tab.evaluate(async (url) => (await import(/* @vite-ignore */ url)).mounts, (await first.getAttribute('data-module'))!);
   expect(JSON.stringify([...mounts].sort()) === '["first","second"]', `one module, imported once, should have mounted twice; its record is ${JSON.stringify(mounts)}`);
 
   // A reported value reaches the marks and the places of the module's own card, and its own series.

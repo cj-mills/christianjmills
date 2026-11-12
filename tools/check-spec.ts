@@ -128,6 +128,17 @@ await refuses('interactive-unknown', (s) => s.replace('id="broken"', 'id="absent
 for (const bad of ['30em', '20rem; position: fixed', 'url(x)', 'var(--color-ink)', 'min(20rem, 50cqi', 'tall'])
   await refuses('interactive-reserve', (s) => s.replace('reserve="min(16rem + 50cqi, var(--interactive-max-block-size))"', `reserve="${bad}"`));
 
+// No GIFs, by name or by content: one named as a PNG is still refused.
+const GIF = new TextEncoder().encode('GIF89a\x01\x00\x01\x00\x00\x00\x00;');
+for (const [name, what] of [['assets/clip.gif', 'a .gif'], ['assets/clip.png', 'a GIF named .png']] as const) {
+  try {
+    await verify(new Map(files).set(name, GIF), { assetBase });
+    failures.push(`[asset-gif] ${what} should have been refused`);
+  } catch (err) {
+    expect(String(err).includes('[asset-gif]'), `[asset-gif] ${what} was refused for another reason: ${String(err).slice(0, 300)}`);
+  }
+}
+
 // The American English check. The British spellings and the day-first date are put together from
 // pieces here, so this file passes the check itself.
 const [colorB, neighborsB, centerB] = ['col' + 'our', 'neighb' + 'ours', 'cent' + 're'];

@@ -9,3 +9,4 @@ import './references.ts';
 import './code.ts';
 import './tables.ts';
 import './contents.ts';
+import './comments.ts';

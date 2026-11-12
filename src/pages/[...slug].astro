@@ -5,6 +5,7 @@ import Contents, { type Item } from '../components/Contents.astro';
 import { deliverables, formatDate, slugOf, updatedOf, type Deliverable } from '../lib/site.ts';
 import ReferencesSwitch from '../components/ReferencesSwitch.astro';
 import Sources from '../components/Sources.astro';
+import Comments from '../components/Comments.astro';
 
 export async function getStaticPaths() {
   return (await deliverables()).map((entry) => ({ params: { slug: slugOf(entry) }, props: { entry } }));
@@ -24,14 +25,14 @@ if (d.sources.length > 0) contents.push({ slug: 'sources', text: 'Sources' });
 const updated = updatedOf(entry);
 const references = `${d.urls.canonical}references/`;
 const hasNotes = d.notes.length > 0;
-const hasCode = entry.rendered?.html.includes('class="code-block"') ?? false;
 ---
 
 <Base title={d.title} description={d.summary} markdown={`${d.urls.canonical}index.md`} section="writing">
   {/* Says scripts are running, before anything is drawn: a step list that is an interactive's
       fallback then shows its last step alone while the module loads (global.css, Step lists), and
-      a code block with no language to name has its head ready for the copy button (Code). */}
-  {(d.interactives.length > 0 || hasCode) && <script is:inline slot="head">document.documentElement.dataset.js = '';</script>}
+      a code block with no language to name has its head ready for the copy button (Code), and the
+      comments' button is there (Comments). Every post has comments, so every post says so. */}
+  <script is:inline slot="head">document.documentElement.dataset.js = '';</script>
   {/* A reader who has switched reference markers off gets the page without them from its first
       paint, so nothing moves when the script arrives (src/scripts/references.ts). */}
   {hasNotes && <script is:inline slot="head">try { if (localStorage.getItem('refs') === 'off') document.documentElement.dataset.refs = 'off'; } catch {}</script>}
@@ -75,6 +76,8 @@ const hasCode = entry.rendered?.html.includes('class="code-block"') ?? false;
       )}
     </footer>
   </article>
+
+  <Comments id={d.id} discussion={d.comments?.discussion} />
 
   {/* The aside: the contents rail, and under it the switch, both kept in view. */}
   {(contents.length > 1 || hasNotes) && (

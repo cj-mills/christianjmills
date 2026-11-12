@@ -1,7 +1,7 @@
 // The site's Markdown dialect, format 0.1 (draft): Markdoc with the tags and node rules below.
 // Deliverables write content in it; the site validates it at build time and owns how it renders.
 // A config is built per bundle, because references and assets are checked against that bundle.
-import Markdoc, { type Config, type Node, type RenderableTreeNode, type ValidationError } from '@markdoc/markdoc';
+import Markdoc, { type Config, type Node, type RenderableTreeNode, type RenderableTreeNodes, type ValidationError } from '@markdoc/markdoc';
 import type { HighlighterGeneric } from 'shiki';
 import type { Manifest, Source } from './manifest.ts';
 
@@ -492,7 +492,7 @@ export function dialect(ctx: BundleContext) {
             : [error('mark-order', '{% mark %} needs from ≤ min ≤ p10 ≤ median ≤ p90 ≤ max ≤ to, with from below to')];
         },
         transform(node) {
-          const a = { from: 0, ...node.attributes };
+          const a: Record<string, any> = { from: 0, ...node.attributes };
           if (a.trait) {
             const scale = `${a.from} to ${a.to}`;
             const first = traitScales.get(a.trait) ?? scale;
@@ -775,10 +775,10 @@ function marker(note: Note, references: string): Tag {
  *  stands for. `references` is the address of the page that lists them. Returns a new tree; the
  *  input is unchanged. */
 export function mergeReferences(node: RenderableTreeNode, references: string, notes = new Notes()): { tree: RenderableTreeNode; notes: Note[] } {
-  const walk = (node: RenderableTreeNode): RenderableTreeNode => {
-    if (Array.isArray(node)) return node.map(walk);
+  const walk = (node: RenderableTreeNodes): RenderableTreeNodes => {
+    if (Array.isArray(node)) return node.map(walk) as RenderableTreeNode[];
     if (!Tag.isTag(node)) return node;
-    const children = node.children.map(walk);
+    const children = node.children.map(walk) as RenderableTreeNode[];
     if (!MARKED_BLOCKS.has(node.name)) return new Tag(node.name, node.attributes, children);
     const found: Tag[] = [];
     const kept = stripRefs(children, found);
@@ -788,7 +788,7 @@ export function mergeReferences(node: RenderableTreeNode, references: string, no
     const at = nested === -1 ? kept.length : nested;
     return new Tag(node.name, node.attributes, [...kept.slice(0, at), marker(notes.note(found), references), ...kept.slice(at)]);
   };
-  return { tree: walk(node), notes: notes.list };
+  return { tree: walk(node) as RenderableTreeNode, notes: notes.list };
 }
 
 /** The tags that go directly inside another. */

@@ -1,11 +1,11 @@
 // The Markdown copy of a page, for agents (manifest `formats`). Rendered from the same validated
 // Markdoc tree as the HTML, so references keep their resolved links and locators.
-import Markdoc, { type RenderableTreeNode } from '@markdoc/markdoc';
+import Markdoc, { type RenderableTreeNode, type RenderableTreeNodes } from '@markdoc/markdoc';
 import type { Manifest } from './manifest.ts';
 
 const { Tag } = Markdoc;
 
-function text(node: RenderableTreeNode): string {
+function text(node: RenderableTreeNodes): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   if (Array.isArray(node)) return node.map(text).join('');
@@ -13,7 +13,7 @@ function text(node: RenderableTreeNode): string {
   return node.children.map(text).join('');
 }
 
-function inline(node: RenderableTreeNode): string {
+function inline(node: RenderableTreeNodes): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   if (Array.isArray(node)) return node.map(inline).join('');
@@ -46,7 +46,7 @@ function inline(node: RenderableTreeNode): string {
   }
 }
 
-function block(node: RenderableTreeNode, indent = ''): string {
+function block(node: RenderableTreeNodes, indent = ''): string {
   if (!Tag.isTag(node)) return Array.isArray(node) ? node.map((n) => block(n, indent)).join('') : inline(node);
   const kids = (sep = '') => node.children.map((c) => block(c, indent)).join(sep);
   const m = /^h([1-6])$/.exec(node.name);

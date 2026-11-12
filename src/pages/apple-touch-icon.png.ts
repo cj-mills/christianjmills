@@ -2,4 +2,4 @@
 import type { APIRoute } from 'astro';
 import { homeIcon } from '../lib/home-icon.ts';
 
-export const GET: APIRoute = () => new Response(homeIcon(180), { headers: { 'Content-Type': 'image/png' } });
+export const GET: APIRoute = () => new Response(homeIcon(180) as Uint8Array<ArrayBuffer>, { headers: { 'Content-Type': 'image/png' } });

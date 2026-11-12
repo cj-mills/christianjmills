@@ -73,6 +73,24 @@ export function checkPath(name: string) {
   }
 }
 
+const GIF_MAGIC = ['GIF87a', 'GIF89a'];
+
+/**
+ * No GIFs in a bundle, by name or by content (hub decision 2026-11-03-site-video-and-large-media):
+ * a clip is encoded as AV1 with an H.264 fallback, a still is a PNG. The frozen copy of the old site
+ * keeps its GIFs as served; it isn't a bundle.
+ */
+export function refuseGifs(files: Map<string, Uint8Array>) {
+  const gifs = [...files]
+    .filter(([name, bytes]) => /\.gif$/i.test(name) || GIF_MAGIC.includes(new TextDecoder().decode(bytes.subarray(0, 6))))
+    .map(([name]) => name);
+  if (gifs.length) {
+    throw new Error(
+      `[asset-gif] ${gifs.map((g) => `"${g}"`).join(', ')}: the site takes no GIFs. Encode a clip as AV1 with an H.264 fallback, and a still as PNG`,
+    );
+  }
+}
+
 export interface VerifiedDeliverable {
   manifest: Manifest;
   html: string;
@@ -104,6 +122,7 @@ export async function verify(
   const last = manifest.revisions.at(-1)!;
   if (last.version !== manifest.version) throw new Error(`the last revision is ${last.version}, not the manifest's ${manifest.version}`);
   for (const p of manifest.provenance) if (!files.has(p.asset)) throw new Error(`provenance names "${p.asset}", which is not in the bundle`);
+  refuseGifs(files);
 
   const entry = files.get(manifest.content.entry);
   if (!entry) throw new Error(`content entry "${manifest.content.entry}" is not in the bundle`);

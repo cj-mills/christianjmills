@@ -108,6 +108,10 @@ export const manifest = z.strictObject({
     )
     .default([]),
 
+  // Comments: a GitHub Discussion in the site repo's Comments category, titled with the id, unless
+  // the page continues an older thread, named here by its number (src/lib/comments.ts).
+  comments: z.strictObject({ discussion: z.int().positive().optional() }).optional(),
+
   tier: z.strictObject({
     access: z.enum(['free', 'paid']),
     agents: z.enum(['allowed', 'paid', 'denied']),
