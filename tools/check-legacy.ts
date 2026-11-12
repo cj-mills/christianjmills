@@ -27,6 +27,8 @@ const archive = () =>
     ['posts/old/images/a.png', enc('png')],
     ['posts/kept/index.html', page('kept')],
     ['posts/taken/index.html', page('taken')],
+    ['posts/retired/index.html', page('retired')],
+    ['posts/retired/video/demo.mp4', enc('mp4')],
     ['services.html', alias('about.html')],
     ['series/a.html', alias('../posts/old/index.html')],
     ['Notes on Old/index.html', alias('../posts/kept/index.html')],
@@ -48,6 +50,8 @@ expect(to('/series/a.html') === '/posts/new/', 'an alias to a superseded page sh
 expect(to('/services.html') === '/about.html' && to('/services') === '/about.html', 'an alias page should be a 301 to its target, by name and without .html');
 expect(to('/Notes on Old/') === '/posts/kept/index.html' && plan.rules.includes('/Notes%20on%20Old/ /posts/kept/index.html 301'), 'an alias in a folder with spaces should be written encoded');
 expect(['/posts/retired/', '/posts/retired/index.html', '/posts/retired'].every((a) => to(a) === retired['/posts/retired/']), 'a retired post should go to its new home');
+expect(plan.leaving.get('posts/retired/index.html') === 'retired' && plan.writes.has('posts/retired/video/demo.mp4'), "a retired post's page should leave the copy, and its files stay");
+expect(plan.expectations.some((e) => e.path === '/posts/retired/video/demo.mp4' && e.expect === 200), 'the URL check should ask for every file the copy still serves');
 expect(!plan.writes.has('posts/taken/index.html') && plan.leaving.get('posts/taken/index.html') === 'taken over by taken', 'an old page a deliverable takes over should leave the copy');
 expect(!plan.writes.has('CNAME') && !plan.writes.has('index.html') && !plan.writes.has('robots.txt'), "GitHub Pages' files and the replaced root files should not be written");
 const kept = String(plan.writes.get('posts/kept/index.html'));
@@ -77,6 +81,7 @@ refuses('a loop of alias pages', 'redirect loop', (i) => {
 });
 refuses('one address sent to two places', 'would redirect both', (i) => i.manifests.push({ id: 'other', urls: { canonical: '/posts/taken/', supersedes: ['/posts/old/'] } }));
 refuses('an old page with nowhere for the banner', 'no <main>', (i) => i.archive.set('posts/kept/index.html', enc('<html><body>no main</body></html>')));
+refuses('a retired post the copy has no page for', 'no page for', (i) => i.archive.delete('posts/retired/index.html'));
 refuses('a second merge into the same dist/', 'already has a _redirects', (i) => i.built.add('_redirects'));
 
 if (failures.length) {

@@ -2,7 +2,8 @@
 // the site's routing (hub decision 2026-11-03-christianjmills-legacy-urls):
 //
 // - Every file of the archive (legacy/archive.lock.json) is served at its old address, unchanged but
-//   for a banner at the start of each page's <main> saying it is archived.
+//   for a banner at the start of each page's <main> saying it is archived. Its parts are fetched once
+//   into node_modules/.cache/ and checked against their pins on every build.
 // - A page leaves the copy when a new deliverable takes its address (`urls.canonical`) or replaces it
 //   (`urls.supersedes`, a 301 to the new page). Quarto's alias pages become 301s, and the 71 posts
 //   retired on 2026-10-09 redirect to their new homes (legacy/retired.json).
@@ -17,19 +18,15 @@
 import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { ARCHIVE_SITEMAP_PATH } from '../src/lib/lists.ts';
-import { ROOT, fetchArchive, readLock, retiredPath, retiredSchema, unpackArchive, writeFileIn } from './lib/archive.ts';
+import { ROOT, readArchive, readLock, retiredPath, retiredSchema, writeFileIn } from './lib/archive.ts';
 import { planMerge } from './lib/legacy-plan.ts';
 import { pinnedManifests } from './lib/manifests.ts';
 
 const DIST = join(ROOT, process.env.SITE_DIST ?? 'dist');
 
 const lock = await readLock();
-const archive = unpackArchive(await fetchArchive(lock));
-if (archive.size !== lock.files) throw new Error(`the archive holds ${archive.size} files; its pin says ${lock.files}`);
+const archive = await readArchive(lock);
 const retired = retiredSchema.parse(JSON.parse(await readFile(retiredPath, 'utf8'))).posts;
-for (const dir of Object.keys(retired)) {
-  if (!lock.exclude.includes(dir.slice(1))) throw new Error(`legacy/retired.json names ${dir}, which the archive still holds`);
-}
 const built = new Set<string>();
 for (const e of await readdir(DIST, { recursive: true, withFileTypes: true })) {
   if (e.isFile()) built.add(relative(DIST, join(e.parentPath, e.name)).split(sep).join('/'));

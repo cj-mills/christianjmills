@@ -1,11 +1,12 @@
 // The frozen copy of the old site (hub decision 2026-11-03-christianjmills-legacy-urls): the last
-// Quarto build, `gh-pages`, kept as one archive in the public R2 bucket and pinned by hash in
+// Quarto build, `gh-pages`, kept in the public R2 bucket and pinned by hash in
 // `legacy/archive.lock.json`, so a clean checkout builds without the `gh-pages` branch. It is not a
 // deliverable: it is too big for a bundle's limits, and it is served as it was, not rendered.
 //
-// The archive holds the build as it was served, less the folders of the 71 posts retired on
-// 2026-10-09 (`legacy/retired.json`), which redirect to their new homes. It never changes: a page
-// leaves the copy when the build leaves it out (tools/archive-merge.ts), not by packing again.
+// The archive holds every file of the build as it was served. At 386 MB it is over the 315 MB
+// wrangler can upload as one object, so it is packed in parts, each a deterministic tar.gz pinned by
+// its own hash; together they are the one archive. It never changes: a page leaves the copy when
+// the build leaves it out (tools/archive-merge.ts), not by packing again.
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -31,14 +32,21 @@ export const archiveLock = z.strictObject({
     /** The day the build was made, as the banner says it. */
     built: z.iso.date(),
   }),
-  /** Folders of the source left out of the archive, each with a trailing slash. */
-  exclude: z.array(z.string().regex(/^(?!\/).+\/$/)),
   bucket: z.literal('public'),
-  key: z.string().regex(/^sha256\/[0-9a-f]{64}\.tar\.gz$/),
-  sha256: hex64,
-  size: z.int().positive(),
+  /** Every file of the source, in all the parts. */
   files: z.int().positive(),
+  parts: z
+    .array(
+      z.strictObject({
+        key: z.string().regex(/^sha256\/[0-9a-f]{64}\.tar\.gz$/),
+        sha256: hex64,
+        size: z.int().positive(),
+        files: z.int().positive(),
+      }),
+    )
+    .min(1),
 });
+export type ArchivePart = ArchiveLock['parts'][number];
 export type ArchiveLock = z.infer<typeof archiveLock>;
 
 export const retiredSchema = z.object({
@@ -95,16 +103,16 @@ export async function readLock(): Promise<ArchiveLock> {
   return archiveLock.parse(JSON.parse(await readFile(lockPath, 'utf8')));
 }
 
-/** The archive's bytes, checked against its pin: from the cache, or fetched from the bucket into it. */
-export async function fetchArchive(lock: ArchiveLock, log = console.log): Promise<Uint8Array> {
-  const cached = join(CACHE, `${lock.sha256}.tar.gz`);
+/** A part's bytes, checked against its pin: from the cache, or fetched from the bucket into it. */
+async function fetchPart(lock: ArchiveLock, part: ArchivePart, log: (s: string) => void): Promise<Uint8Array> {
+  const cached = join(CACHE, `${part.sha256}.tar.gz`);
   try {
     const bytes = new Uint8Array(await readFile(cached));
-    if (bytes.byteLength === lock.size && sha256(bytes) === lock.sha256) return bytes;
+    if (bytes.byteLength === part.size && sha256(bytes) === part.sha256) return bytes;
   } catch {}
   const base = buckets[lock.bucket].url;
   if (!base) throw new Error(`no URL configured for the ${lock.bucket} bucket`);
-  const url = new URL(lock.key, base);
+  const url = new URL(part.key, base);
   const bytes =
     url.protocol === 'file:'
       ? new Uint8Array(await readFile(url))
@@ -112,14 +120,29 @@ export async function fetchArchive(lock: ArchiveLock, log = console.log): Promis
           if (!res.ok) throw new Error(`GET ${url.href}: ${res.status} ${res.statusText}`);
           return new Uint8Array(await res.arrayBuffer());
         });
-  if (bytes.byteLength !== lock.size) throw new Error(`archive is ${bytes.byteLength} bytes; legacy/archive.lock.json pins ${lock.size}`);
+  if (bytes.byteLength !== part.size) throw new Error(`${part.key} is ${bytes.byteLength} bytes; legacy/archive.lock.json pins ${part.size}`);
   const actual = sha256(bytes);
-  if (actual !== lock.sha256) throw new Error(`archive hash ${actual} does not match legacy/archive.lock.json's ${lock.sha256}`);
+  if (actual !== part.sha256) throw new Error(`${part.key} hashes to ${actual}, not legacy/archive.lock.json's ${part.sha256}`);
   await mkdir(CACHE, { recursive: true });
   await writeFile(`${cached}.part`, bytes);
   await rename(`${cached}.part`, cached);
   log(`frozen copy: verified ${url.href}`);
   return bytes;
+}
+
+/** Every file of the frozen copy, from all its parts, each checked against its pin. */
+export async function readArchive(lock: ArchiveLock, log = console.log): Promise<Map<string, Uint8Array>> {
+  const files = new Map<string, Uint8Array>();
+  for (const part of lock.parts) {
+    const got = unpackArchive(await fetchPart(lock, part, log));
+    if (got.size !== part.files) throw new Error(`${part.key} holds ${got.size} files; its pin says ${part.files}`);
+    for (const [name, bytes] of got) {
+      if (files.has(name)) throw new Error(`${name} is in two parts of the frozen copy`);
+      files.set(name, bytes);
+    }
+  }
+  if (files.size !== lock.files) throw new Error(`the frozen copy holds ${files.size} files; its pin says ${lock.files}`);
+  return files;
 }
 
 // Quarto's alias pages: a page that sends the reader on with JavaScript, written for each of a

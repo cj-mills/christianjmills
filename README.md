@@ -47,21 +47,22 @@ set `DELIVERABLES_PUBLIC_URL` to a `file:` URL of a folder laid out like the buc
 `CHECK_URLS_EXTERNAL=0` to leave out the redirects to GitHub.
 
 **The old site.** christianjmills.com keeps every address the Quarto site had (hub decision
-`2026-11-03-christianjmills-legacy-urls`). Its last build, `gh-pages` at `2ddf70cf`, is one archive in
-the public bucket, pinned in `legacy/archive.lock.json` and fetched once into
-`node_modules/.cache/`. The archive leaves out the folders of the 71 posts retired on October 9, 2026,
-which redirect to their new homes (`legacy/retired.json`). At build time:
+`2026-11-03-christianjmills-legacy-urls`). Its last build, `gh-pages` at `2ddf70cf`, every file of
+it, is in the public bucket as an archive in two parts (each under the 315 MB wrangler can upload),
+pinned in `legacy/archive.lock.json` and fetched once into `node_modules/.cache/`. At build time:
 
 - each old page is served at its old address with a banner saying it is archived;
 - an old page leaves the copy when a deliverable takes its address (`urls.canonical`) or replaces it
   (`urls.supersedes`, a 301);
-- Quarto's alias pages become 301s;
+- Quarto's alias pages become 301s, and the 71 posts retired on October 9, 2026 send their readers to
+  their new homes (`legacy/retired.json`); their images and videos stay where they were;
 - a file the new site builds at an old file's path fails the build, unless the deliverable names it.
 
 The Worker serves files only by their names (`html_handling: "none"` in `wrangler.jsonc`), so
 `/about.html` and `/posts/x/index.html` answer 200 where they did on GitHub Pages; the folders and
 slashes come from the rules the build writes into `dist/_redirects`. The archive was packed once by
-`tools/archive-pack.ts` and is never packed again.
+`tools/archive-pack.ts` and is never packed again. An offline build needs its parts in the local
+folder `DELIVERABLES_PUBLIC_URL` names, beside the bundles.
 
 **Feed and sitemaps.** `/blog.xml` (the old feed's address), `/sitemap.xml` and `/robots.txt` are
 generated from the manifests; `/sitemap-archive.xml` lists the old pages the copy still serves.

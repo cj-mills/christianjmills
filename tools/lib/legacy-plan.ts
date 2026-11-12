@@ -61,7 +61,13 @@ export function planMerge(input: {
     leaving.set(path, 'an alias page');
     for (const a of addressesOf(path)) redirect(a, target, `alias page ${path}`);
   }
-  for (const [dir, target] of Object.entries(retired)) for (const a of addressesOf(fileOf(dir))) redirect(a, target, `retired post ${dir}`);
+  // A retired post's page leaves the copy and sends the reader to its new home; its images and videos
+// stay at their addresses, as every other file of the old build does.
+for (const [dir, target] of Object.entries(retired)) {
+  if (!archive.has(fileOf(dir))) throw new Error(`legacy/retired.json names ${dir}, which the frozen copy has no page for`);
+  leaving.set(fileOf(dir), 'retired');
+  for (const a of addressesOf(fileOf(dir))) redirect(a, target, `retired post ${dir}`);
+}
   for (const m of manifests) {
     const own = fileOf(m.urls.canonical);
     if (archive.has(own)) leaving.set(own, `taken over by ${m.id}`);
@@ -168,7 +174,10 @@ export function planMerge(input: {
     want(e.path, r ? r.to : 200, r ? `old sitemap, ${r.why}` : writes.has(fileOf(e.path)) ? 'old sitemap, in the copy' : 'old sitemap, now a page of the new site');
   }
   for (const [from, { to, why }] of redirects) if (why !== 'the slash' && why !== 'the old .html name') want(from, to, why);
-  for (const f of served) if (f.endsWith('.html')) for (const a of addressesOf(f)) want(a, redirects.get(a)?.to ?? 200, 'an old page, in the copy');
+  for (const f of served) {
+  if (f.endsWith('.html')) for (const a of addressesOf(f)) want(a, redirects.get(a)?.to ?? 200, 'an old page, in the copy');
+  else want(`/${f}`, 200, 'an old file, in the copy');
+}
   for (const f of built) if (f.endsWith('index.html') && !f.startsWith('pagefind/')) want(addressesOf(f)[0], 200, 'a page of the new site');
   for (const p of ['/blog.xml', '/sitemap.xml', ARCHIVE_SITEMAP_PATH, '/robots.txt']) want(p, 200, 'a machine-readable list');
 

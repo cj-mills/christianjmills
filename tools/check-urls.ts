@@ -21,6 +21,7 @@ const arg = process.argv[2];
 const external = process.env.CHECK_URLS_EXTERNAL !== '0';
 const expectations: Expectation[] = JSON.parse(await readFile(join(ROOT, '.build/urls.json'), 'utf8'));
 const failures: string[] = [];
+let reencodedPlus = 0;
 
 let base: URL;
 let stop = () => {};
@@ -80,6 +81,17 @@ try {
     const page = e.expect === 200 && res.status === 200 && (res.headers.get('content-type') ?? '').startsWith('text/html');
     const body = page ? await res.text() : (await res.body?.cancel(), '');
     if (e.expect === 200) {
+      // Cloudflare's asset server sends a `+` in a path on to its encoded form, `%2B`, with a 307
+      // (observed 2026-11-12 in wrangler dev: three old images named `c++`). The reader still gets
+      // the file, so one such hop to a 200 passes.
+      if (res.status === 307 && e.path.includes('+')) {
+        const location = new URL(res.headers.get('location') ?? '', base);
+        const reencoded = new URL(e.path.replaceAll('+', '%2B'), base);
+        if (location.href === reencoded.href && (await fetch(location, { redirect: 'manual' }).then((r) => (r.body?.cancel(), r.status))) === 200) {
+          reencodedPlus++;
+          return;
+        }
+      }
       if (res.status !== 200) failures.push(`${e.path} answered ${res.status}, not 200 (${e.why})`);
       else if (page && body.includes('data-archived') !== e.why.endsWith('in the copy')) {
         failures.push(`${e.path} ${e.why.endsWith('in the copy') ? 'is an old page without' : 'is a new page with'} the archive banner`);
@@ -128,5 +140,5 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(
-  `URL check passed on ${base.origin}: ${expectations.length - redirects} addresses answer 200, ${redirects} redirect with a 301 to a page that does${external ? '' : ' (GitHub targets not followed)'}, and noindex is on the preview's hosts only`,
+  `URL check passed on ${base.origin}: ${expectations.length - redirects} addresses answer 200 (${reencodedPlus} after the asset server's 307 that encodes a +), ${redirects} redirect with a 301 to a page that does${external ? '' : ' (GitHub targets not followed)'}, and noindex is on the preview's hosts only`,
 );
