@@ -3,7 +3,8 @@
 // 1. Static budgets on dist/: the bytes each page needs before it is usable, gzip-compressed as
 //    served, plus per-file limits on images and interactive modules. Deterministic.
 // 2. Runtime metrics in headless Chromium with Lighthouse-like mobile throttling (150 ms RTT,
-//    1.6 Mbps down, 4x CPU slowdown): LCP and CLS, and the font bytes the page fetches. Fonts are
+//    1.6 Mbps down, a CPU four times slower than the reference machine's, calibrated wherever the
+//    check runs: tools/lib/cpu.ts): LCP and CLS, and the font bytes the page fetches. Fonts are
 //    counted as the browser fetches them, because which faces and subsets a page loads depends on
 //    what it sets (unicode ranges, weights, styles). The run scrolls through the page a step at a
 //    time and waits at each step for the interactives near the window to mount, so its CLS is that
@@ -41,6 +42,7 @@
 import { readFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import { chromium, type BrowserContext } from 'playwright';
+import { calibratedRate } from './lib/cpu.ts';
 import { EXPECTED_MOUNT_FAILURES, EXPECTED_MOUNT_SHIFTS, fileFor, pages, serve } from './lib/dist.ts';
 
 const KB = 1024;
@@ -138,6 +140,11 @@ for (const m of modules) rows.push(`${('interactive ' + m).padEnd(48)} module ${
 // Runtime metrics.
 const { origin, server } = await serve();
 const browser = await chromium.launch();
+// The CPU is four times slower than the reference machine's, wherever the check runs (tools/lib/cpu.ts).
+const cpu = await calibratedRate(browser);
+rows.push(
+  `CPU: this machine runs the benchmark in ${cpu.hostMs.toFixed(1)} ms, the reference in ${cpu.reference.benchmarkMs} ms, so it is slowed ${cpu.rate.toFixed(2)} times`,
+);
 
 interface Hold {
   /** The figure's place among the page's interactive figures, from 0, and how many there are. */
@@ -281,7 +288,7 @@ try {
       downloadThroughput: (1.6 * 1024 * 1024) / 8,
       uploadThroughput: (750 * 1024) / 8,
     });
-    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpu.rate });
     await tab.addInitScript(() => {
       (window as any).__cls = 0;
       (window as any).__lcp = 0;

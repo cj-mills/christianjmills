@@ -243,7 +243,8 @@ taller than the limit at 375 × 740 or 1280 × 720.
 
 **Budgets** (hub decisions `2026-11-08-christianjmills-interactive-budget` and
 `2026-11-09-christianjmills-interactive-and-html-budgets`). The build measures each interactive
-under its throttling (150 ms RTT, 1.6 Mbps, a CPU four times slower) and fails when:
+under its throttling (150 ms RTT, 1.6 Mbps, a CPU four times slower than the reference machine's,
+calibrated wherever the check runs: `tools/lib/cpu.ts`) and fails when:
 
 - it takes more than 1,500 ms to mount, from when the site starts loading its module to when
   `mount` has finished. A module mounted many times is judged by its slowest mount, the first;

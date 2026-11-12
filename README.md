@@ -33,6 +33,13 @@ frozen copy of the old site around the new one and writes the routing (`tools/ar
 then serves `dist/` with `wrangler dev` and fails if any address of the old site or the new one
 answers other than it should (`tools/check-urls.ts`).
 
+**The performance check's CPU** is four times slower than the reference machine's, the user's
+workstation, wherever the check runs: it first times a fixed benchmark in Chromium and scales the
+slowdown by the reference's time in `tools/perf-reference.json`, so a slower runner is slowed less
+(hub decision `2026-11-12-christianjmills-calibrated-cpu-slowdown`). When Playwright's Chromium
+changes, the check refuses to run until the reference is read again on the reference machine with
+`npm run perf:calibrate`.
+
 **Design tokens.** `src/styles/tokens.json` is generated and committed, so the user's apps can
 read the same tokens. `tools/design/tokens.ts` builds it from a GPUI Kit theme in
 `src/styles/themes/` (mapped and corrected by `tools/design/theme.ts`), the typefaces in
